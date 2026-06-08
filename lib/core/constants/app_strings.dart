@@ -88,7 +88,7 @@ class AppStrings {
   static const String localityArea = 'Your locality or area';
   static const String selectYourArea = 'Select your area';
   static const String localityAreaPlaceholder =
-      'e.g., Bopal, Koramangala, Satellite';
+      'e.g., Bopal, Koramangala, 380058';
   static const String country = 'Country';
   static const String selectCountry = 'Select your country';
   static const String selectCountryPlaceholder = 'Search country...';
@@ -107,6 +107,8 @@ class AppStrings {
   static const String streetLandmarkPlaceholder = 'e.g. Near City Center Mall';
   static const String addressPrivacyNote =
       'Your exact house number is kept private and will never be shared publicly on Nearhood.';
+  static const String pincodeIncorrectNote = 
+      'If the PIN code is incorrect, please go back and search for your area again (you can also search by PIN code).';
 
   // Actions
   static const String continueButton = 'Continue';
@@ -136,4 +138,13 @@ class AppStrings {
   static const String useCurrentLocation = "Use your current location";
   static const String detectLocationAutomatic =
       "We\'ll detect your area automatically";
+
+  // Error Messages
+  static const String defaultError = 'Something went wrong. Please try again.';
+  static const String googleSignInFailed = 'Google Sign-In was cancelled or failed. Please try again.';
+  static const String credentialExpired = 'Your session has expired. Please log in again.';
+  static const String networkError = 'Network error. Please check your internet connection.';
+  static const String invalidCredentials = 'Invalid email or password. Please try again.';
+  static const String userNotFound = 'No account found with this email.';
+  static const String emailAlreadyInUse = 'An account already exists with this email.';
 }

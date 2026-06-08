@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1051048633429",
+    "project_id": "near-hood",
+    "storage_bucket": "near-hood.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051048633429:android:5366329eaf0e2c58e860dc",
+        "android_client_info": {
+          "package_name": "com.harsh.nearhood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051048633429-171aing2j6ilkc7beo42s3u0g6q5rt7o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.harsh.nearhood",
+            "certificate_hash": "e3093631737bd46514861868a6e5c2d998bbe1d2"
+          }
+        },
+        {
+          "client_id": "1051048633429-3n22agrfg9m2vt3q9mlhvnbbfrus1d5n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcoeN5CDizl63FNV7apdIrHhEcdcpcDoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051048633429-3n22agrfg9m2vt3q9mlhvnbbfrus1d5n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051048633429-bnjkbrvti192ju6mpe2ma3jcd6pqctru.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.harsh.nearhood"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
