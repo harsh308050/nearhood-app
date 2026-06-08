@@ -60,6 +60,7 @@ enum PageTransitionType {
   topToBottom,
   bottomToTop,
   fade,
+  none,
 }
 
 /// Custom Page Route that transitions page with a slide or fade animation.
@@ -72,8 +73,13 @@ class CustomPageRoute<T> extends PageRouteBuilder<T> {
     this.transitionType = PageTransitionType.rightToLeft,
   }) : super(
          pageBuilder: (context, animation, secondaryAnimation) => page,
-         transitionDuration: const Duration(milliseconds: 500),
+         transitionDuration: transitionType == PageTransitionType.none
+             ? Duration.zero
+             : const Duration(milliseconds: 500),
          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+           if (transitionType == PageTransitionType.none) {
+             return child;
+           }
            if (transitionType == PageTransitionType.fade) {
              return FadeTransition(opacity: animation, child: child);
            }

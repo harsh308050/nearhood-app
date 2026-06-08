@@ -96,6 +96,14 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
   }
 
   @override
+  void didUpdateWidget(covariant CustomDropdown<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.items != oldWidget.items) {
+      _filteredItems = widget.items;
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _removeOverlay();
@@ -433,6 +441,13 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
               ),
               sw(12),
             ],
+            if (item.icon != null) ...[
+              _buildIconWidget(
+                item.icon,
+                isSelected ? AppColors.primaryBlue : AppColors.darkGrey,
+              )!,
+              sw(12),
+            ],
             Expanded(
               child: CustomText(
                 item.label,
@@ -473,7 +488,10 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
 
     final effectiveContentPadding =
         widget.contentPadding ??
-        EdgeInsets.symmetric(horizontal: 20.0.w, vertical: 15.0.h);
+        EdgeInsets.symmetric(
+          horizontal: 20.0.w,
+          vertical: 12.0.h,
+        ).copyWith(right: 12.w);
 
     final effectiveTextStyle = AppTypography.bodyText
         .copyWith(
@@ -522,9 +540,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
         )
         .merge(widget.errorStyle);
 
-    final Color iconColor = _isFocused
-        ? AppColors.primaryBlue
-        : AppColors.darkGrey;
+    final Color iconColor = _isFocused ? AppColors.primaryBlue : AppColors.grey;
 
     Widget? prefixWidget;
     if (widget.prefix != null) {
@@ -553,7 +569,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
           duration: const Duration(milliseconds: 200),
           child: Icon(
             Icons.keyboard_arrow_down,
-            size: 24.0.r,
+            size: 22.0.r,
             color: iconColor,
           ),
         ),

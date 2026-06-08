@@ -291,7 +291,7 @@ class CustomButton extends StatelessWidget {
         effectiveTextColor = _isDisabled
             ? (disabledTextColor ?? AppColors.grey)
             : (textColor ?? AppColors.darkGrey);
-        effectiveLoadingColor = loadingIndicatorColor ?? AppColors.white;
+        effectiveLoadingColor = loadingIndicatorColor ?? AppColors.primaryBlue;
         break;
       case CustomButtonVariant.text:
         effectiveBackgroundColor = Colors.transparent;

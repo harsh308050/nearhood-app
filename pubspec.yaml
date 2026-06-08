@@ -1,5 +1,5 @@
 name: nearhood
-description: "A new Flutter project."
+description: "Nearhood is a Premium Hyperlocal Social Network built exclusively for India. It connects people who live in the same locality, same streets, same area, real neighbors - on a single trusted, real-name platform."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -13,6 +13,16 @@ dependencies:
   shimmer: ^3.0.0
   http: ^1.6.0
   cached_network_image: ^3.4.1
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
+  google_sign_in: ^7.2.0
+  dio: ^5.9.2
+  flutter_dotenv: ^5.2.1
+  flutter_bloc: ^9.0.0
+  shared_preferences: ^2.5.5
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  location: ^8.0.1
 
 dev_dependencies:
   flutter_test:
@@ -24,6 +34,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - .env
 
   fonts:
     - family: ClashDisplay
