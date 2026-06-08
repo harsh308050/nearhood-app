@@ -15,6 +15,7 @@ import 'package:nearhood/core/network/api_call_state.dart';
 
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/core/services/location_service.dart';
+import 'package:nearhood/features/location_selection/screeens/city_map_image.dart';
 
 class LocationSelectionScreen extends StatelessWidget {
   final UserProfile? prefilledProfile;
@@ -53,6 +54,9 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
   LocationModel? _selectedState;
   LocationModel? _selectedCity;
   LocationModel? _selectedLocality;
+
+  double? _detectedLatitude;
+  double? _detectedLongitude;
 
   final TextEditingController _countryController = TextEditingController();
   final TextEditingController _stateController = TextEditingController();
@@ -129,6 +133,8 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
         _selectedLocality = null;
         _localityController.clear();
         _hiddenPinCode = null;
+        _detectedLatitude = null;
+        _detectedLongitude = null;
       });
       _countryFieldKey.currentState?.validate();
     }
@@ -156,6 +162,8 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
         _selectedLocality = null;
         _localityController.clear();
         _hiddenPinCode = null;
+        _detectedLatitude = null;
+        _detectedLongitude = null;
       });
       _stateFieldKey.currentState?.validate();
     }
@@ -184,6 +192,8 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
         _selectedLocality = null;
         _localityController.clear();
         _hiddenPinCode = null;
+        _detectedLatitude = null;
+        _detectedLongitude = null;
       });
       _cityFieldKey.currentState?.validate();
     }
@@ -208,6 +218,8 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
         if (result.pincode != null) {
           _hiddenPinCode = result.pincode;
         }
+        _detectedLatitude = null;
+        _detectedLongitude = null;
       });
       _localityFieldKey.currentState?.validate();
     }
@@ -328,6 +340,8 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
             _hiddenPinCode = matchedLocality.pincode;
           }
         }
+        _detectedLatitude = position.latitude;
+        _detectedLongitude = position.longitude;
         _isAutoDetectingLocation = false;
       });
       _countryFieldKey.currentState?.validate();
@@ -563,11 +577,32 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
   }
 
   Widget _buildHeroIllustration() {
+    double? mapLat;
+    double? mapLng;
+
+    if (_selectedLocality?.latitude != null && _selectedLocality?.longitude != null) {
+      mapLat = _selectedLocality!.latitude;
+      mapLng = _selectedLocality!.longitude;
+    } else if (_selectedCity?.latitude != null && _selectedCity?.longitude != null) {
+      mapLat = _selectedCity!.latitude;
+      mapLng = _selectedCity!.longitude;
+    } else if (_selectedState?.latitude != null && _selectedState?.longitude != null) {
+      mapLat = _selectedState!.latitude;
+      mapLng = _selectedState!.longitude;
+    } else if (_detectedLatitude != null && _detectedLongitude != null) {
+      mapLat = _detectedLatitude;
+      mapLng = _detectedLongitude;
+    }
+
     return ClipRRect(
       borderRadius: BorderRadiusGeometry.circular(20.r),
-      child: CustomImageView(
-        imagePath: AppAssets.mapPlaceholder,
-        fit: BoxFit.fill,
+      child: CityMapImage(
+        cityName: _selectedCity?.name,
+        stateName: _selectedState?.name,
+        countryName: _selectedCountry?.name,
+        latitude: mapLat,
+        longitude: mapLng,
+        height: 180.h,
       ),
     );
   }

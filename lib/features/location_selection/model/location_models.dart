@@ -5,6 +5,8 @@ class LocationModel {
   final String? phonecode;
   final String? flag;
   final String? pincode;
+  final double? latitude;
+  final double? longitude;
 
   const LocationModel({
     this.isoCode,
@@ -13,6 +15,8 @@ class LocationModel {
     this.phonecode,
     this.flag,
     this.pincode,
+    this.latitude,
+    this.longitude,
   });
 
   factory LocationModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class LocationModel {
       phonecode: json['phonecode'],
       flag: json['flag'],
       pincode: json['pincode'],
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
 
@@ -34,7 +40,9 @@ class LocationModel {
         other.placeId == placeId &&
         other.name == name &&
         other.phonecode == phonecode &&
-        other.pincode == pincode;
+        other.pincode == pincode &&
+        other.latitude == latitude &&
+        other.longitude == longitude;
   }
 
   @override
@@ -45,6 +53,8 @@ class LocationModel {
       name,
       phonecode,
       pincode,
+      latitude,
+      longitude,
     );
   }
 
