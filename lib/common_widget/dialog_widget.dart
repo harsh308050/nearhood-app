@@ -73,7 +73,7 @@ class DialogWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(36),
+            padding: EdgeInsets.symmetric(vertical: 35.h, horizontal: 25.w),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -119,7 +119,7 @@ class DialogWidget extends StatelessWidget {
                 if (positiveLabel != null && positiveLabel!.isNotEmpty) ...[
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 56.h,
                     child: ElevatedButton(
                       onPressed: positiveTap,
                       child: CustomText(positiveLabel!),
