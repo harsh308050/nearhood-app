@@ -11,6 +11,8 @@ class AppStrings {
   static const String connectWithNeighbors = 'Discover Your Neighborhood with';
   static const String continueWithGoogle = 'Continue with Google';
   static const String continueWithEmail = 'Continue with email';
+  static const String continueOnboarding = 'Continue Onboarding?';
+  static const String useDifferentAccount = 'Use Different Account';
 
   // Get Started Screen Specific
   static const String discoverYourNeighborhoodWith =
@@ -107,7 +109,7 @@ class AppStrings {
   static const String streetLandmarkPlaceholder = 'e.g. Near City Center Mall';
   static const String addressPrivacyNote =
       'Your exact house number is kept private and will never be shared publicly on Nearhood.';
-  static const String pincodeIncorrectNote = 
+  static const String pincodeIncorrectNote =
       'If the PIN code is incorrect, please go back and search for your area again (you can also search by PIN code).';
 
   // Actions
@@ -141,10 +143,15 @@ class AppStrings {
 
   // Error Messages
   static const String defaultError = 'Something went wrong. Please try again.';
-  static const String googleSignInFailed = 'Google Sign-In was cancelled or failed. Please try again.';
-  static const String credentialExpired = 'Your session has expired. Please log in again.';
-  static const String networkError = 'Network error. Please check your internet connection.';
-  static const String invalidCredentials = 'Invalid email or password. Please try again.';
+  static const String googleSignInFailed =
+      'Google Sign-In was cancelled or failed. Please try again.';
+  static const String credentialExpired =
+      'Your session has expired. Please log in again.';
+  static const String networkError =
+      'Network error. Please check your internet connection.';
+  static const String invalidCredentials =
+      'Invalid email or password. Please try again.';
   static const String userNotFound = 'No account found with this email.';
-  static const String emailAlreadyInUse = 'An account already exists with this email.';
+  static const String emailAlreadyInUse =
+      'An account already exists with this email.';
 }

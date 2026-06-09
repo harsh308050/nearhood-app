@@ -35,27 +35,22 @@ class LocationModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is LocationModel &&
-        other.isoCode == isoCode &&
-        other.placeId == placeId &&
-        other.name == name &&
-        other.phonecode == phonecode &&
-        other.pincode == pincode &&
-        other.latitude == latitude &&
-        other.longitude == longitude;
+    if (other is! LocationModel) return false;
+    
+    if (placeId != null && other.placeId != null) {
+      return placeId == other.placeId;
+    }
+    if (isoCode != null && other.isoCode != null) {
+      return isoCode == other.isoCode;
+    }
+    return name?.toLowerCase() == other.name?.toLowerCase();
   }
 
   @override
   int get hashCode {
-    return Object.hash(
-      isoCode,
-      placeId,
-      name,
-      phonecode,
-      pincode,
-      latitude,
-      longitude,
-    );
+    if (placeId != null) return placeId.hashCode;
+    if (isoCode != null) return isoCode.hashCode;
+    return name?.toLowerCase().hashCode ?? 0;
   }
 
   @override

@@ -469,14 +469,27 @@ class _LocationSelectionViewState extends State<LocationSelectionView> {
                                 )
                                 .toList();
 
+                            LocationModel? activeCountry = _selectedCountry;
+                            if (_selectedCountry != null && _selectedCountry!.flag == null) {
+                              final matched = locationState.countries
+                                  .cast<LocationModel?>()
+                                  .firstWhere(
+                                    (c) => c == _selectedCountry,
+                                    orElse: () => null,
+                                  );
+                              if (matched != null) {
+                                activeCountry = matched;
+                              }
+                            }
+
                             return CustomDropdown<LocationModel>(
                               label: AppStrings.country,
                               hint: AppStrings.selectCountryPlaceholder,
                               items: countryItems,
-                              value: _selectedCountry,
-                              prefixIcon: _selectedCountry?.flag != null
+                              value: activeCountry,
+                              prefixIcon: activeCountry?.flag != null
                                   ? CustomText(
-                                      _selectedCountry!.flag!,
+                                      activeCountry!.flag!,
                                       fontSize: 18.sp,
                                     )
                                   : CustomImageView(

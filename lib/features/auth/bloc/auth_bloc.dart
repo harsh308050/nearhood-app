@@ -200,18 +200,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     super.onChange(change);
     final newState = change.nextState;
     if (newState.status == ApiCallState.success && newState.userProfile != null) {
-      final onboarding = newState.userProfile!.onboarding;
-      final isComplete = onboarding?.isComplete ?? false;
-      final hasAgreed = onboarding?.hasAgreedToRules ?? false;
-      final currentStep = onboarding?.currentStep ?? 1;
-      final totalSteps = onboarding?.totalSteps ?? 4;
-      
-      if (isComplete || currentStep > totalSteps || hasAgreed) {
-        sharedPrefsaveData(
-          SharedPrefKeys.userDataKey,
-          jsonEncode(newState.userProfile!.toJson()),
-        );
-      }
+      sharedPrefsaveData(
+        SharedPrefKeys.userDataKey,
+        jsonEncode(newState.userProfile!.toJson()),
+      );
     }
   }
 }
