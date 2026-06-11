@@ -72,7 +72,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _authBloc.add(const EmailSignInRequested());
     } catch (e) {
       setState(() => _isLoading = false);
-      AppSnackBar.showMessage(context, AuthErrorHandler.getErrorMessage(e));
+      AppSnackBar.showMessage(
+        context,
+        AuthErrorHandler.getErrorMessage(e),
+        borderColor: AppColors.red,
+      );
     }
   }
 
@@ -91,7 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       setState(() => _isGoogleLoading = false);
-      AppSnackBar.showMessage(context, AuthErrorHandler.getErrorMessage(e));
+      AppSnackBar.showMessage(
+        context,
+        AuthErrorHandler.getErrorMessage(e),
+        borderColor: AppColors.red,
+      );
     }
   }
 
@@ -122,7 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
               );
             }
           } else if (state.status == ApiCallState.failure) {
-            AppSnackBar.showMessage(context, state.message ?? 'Login failed');
+            AppSnackBar.showMessage(
+              context,
+              state.message ?? 'Login failed',
+              borderColor: AppColors.red,
+            );
           }
         }
       },

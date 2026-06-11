@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 
 /// A reusable, highly configurable AppBar widget.
@@ -112,6 +111,7 @@ class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onActionButtonPressed;
   final String? actionButtonLabel;
   final ButtonStyle? actionButtonStyle;
+  final Widget? actionButton;
 
   // --- ADDITIONAL CONFIG ---
   final Color? backgroundColor;
@@ -174,6 +174,7 @@ class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.onActionButtonPressed,
     this.actionButtonLabel,
     this.actionButtonStyle,
+    this.actionButton,
 
     // Config
     this.backgroundColor,
@@ -419,8 +420,8 @@ class _CommonAppBarState extends State<CommonAppBar> {
               CustomImageView(
                 imagePath: AppAssets.icShare,
                 color: AppColors.darkGrey,
-                height: 20.h,
-                width: 20.w,
+                height: 18.h,
+                width: 18.w,
               ),
         ),
       );
@@ -484,7 +485,10 @@ class _CommonAppBarState extends State<CommonAppBar> {
       suffixWidgets.add(sw(4));
     }
 
-    if (widget.showActionButton && !_isSearchActive) {
+    if (widget.actionButton != null && !_isSearchActive) {
+      suffixWidgets.add(widget.actionButton!);
+      suffixWidgets.add(sw(4));
+    } else if (widget.showActionButton && !_isSearchActive) {
       suffixWidgets.add(
         CustomButton.filled(
           height: 32.h,
@@ -509,7 +513,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
           : Align(
               alignment: widget.centerTitle
                   ? Alignment.center
-                  : Alignment.centerLeft,
+                  : Alignment.topLeft,
               child:
                   widget.titleWidget ??
                   (widget.title != null

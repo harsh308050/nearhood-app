@@ -124,13 +124,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           current.status != ApiCallState.busy,
       listener: (context, state) {
         if (state.status == ApiCallState.success) {
-          AppSnackBar.showMessage(context, 'Verification successful!');
+          AppSnackBar.showMessage(
+            context,
+            'Verification successful!',
+            borderColor: AppColors.green,
+          );
           callNextScreenAndClearStack(context, const CommunityRulesScreen());
         } else if (state.status == ApiCallState.failure) {
           _showError();
           AppSnackBar.showMessage(
             context,
             state.message ?? 'Verification failed',
+            borderColor: AppColors.red,
           );
         }
       },

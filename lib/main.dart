@@ -5,6 +5,7 @@ import 'package:nearhood/firebase_options.dart';
 import 'package:nearhood/features/splash/splash_screen.dart';
 import 'package:nearhood/core/theme/app_theme.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
+import 'package:nearhood/common_widget/connectivity_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,9 @@ class NearhoodApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) {
+        return ConnectivityWrapper(child: child!);
+      },
       home: const SplashScreen(),
     );
   }

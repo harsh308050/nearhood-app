@@ -224,3 +224,29 @@ class SelectedModel<T> {
 
   SelectedModel({required this.fromWhere, this.selectedItem});
 }
+
+String formatTimeAgo(String isoString) {
+  if (isoString.isEmpty) return '';
+  try {
+    final DateTime dateTime = DateTime.parse(isoString).toLocal();
+    final Duration difference = DateTime.now().difference(dateTime);
+
+    if (difference.inDays >= 30) {
+      final int months = (difference.inDays / 30).floor();
+      return '${months}mo ago';
+    } else if (difference.inDays >= 7) {
+      final int weeks = (difference.inDays / 7).floor();
+      return '${weeks}w ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  } catch (_) {
+    return '';
+  }
+}

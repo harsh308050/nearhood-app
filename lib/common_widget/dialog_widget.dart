@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nearhood/common_widget/custom_text.dart';
+import 'package:nearhood/common_widget/custom_button.dart';
+import 'package:nearhood/common_widget/custom_image_view.dart';
 import 'package:nearhood/core/theme/app_colors.dart';
 import 'package:nearhood/core/theme/app_typography.dart';
 import 'package:nearhood/core/utils/cm.dart';
@@ -81,15 +83,11 @@ class DialogWidget extends StatelessWidget {
               children: [
                 // Top icon / illustration
                 if (showTopImage && topImage != null) ...[
-                  Image.asset(
-                    topImage!,
-                    height: 120,
-                    width: 130,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.info_outline_rounded,
-                      size: 80,
-                      color: AppColors.primaryBlue,
-                    ),
+                  CustomImageView(
+                    imagePath: topImage!,
+                    height: 120.h,
+                    width: 130.w,
+                    fit: BoxFit.contain,
                   ),
                   sh(10),
                 ],
@@ -117,13 +115,10 @@ class DialogWidget extends StatelessWidget {
 
                 // Positive button
                 if (positiveLabel != null && positiveLabel!.isNotEmpty) ...[
-                  SizedBox(
-                    width: double.infinity,
+                  CustomButton.filled(
+                    text: positiveLabel!,
+                    onPressed: positiveTap,
                     height: 56.h,
-                    child: ElevatedButton(
-                      onPressed: positiveTap,
-                      child: CustomText(positiveLabel!),
-                    ),
                   ),
                   sh(20),
                 ],

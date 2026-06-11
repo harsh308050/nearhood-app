@@ -116,6 +116,7 @@ class _AddressDetailsViewState extends State<AddressDetailsView> {
           AppSnackBar.showMessage(
             context,
             state.error?.message ?? 'Unknown error',
+            borderColor: AppColors.red,
           );
         } else if (state.status == ApiCallState.success) {
           callNextScreenAndClearStack(context, const MobileNumberScreen());
@@ -163,7 +164,7 @@ class _AddressDetailsViewState extends State<AddressDetailsView> {
                           key: _pinCodeFieldKey,
                           controller: _pinCodeController,
                           label: AppStrings.pinCode,
-                          hint: 'e.g. 380058',
+                          hint: AppStrings.pincodePlaceholder,
                           keyboardType: TextInputType.number,
                           isRequired: true,
                           enabled: false,

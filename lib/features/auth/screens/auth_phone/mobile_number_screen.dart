@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/features/auth/screens/auth_phone/otp_verification_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nearhood/features/community_rules/community_rules_screen.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
 import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
 import 'package:nearhood/features/auth/bloc/auth_event.dart';
@@ -21,7 +20,6 @@ class MobileNumberScreen extends StatefulWidget {
 class _MobileNumberScreenState extends State<MobileNumberScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
-  bool _isSkipping = false;
 
   final AuthBloc _authBloc = AuthBloc(
     repository: AuthRepository(dataSource: AuthRemoteDataSource()),
@@ -33,20 +31,8 @@ class _MobileNumberScreenState extends State<MobileNumberScreen> {
     super.dispose();
   }
 
-  void _onSkipPressed() {
-    _isSkipping = true;
-    _authBloc.add(
-      const UpdateRegisterRequested(
-        UpdateRegisterRequest(
-          onboarding: OnboardingUpdate(isPhoneSkipped: true),
-        ),
-      ),
-    );
-  }
-
   void _onSendOtp() {
     if (_phoneController.text.replaceAll(' ', '').length < 10) return;
-    _isSkipping = false;
     _authBloc.add(
       SendOtpRequested(
         SendOtpRequest(phoneNumber: _phoneController.text.trim()),
@@ -68,23 +54,17 @@ class _MobileNumberScreenState extends State<MobileNumberScreen> {
         } else {
           setState(() => _isLoading = false);
           if (state.status == ApiCallState.success) {
-            if (_isSkipping) {
-              callNextScreenAndClearStack(
-                context,
-                const CommunityRulesScreen(),
-              );
-            } else {
-              callNextScreen(
-                context,
-                OtpVerificationScreen(
-                  phoneNumber: '+91 ${_phoneController.text.trim()}',
-                ),
-              );
-            }
+            callNextScreen(
+              context,
+              OtpVerificationScreen(
+                phoneNumber: '+91 ${_phoneController.text.trim()}',
+              ),
+            );
           } else if (state.status == ApiCallState.failure) {
             AppSnackBar.showMessage(
               context,
               state.message ?? 'An error occurred',
+              borderColor: AppColors.red,
             );
           }
         }
@@ -227,22 +207,6 @@ class _MobileNumberScreenState extends State<MobileNumberScreen> {
                             ? _onSendOtp
                             : null,
                         backgroundColor: AppColors.primaryBlue,
-                      ),
-                      sh(16),
-                      // Skip Option
-                      Center(
-                        child: GestureDetector(
-                          onTap: _onSkipPressed,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.h),
-                            child: CustomText(
-                              AppStrings.skipForNow,
-                              style: AppTypography.bodyText.copyWith(
-                                color: AppColors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
                       ),
                     ],
                   ),

@@ -111,7 +111,11 @@ class _SignupScreenState extends State<SignupScreen> {
               );
             }
           } else if (state.status == ApiCallState.failure) {
-            AppSnackBar.showMessage(context, state.message ?? 'Signup failed');
+            AppSnackBar.showMessage(
+              context,
+              state.message ?? 'Signup failed',
+              borderColor: AppColors.red,
+            );
           }
         }
       },

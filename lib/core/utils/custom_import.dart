@@ -5,6 +5,7 @@
 
 // Flutter Material
 export 'package:flutter/material.dart';
+export 'package:flutter_svg/flutter_svg.dart';
 
 // Common Widgets
 export 'package:nearhood/common_widget/app_snackbar.dart';
@@ -17,6 +18,8 @@ export 'package:nearhood/common_widget/custom_text.dart';
 export 'package:nearhood/common_widget/custom_textfield.dart';
 export 'package:nearhood/common_widget/dialog_widget.dart';
 export 'package:nearhood/common_widget/empty_state_widget.dart';
+export 'package:nearhood/common_widget/post_media_carousel_widget.dart';
+export 'package:nearhood/common_widget/post_attachments_widget.dart';
 
 // Core Constants
 export 'package:nearhood/core/constants/app_assets.dart';

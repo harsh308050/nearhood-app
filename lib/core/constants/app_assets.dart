@@ -11,7 +11,9 @@ class AppAssets {
 
   static const String getStarted = '$_imagesPath/getstarted.png';
   static const String emptyState = '$_imagesPath/emptystate.svg';
+  static const String noInternet = '$_imagesPath/no_internet.svg';
   static const String mapPlaceholder = '$_imagesPath/maps_placeholder.png';
+  static const String profilePlaceholder = '$_imagesPath/profile_placeholder.png';
 
   static const String icAdd = '$_iconsPath/ic_add.svg';
   static const String icAdduser = '$_iconsPath/ic_adduser.svg';
@@ -46,6 +48,7 @@ class AppAssets {
   static const String icHome = '$_iconsPath/ic_home.svg';
   static const String icInfo = '$_iconsPath/ic_info.svg';
   static const String icLike = '$_iconsPath/ic_like.svg';
+  static const String icLikeFilled = '$_iconsPath/ic_like_filled.svg';
   static const String icLock = '$_iconsPath/ic_lock.svg';
 
   static const String icLocation = '$_iconsPath/ic_location.svg';
@@ -80,4 +83,11 @@ class AppAssets {
   static const String icVerified = '$_iconsPath/ic_verified.svg';
   static const String icWarning = '$_iconsPath/ic_warning.svg';
   static const String icWorld = '$_iconsPath/ic_world.svg';
+
+  static const String icReactLike = '$_iconsPath/ic_react_like.png';
+  static const String icReactCelebrate = '$_iconsPath/ic_react_celebrate.png';
+  static const String icReactSupport = '$_iconsPath/ic_react_support.png';
+  static const String icReactLove = '$_iconsPath/ic_react_love.png';
+  static const String icReactInsightful = '$_iconsPath/ic_react_insightful.png';
+  static const String icReactFunny = '$_iconsPath/ic_react_funny.png';
 }

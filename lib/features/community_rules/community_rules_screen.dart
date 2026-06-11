@@ -108,6 +108,7 @@ class _CommunityRulesScreenState extends State<CommunityRulesScreen> {
             AppSnackBar.showMessage(
               context,
               state.message ?? 'Failed to update rules agreement',
+              borderColor: AppColors.red,
             );
           }
         }

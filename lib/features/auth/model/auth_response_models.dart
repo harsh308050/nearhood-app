@@ -61,7 +61,7 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id']?.toString(),
+      id: json['id']?.toString() ?? json['_id']?.toString(),
       firebaseUid: json['firebaseUid']?.toString(),
       fullName: json['fullName']?.toString(),
       email: json['email']?.toString(),

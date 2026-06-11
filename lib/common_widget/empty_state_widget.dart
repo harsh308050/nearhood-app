@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nearhood/common_widget/custom_text.dart';
+import 'package:nearhood/common_widget/custom_button.dart';
 import 'package:nearhood/core/constants/app_assets.dart';
-import 'package:nearhood/core/theme/app_colors.dart';
 import 'package:nearhood/core/theme/app_typography.dart';
 import 'package:nearhood/core/utils/cm.dart';
 import 'package:nearhood/common_widget/custom_image_view.dart';
@@ -40,49 +40,43 @@ class EmptyStateWidget extends StatelessWidget {
   /// Whether to show the illustration. Defaults to true.
   final bool showIllustration;
 
-  /// Title text displayed below the illustration.
+  /// The empty state title.
   final String title;
 
-  /// Subtitle / description text.
+  /// The empty state subtitle/description.
   final String subtitle;
 
   /// Whether to show the action button. Defaults to true.
   final bool showButton;
 
-  /// Text for the default action button. Ignored if [button] is provided.
+  /// The label for the action button. Defaults to 'Retry'.
   final String? btnText;
 
-  /// Callback for the default action button. Ignored if [button] is provided.
+  /// Callback when the action button is pressed.
   final VoidCallback? onPressed;
 
-  /// An optional custom button widget. Overrides [btnText] and [onPressed].
+  /// A custom button widget. Overrides [btnText] and [onPressed].
   final Widget? button;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        alignment: Alignment.center,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Illustration
             if (showIllustration)
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.6,
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child:
-                      illustration ??
-                      CustomImageView(
-                        imagePath: illustrationPath,
-                        fit: BoxFit.contain,
-                      ),
-                ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 10.h),
+                child:
+                    illustration ??
+                    CustomImageView(
+                      imagePath: illustrationPath,
+                      fit: BoxFit.fill,
+                    ),
               ),
 
             // Title
@@ -104,23 +98,11 @@ class EmptyStateWidget extends StatelessWidget {
             // Button
             if (showButton) ...[
               button ??
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: onPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: CustomText(
-                        btnText ?? 'Retry',
-                        style: AppTypography.buttonLabel,
-                      ),
-                    ),
+                  CustomButton.filled(
+                    text: btnText ?? 'Retry',
+                    onPressed: onPressed,
+                    height: 56.h,
+                    borderRadius: 14.r,
                   ),
               sh(16),
             ],

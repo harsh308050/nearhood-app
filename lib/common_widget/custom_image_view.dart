@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nearhood/core/utils/cm.dart';
 
 /// A customizable widget to display both PNG/JPG images and SVGs seamlessly.
 class CustomImageView extends StatelessWidget {
@@ -41,7 +42,7 @@ class CustomImageView extends StatelessWidget {
           placeholderBuilder: (context) => SizedBox(
             height: height ?? 40,
             width: width ?? 40,
-            child: const Center(child: CircularProgressIndicator.adaptive()),
+            child: shimmerContainer(height ?? 40, width ?? 40),
           ),
         );
       } else {
@@ -70,7 +71,7 @@ class CustomImageView extends StatelessWidget {
             return SizedBox(
               height: height ?? 40,
               width: width ?? 40,
-              child: const Center(child: CircularProgressIndicator.adaptive()),
+              child: shimmerContainer(height ?? 40, width ?? 40),
             );
           },
           errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),

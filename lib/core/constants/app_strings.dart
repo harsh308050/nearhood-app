@@ -98,6 +98,43 @@ class AppStrings {
   static const String searchPlaceholder = 'Search...';
 
   // Address Details Screen Specific
+  static const String myAreaOnly = 'My Area Only';
+
+  // Feed & Posts Screen Specific
+  static const String whatIsHappeningNeighbor = "What's happening, neighbor?";
+  static const String allPosts = 'All Posts';
+  static const String alerts = 'Alerts';
+  static const String events = 'Events';
+  static const String marketplace = 'Marketplace';
+  static const String home = 'Home';
+  static const String explore = 'Explore';
+  static const String market = 'Market';
+  static const String createPost = 'Create Post';
+  static const String whatWouldYouLikeToShare = 'What would you like to share?';
+  static const String general = 'General';
+  static const String generalDesc = 'Anything neighborhood-related';
+  static const String question = 'Question';
+  static const String questionDesc = 'Ask neighbors for help';
+  static const String safetyAlert = 'Safety Alert';
+  static const String safetyAlertDesc = 'Urgent warnings';
+  static const String lostAndFound = 'Lost & Found';
+  static const String lostAndFoundDesc = 'Pets, items, people';
+  static const String forSale = 'For Sale';
+  static const String forSaleDesc = 'Buy and sell locally';
+  static const String event = 'Event';
+  static const String eventDesc = 'Community gatherings';
+  static const String recommend = 'Recommendation';
+  static const String recommendDesc = 'Local business reviews';
+  static const String cancel = 'Cancel';
+  static const String post = 'Post';
+  static const String writeAComment = 'Write a comment...';
+  static const String comments = 'Comments';
+  static const String reply = 'Reply';
+  static const String like = 'Like';
+  static const String comment = 'Comment';
+  static const String refresh = 'Refresh';
+
+  static const String share = 'Share';
   static const String yourAddressDetails = 'Your address details';
   static const String addressDetailsSubtitle =
       'We need this to connect you with neighbors.';
@@ -135,6 +172,9 @@ class AppStrings {
 
   //Messages
   static const String noResultFound = "No results found";
+  static const String noInternet = "No Internet Connection";
+  static const String noInternetDesc =
+      "Please check your connection and try again.";
   static const String noAreasFound = "No areas found";
   static const String tryDiffSearch = "Try a different search term";
   static const String useCurrentLocation = "Use your current location";
@@ -154,4 +194,80 @@ class AppStrings {
   static const String userNotFound = 'No account found with this email.';
   static const String emailAlreadyInUse =
       'An account already exists with this email.';
+
+  // Location Selection & Dropdowns
+  static const String stateLabel = 'State';
+  static const String searchStatePlaceholder = 'Search State';
+  static const String cityLabel = 'City';
+  static const String searchCityPlaceholder = 'Search City';
+  static const String pleaseSelectCountry = 'Please select a country';
+  static const String pleaseSelectState = 'Please select a state';
+  static const String pleaseSelectCity = 'Please select a city';
+  static const String pleaseSelectCityFirst = 'Please select a city first';
+  static const String verifyYourNeighborhood = 'Verify Your Neighborhood';
+  static const String gpsVerificationWarning = 'To join Nearhood and stay updated with your real neighborhood correctly, we use your device\'s GPS to verify your neighborhood.';
+  static const String gpsVerificationBenefit = 'This ensures you see relevant safety updates, local events, and connect with verified neighbors nearby.';
+  static const String allowGpsLocation = 'Allow GPS Location';
+  static const String locationAccessRequired = 'Verification required: Location access is needed to verify your neighborhood.';
+  static const String locationMismatchTitle = 'Location Mismatch';
+  static const String locationMismatchMessage = 'We detected that you are currently at ';
+  static const String locationMismatchButSelected = ', but you selected ';
+  static const String locationMismatchPrompt = '.\n\nPlease select the correct location to verify and join your neighborhood.';
+  static const String useDetectedLocation = 'Use Detected Location';
+  static const String selectManually = 'Select Manually';
+  static const String searchLocalityTitle = 'Search for Locality/Area';
+  static const String pincodePlaceholder = 'e.g. 380058';
+
+  // Navigation / Action Sheets
+  static const String editPost = 'Edit Post';
+  static const String copyLink = 'Copy Link';
+  static const String reportPost = 'Report Post';
+  static const String deletePost = 'Delete Post';
+  static const String postDeletedSuccessfully = 'Post deleted successfully';
+  static const String editPostComingSoon = 'Edit post coming soon';
+  static const String linkCopied = 'Link copied to clipboard';
+  static const String reportSubmitted = 'Report submitted';
+  static const String delete = 'Delete';
+  static const String report = 'Report';
+  static const String whyReportingPost = 'Why are you reporting this post?';
+  static const String postReportedMessage = 'Post reported. We\'ll review it shortly.';
+  static const String deletePostConfirmation = 'Are you sure you want to delete this post? This action cannot be undone.';
+
+  // Placeholder Screens (Explore, Chat, Market)
+  static const String messages = 'Messages';
+  static const String neighborMessages = 'Neighbor Messages';
+  static const String chatComingSoonDesc = 'Chat directly with verified neighbors around you to coordinate events, discuss issues, or offer help. Coming soon!';
+  static const String exploreNeighborhood = 'Explore the Neighborhood';
+  static const String exploreComingSoonDesc = 'Discover local businesses, recommendations, and interesting places around your neighborhood. Coming soon!';
+  static const String localMarketplace = 'Local Marketplace';
+  static const String marketComingSoonDesc = 'Buy, sell, or request items and services from verified neighbors around you safely. Coming soon!';
+
+  // Feed & Homepage
+  static const String unableToLoadFeed = 'Unable to Load Feed';
+  static const String retry = 'Retry';
+  static const String noPostsYet = 'No Posts Yet';
+  static const String nearby = 'Nearby';
+  static const String city = 'City';
+
+  // Create Post, Polls & Visibility picker
+  static const String maxImagesReached = 'You can add up to 4 images only.';
+  static const String postCreatedSuccessfully = 'Post created successfully';
+  static const String contentRequired = 'Please write something for your post';
+  static const String pollAttachment = 'Poll Attachment';
+  static const String selectLocation = 'Select Location';
+  static const String searchAddressPlaceholder = 'Search address or location...';
+  static const String selectedLocation = 'Selected Location';
+  static const String confirmLocation = 'Confirm Location';
+  static const String noCommentsYet = 'No comments yet. Start the conversation!';
+  static const String hideReplies = 'Hide replies';
+  static const String createPoll = 'Create Poll';
+  static const String askQuestionPlaceholder = 'Ask a question...';
+  static const String options = 'Options';
+  static const String showWhoVoted = 'Show who voted';
+  static const String letVotersSeeDetails = 'Let voters see who chose each option';
+  static const String anonymousVoting = 'Anonymous voting';
+  static const String whoCanSeePost = 'Who can see this post?';
+  static const String selectRadius = 'Select Radius: ';
+  static const String apply = 'Apply';
+  static const String directions = 'Directions';
 }

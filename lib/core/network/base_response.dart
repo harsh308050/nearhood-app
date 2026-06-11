@@ -15,11 +15,17 @@ class BaseResponse<T> {
     Map<String, dynamic> json,
     T Function(dynamic data) dataParser,
   ) {
+    final isSuccess = json['success'] == true;
     return BaseResponse(
       code: json['code'] is int ? json['code'] as int : 0,
-      success: json['success'] == true,
+      success: isSuccess,
       message: json['message']?.toString() ?? '',
-      data: json['data'] == null ? null : dataParser(json['data']),
+      // Only parse data when the response is successful.
+      // On error, data contains error info (e.g. {errors: [...]})
+      // which is handled separately by ErrorModel.fromResponseMap.
+      data: (isSuccess && json['data'] != null)
+          ? dataParser(json['data'])
+          : null,
     );
   }
 }
