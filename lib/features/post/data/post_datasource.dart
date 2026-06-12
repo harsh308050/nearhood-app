@@ -138,6 +138,13 @@ class PostRemoteDataSource extends HttpActions {
     return put('posts/$postId/comments/$commentId/pin');
   }
 
+  Future<HttpResponse> deleteComment({
+    required String postId,
+    required String commentId,
+  }) {
+    return delete('posts/$postId/comments/$commentId');
+  }
+
   Future<HttpResponse> votePoll(String postId, String optionId) {
     return post('posts/$postId/poll/vote', body: {'optionId': optionId});
   }

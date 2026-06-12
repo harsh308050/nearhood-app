@@ -50,3 +50,35 @@ class TogglePinCommentRequested extends CommentEvent {
     required this.commentId,
   });
 }
+
+class DeleteCommentRequested extends CommentEvent {
+  final String postId;
+  final String commentId;
+  final String? parentCommentId;
+
+  const DeleteCommentRequested({
+    required this.postId,
+    required this.commentId,
+    this.parentCommentId,
+  });
+}
+
+class LocalDeleteCommentRequested extends CommentEvent {
+  final String commentId;
+  final String? parentCommentId;
+
+  const LocalDeleteCommentRequested({
+    required this.commentId,
+    this.parentCommentId,
+  });
+}
+
+class LocalUndoDeleteCommentRequested extends CommentEvent {
+  final String commentId;
+  final String? parentCommentId;
+
+  const LocalUndoDeleteCommentRequested({
+    required this.commentId,
+    this.parentCommentId,
+  });
+}

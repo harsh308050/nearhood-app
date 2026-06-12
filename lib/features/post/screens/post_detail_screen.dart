@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
@@ -63,7 +64,10 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   // Replying state
   String? _replyParentId;
   String? _replyAuthorName;
+  String? _replyCommentContent;
   final Set<String> _expandedCommentIds = {};
+  String? _highlightedCommentId;
+  final List<_PendingDelete> _pendingDeletes = [];
 
   @override
   void initState() {
@@ -76,8 +80,80 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     });
   }
 
+  void _initiateDelete(CommentModel comment, String? parentCommentId) {
+    // Dispatch local delete to BLoC (triggers collapse animation and decrements counter locally)
+    context.read<CommentBloc>().add(
+      LocalDeleteCommentRequested(
+        commentId: comment.id,
+        parentCommentId: parentCommentId,
+      ),
+    );
+
+    final snackBarController = AppSnackBar.showMessage(
+      context,
+      'Comment deleted',
+      isTop: false,
+      buttonText: 'Undo',
+      borderColor: AppColors.red,
+      onButtonPressed: () {
+        // Undo clicked: restore comment and counters in BLoC
+        context.read<CommentBloc>().add(
+          LocalUndoDeleteCommentRequested(
+            commentId: comment.id,
+            parentCommentId: parentCommentId,
+          ),
+        );
+        _pendingDeletes.removeWhere((p) => p.commentId == comment.id);
+      },
+      onTimeout: () {
+        final isPending = _pendingDeletes.any((p) => p.commentId == comment.id);
+        if (isPending) {
+          _pendingDeletes.removeWhere((p) => p.commentId == comment.id);
+          context.read<CommentBloc>().add(
+            DeleteCommentRequested(
+              postId: _currentPost.id,
+              commentId: comment.id,
+              parentCommentId: parentCommentId,
+            ),
+          );
+        }
+      },
+      duration: const Duration(seconds: 4),
+    );
+
+    final pending = _PendingDelete(
+      commentId: comment.id,
+      parentCommentId: parentCommentId,
+      controller: snackBarController,
+    );
+
+    _pendingDeletes.add(pending);
+  }
+
+  void _flushPendingDeletes() {
+    if (_pendingDeletes.isEmpty) return;
+
+    final toFlush = List<_PendingDelete>.from(_pendingDeletes);
+    _pendingDeletes.clear();
+
+    for (final pending in toFlush) {
+      try {
+        pending.controller.dismiss();
+      } catch (_) {}
+
+      context.read<CommentBloc>().add(
+        DeleteCommentRequested(
+          postId: _currentPost.id,
+          commentId: pending.commentId,
+          parentCommentId: pending.parentCommentId,
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _flushPendingDeletes();
     _commentController.dispose();
     _commentFocusNode.dispose();
     super.dispose();
@@ -101,6 +177,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     setState(() {
       _replyParentId = null;
       _replyAuthorName = null;
+      _replyCommentContent = null;
     });
   }
 
@@ -108,6 +185,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     setState(() {
       _replyParentId = comment.id;
       _replyAuthorName = comment.author?.fullName ?? 'Neighbor';
+      _replyCommentContent = comment.content;
     });
     _commentFocusNode.requestFocus();
   }
@@ -116,8 +194,266 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     setState(() {
       _replyParentId = null;
       _replyAuthorName = null;
+      _replyCommentContent = null;
     });
     _commentFocusNode.unfocus();
+  }
+
+  Future<void> _showMenu(
+    BuildContext cardContext,
+    CommentModel comment, {
+    String? parentCommentId,
+    required bool isReply,
+  }) async {
+    if (comment.isDeleted == true) return;
+
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final navigator = Navigator.of(context);
+
+    var renderBox = cardContext.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    var size = renderBox.size;
+    var position = renderBox.localToGlobal(Offset.zero);
+
+    // Check if the comment card is fully visible within the viewport
+    final scrollable = Scrollable.maybeOf(cardContext);
+    bool needsScroll = false;
+    if (scrollable != null) {
+      final scrollableRenderBox =
+          scrollable.context.findRenderObject() as RenderBox?;
+      if (scrollableRenderBox != null) {
+        final scrollablePosition = scrollableRenderBox.localToGlobal(
+          Offset.zero,
+        );
+        final scrollableSize = scrollableRenderBox.size;
+
+        final double viewportTop = scrollablePosition.dy;
+        final double viewportBottom =
+            scrollablePosition.dy + scrollableSize.height;
+
+        final double cardTop = position.dy;
+        final double cardBottom = position.dy + size.height;
+
+        // If card starts above or ends below the visible viewport, scroll it
+        if (cardTop < viewportTop + 8 || cardBottom > viewportBottom - 8) {
+          needsScroll = true;
+        }
+      }
+    }
+
+    if (needsScroll) {
+      Scrollable.ensureVisible(
+        cardContext,
+        duration: const Duration(milliseconds: 250),
+        alignment: 0.3,
+      );
+      await Future.delayed(const Duration(milliseconds: 280));
+
+      if (!cardContext.mounted) return;
+      if (!navigator.context.mounted) return;
+
+      renderBox = cardContext.findRenderObject() as RenderBox?;
+      if (renderBox == null) return;
+      size = renderBox.size;
+      position = renderBox.localToGlobal(Offset.zero);
+    }
+
+    final currentUser = sharedPrefGetUser();
+    final bool isPostAuthor = _currentPost.author?.id == currentUser?.id;
+    final bool isCommentAuthor = comment.author?.id == currentUser?.id;
+    final bool isAreaLead = currentUser?.role == 'area_lead';
+
+    final bool canDelete = isPostAuthor || isCommentAuthor || isAreaLead;
+    final bool canPin = isPostAuthor && !isReply;
+
+    setState(() {
+      _highlightedCommentId = comment.id;
+    });
+
+    final isCommentLiked =
+        currentUser != null &&
+        comment.reactions.any((r) => r.userId == currentUser.id);
+
+    final double menuHeight = (canPin && canDelete) ? 115.h : 60.h;
+
+    // Check if there's enough room below the card for the menu
+    final bool showMenuBelow =
+        (position.dy + size.height + menuHeight + 20.h) < screenHeight;
+    final double menuTop = showMenuBelow
+        ? (position.dy + size.height - 8.h)
+        : (position.dy - menuHeight - 8.h);
+
+    navigator
+        .push(
+          RawDialogRoute(
+            barrierDismissible: true,
+            barrierLabel: 'dismiss',
+            barrierColor: Colors.black.withValues(alpha: 0.6),
+            transitionDuration: const Duration(milliseconds: 200),
+            pageBuilder: (dialogContext, anim1, anim2) {
+              return BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(dialogContext),
+                        behavior: HitTestBehavior.opaque,
+                        child: const SizedBox.expand(),
+                      ),
+                      // Exact Positioned Comment Card
+                      Positioned(
+                        left: position.dx,
+                        top: position.dy,
+                        width: size.width,
+                        height: size.height,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: CommentCardWidget(
+                            authorName: comment.author?.fullName ?? 'Neighbor',
+                            imageUrl: comment.author?.profilePhotoUrl,
+                            isVerified: comment.author?.isVerified ?? false,
+                            isAreaLead: comment.author?.role == 'area_lead',
+                            timeAgo: formatTimeAgo(comment.createdAt),
+                            content: comment.content,
+                            likeCount: comment.reactions.length,
+                            isLiked: isCommentLiked,
+                            isReply: isReply,
+                            showReply: false,
+                            isPinned: comment.isPinned,
+                            showPin: false,
+                            showMenu: false,
+                            isHighlighted: true,
+                            onLikeTap: () {},
+                            onReplyTap: () {},
+                          ),
+                        ),
+                      ),
+                      // Positioned Actions Menu
+                      Positioned(
+                        right: position.dx,
+                        top: menuTop,
+                        width: isReply ? 160.w : 170.w,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(16.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16.r),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (canPin) ...[
+                                    ListTile(
+                                      leading: Icon(
+                                        comment.isPinned
+                                            ? Icons.push_pin
+                                            : Icons.push_pin_outlined,
+                                        color: comment.isPinned
+                                            ? AppColors.primaryBlue
+                                            : AppColors.darkGrey,
+                                      ),
+                                      title: CustomText(
+                                        comment.isPinned
+                                            ? 'Unpin comment'
+                                            : 'Pin comment',
+                                        style: AppTypography.bodyText.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: comment.isPinned
+                                              ? AppColors.primaryBlue
+                                              : AppColors.darkGrey,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(dialogContext);
+                                        context.read<CommentBloc>().add(
+                                          TogglePinCommentRequested(
+                                            postId: _currentPost.id,
+                                            commentId: comment.id,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const Divider(
+                                      height: 1,
+                                      color: AppColors.borderLight,
+                                    ),
+                                  ],
+                                  if (canDelete) ...[
+                                    ListTile(
+                                      leading: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: AppColors.red,
+                                      ),
+                                      title: CustomText(
+                                        AppStrings.delete,
+                                        style: AppTypography.bodyText.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.red,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(dialogContext);
+                                        _initiateDelete(
+                                          comment,
+                                          parentCommentId,
+                                        );
+                                      },
+                                    ),
+                                  ] else ...[
+                                    ListTile(
+                                      leading: const Icon(
+                                        Icons.flag_outlined,
+                                        color: AppColors.red,
+                                      ),
+                                      title: CustomText(
+                                        'Report',
+                                        style: AppTypography.bodyText.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.red,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(dialogContext);
+                                        AppSnackBar.showMessage(
+                                          context,
+                                          'Report submitted',
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        )
+        .then((_) {
+          if (_highlightedCommentId == comment.id) {
+            setState(() {
+              _highlightedCommentId = null;
+            });
+          }
+        });
   }
 
   @override
@@ -168,9 +504,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
         ),
         BlocListener<CommentBloc, CommentState>(
           listener: (context, state) {
-            if (state.status == ApiCallState.success &&
-                state.message == 'Comment added successfully') {
-              // Update local post comment count
+            if (state.status == ApiCallState.success) {
+              // Sync local post comment count to totalCount in bloc state
               setState(() {
                 _currentPost = PostModel(
                   id: _currentPost.id,
@@ -186,7 +521,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   isPinned: _currentPost.isPinned,
                   isResolved: _currentPost.isResolved,
                   isDeleted: _currentPost.isDeleted,
-                  commentCount: _currentPost.commentCount + 1,
+                  commentCount: state.totalCount,
                   reactions: _currentPost.reactions,
                   topComments: _currentPost.topComments,
                   createdAt: _currentPost.createdAt,
@@ -196,28 +531,71 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   metadata: _currentPost.metadata,
                 );
               });
+            } else if (state.status == ApiCallState.failure) {
+              // Revert the local commentCount back to bloc state's totalCount
+              setState(() {
+                _currentPost = PostModel(
+                  id: _currentPost.id,
+                  author: _currentPost.author,
+                  content: _currentPost.content,
+                  category: _currentPost.category,
+                  mediaUrls: _currentPost.mediaUrls,
+                  localityPlaceId: _currentPost.localityPlaceId,
+                  city: _currentPost.city,
+                  localityName: _currentPost.localityName,
+                  visibilityRadius: _currentPost.visibilityRadius,
+                  maxRadiusMeters: _currentPost.maxRadiusMeters,
+                  isPinned: _currentPost.isPinned,
+                  isResolved: _currentPost.isResolved,
+                  isDeleted: _currentPost.isDeleted,
+                  commentCount: state.totalCount,
+                  reactions: _currentPost.reactions,
+                  topComments: _currentPost.topComments,
+                  createdAt: _currentPost.createdAt,
+                  updatedAt: _currentPost.updatedAt,
+                  attachedLocation: _currentPost.attachedLocation,
+                  poll: _currentPost.poll,
+                  metadata: _currentPost.metadata,
+                );
+              });
+              // Show error snackbar
+              AppSnackBar.showMessage(
+                context,
+                state.message ?? 'Failed to delete comment',
+                isTop: true,
+                backgroundColor: AppColors.white,
+                borderColor: AppColors.red,
+              );
             }
           },
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        appBar: _buildAppBar(currentUser),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPostContent(currentUser),
-                    _buildCommentsSection(),
-                  ],
+      child: PopScope(
+        canPop: true,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) {
+            _flushPendingDeletes();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: _buildAppBar(currentUser),
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPostContent(currentUser),
+                      _buildCommentsSection(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            _buildStickyCommentInput(),
-          ],
+              _buildStickyCommentInput(),
+            ],
+          ),
         ),
       ),
     );
@@ -287,19 +665,10 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                         for (int i = 0; i < topReactions.length; i++)
                           Positioned(
                             left: (i * 12).toDouble().r,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.white,
-                                  width: 1.r,
-                                ),
-                              ),
-                              child: Image.asset(
-                                _getReactionAsset(topReactions[i]),
-                                height: 16.r,
-                                width: 16.r,
-                              ),
+                            child: Image.asset(
+                              _getReactionAsset(topReactions[i]),
+                              height: 16.r,
+                              width: 16.r,
                             ),
                           ),
                       ],
@@ -800,165 +1169,251 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                         !isReplyThreeMatch &&
                         (isPostAuthor || reply.author?.id != currentUser?.id);
 
-                    return CommentCardWidget(
-                      authorName: reply.author?.fullName ?? 'Neighbor',
-                      imageUrl: reply.author?.profilePhotoUrl,
-                      isVerified: reply.author?.isVerified ?? false,
-                      isAreaLead: reply.author?.role == 'area_lead',
-                      timeAgo: formatTimeAgo(reply.createdAt),
-                      content: reply.content,
-                      likeCount: reply.reactions.length,
-                      isLiked: isReplyLiked,
-                      isReply: true,
-                      showReply: showReplyForReply,
-                      isPinned: false, // reply cannot be pinned
-                      showPin: false, // reply cannot show pin option
-                      onLikeTap: () {
-                        if (isReplyLiked) {
-                          context.read<CommentBloc>().add(
-                            UnlikeCommentRequested(
-                              postId: _currentPost.id,
-                              commentId: reply.id,
+                    return AnimatedCollapse(
+                      isDeleting: reply.isDeleted,
+                      onCollapsed: null,
+                      child: Builder(
+                        builder: (cardContext) {
+                          return GestureDetector(
+                            onLongPress: () => _showMenu(
+                              cardContext,
+                              reply,
+                              parentCommentId: comment.id,
+                              isReply: true,
                             ),
-                          );
-                        } else {
-                          context.read<CommentBloc>().add(
-                            LikeCommentRequested(
-                              postId: _currentPost.id,
-                              commentId: reply.id,
-                            ),
-                          );
-                        }
-                      },
-                      onReplyTap: () => _startReply(comment),
-                    );
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Render Top Level Comment
-                      CommentCardWidget(
-                        authorName: comment.author?.fullName ?? 'Neighbor',
-                        imageUrl: comment.author?.profilePhotoUrl,
-                        isVerified: comment.author?.isVerified ?? false,
-                        isAreaLead: comment.author?.role == 'area_lead',
-                        timeAgo: formatTimeAgo(comment.createdAt),
-                        content: comment.content,
-                        likeCount: comment.reactions.length,
-                        isLiked: isCommentLiked,
-                        isReply: false,
-                        showReply: showReply,
-                        isPinned: comment.isPinned,
-                        showPin:
-                            isPostAuthor, // Only post author sees the pin option
-                        onLikeTap: () {
-                          if (isCommentLiked) {
-                            context.read<CommentBloc>().add(
-                              UnlikeCommentRequested(
-                                postId: _currentPost.id,
-                                commentId: comment.id,
+                            child: CommentCardWidget(
+                              authorName: reply.author?.fullName ?? 'Neighbor',
+                              imageUrl: reply.author?.profilePhotoUrl,
+                              isVerified: reply.author?.isVerified ?? false,
+                              isAreaLead: reply.author?.role == 'area_lead',
+                              timeAgo: formatTimeAgo(reply.createdAt),
+                              content: reply.content,
+                              likeCount: reply.reactions.length,
+                              isLiked: isReplyLiked,
+                              isReply: true,
+                              showReply: showReplyForReply,
+                              isPinned: false, // reply cannot be pinned
+                              showPin: false, // reply cannot show pin option
+                              showMenu: true,
+                              isHighlighted: _highlightedCommentId == reply.id,
+                              onMenuTap: () => _showMenu(
+                                cardContext,
+                                reply,
+                                parentCommentId: comment.id,
+                                isReply: true,
                               ),
-                            );
-                          } else {
-                            context.read<CommentBloc>().add(
-                              LikeCommentRequested(
-                                postId: _currentPost.id,
-                                commentId: comment.id,
-                              ),
-                            );
-                          }
-                        },
-                        onReplyTap: () => _startReply(comment),
-                        onPinTap: () {
-                          context.read<CommentBloc>().add(
-                            TogglePinCommentRequested(
-                              postId: _currentPost.id,
-                              commentId: comment.id,
+                              onLikeTap: () {
+                                if (isReplyLiked) {
+                                  context.read<CommentBloc>().add(
+                                    UnlikeCommentRequested(
+                                      postId: _currentPost.id,
+                                      commentId: reply.id,
+                                    ),
+                                  );
+                                } else {
+                                  context.read<CommentBloc>().add(
+                                    LikeCommentRequested(
+                                      postId: _currentPost.id,
+                                      commentId: reply.id,
+                                    ),
+                                  );
+                                }
+                              },
+                              onReplyTap: () => _startReply(comment),
                             ),
                           );
                         },
                       ),
-                      // 1. Render surfaced author reply (Always visible first, if any)
-                      if (surfacedAuthorReply != null)
-                        renderReplyCard(surfacedAuthorReply),
-                      // 2. Render remaining replies (Collapsible, if any)
-                      if (collapsedReplies.isNotEmpty)
-                        AnimatedSize(
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeInOut,
-                          alignment: Alignment.topCenter,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: isExpanded
-                                ? [
-                                    ...collapsedReplies
-                                        .map((r) => renderReplyCard(r))
-                                        .toList(),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 44.w, bottom: 12.h),
-                                      child: InkWell(
-                                        splashColor: AppColors.transparent,
-                                        onTap: () {
-                                          setState(() {
-                                            _expandedCommentIds.remove(comment.id);
-                                          });
-                                        },
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.keyboard_arrow_up_rounded,
-                                              color: AppColors.grey,
-                                              size: 16,
-                                            ),
-                                            sw(4),
-                                            CustomText(
-                                              AppStrings.hideReplies,
-                                              style: AppTypography.caption.copyWith(
-                                                color: AppColors.grey,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13.sp,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                    );
+                  }
+
+                  return AnimatedCollapse(
+                    isDeleting: comment.isDeleted,
+                    onCollapsed: null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Render Top Level Comment
+                        Builder(
+                          builder: (cardContext) {
+                            return GestureDetector(
+                              onLongPress: () => _showMenu(
+                                cardContext,
+                                comment,
+                                isReply: false,
+                              ),
+                              child: CommentCardWidget(
+                                authorName:
+                                    comment.author?.fullName ?? 'Neighbor',
+                                imageUrl: comment.author?.profilePhotoUrl,
+                                isVerified: comment.author?.isVerified ?? false,
+                                isAreaLead: comment.author?.role == 'area_lead',
+                                timeAgo: formatTimeAgo(comment.createdAt),
+                                content: comment.content,
+                                likeCount: comment.reactions.length,
+                                isLiked: isCommentLiked,
+                                isReply: false,
+                                showReply: showReply,
+                                isPinned: comment.isPinned,
+                                showPin:
+                                    isPostAuthor, // Only post author sees the pin option
+                                showMenu: true,
+                                isHighlighted:
+                                    _highlightedCommentId == comment.id,
+                                onMenuTap: () => _showMenu(
+                                  cardContext,
+                                  comment,
+                                  isReply: false,
+                                ),
+                                onLikeTap: () {
+                                  if (isCommentLiked) {
+                                    context.read<CommentBloc>().add(
+                                      UnlikeCommentRequested(
+                                        postId: _currentPost.id,
+                                        commentId: comment.id,
                                       ),
-                                    ),
-                                  ]
-                                : [
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 44.w, bottom: 12.h),
-                                      child: InkWell(
-                                        splashColor: AppColors.transparent,
-                                        onTap: () {
-                                          setState(() {
-                                            _expandedCommentIds.add(comment.id);
-                                          });
-                                        },
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.subdirectory_arrow_right_rounded,
-                                              color: AppColors.primaryBlue,
-                                              size: 16.r,
-                                            ),
-                                            sw(4),
-                                            CustomText(
-                                              'View ${collapsedReplies.length} ${collapsedReplies.length == 1 ? 'reply' : 'replies'}',
-                                              style: AppTypography.caption.copyWith(
-                                                color: AppColors.primaryBlue,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13.sp,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    );
+                                  } else {
+                                    context.read<CommentBloc>().add(
+                                      LikeCommentRequested(
+                                        postId: _currentPost.id,
+                                        commentId: comment.id,
                                       ),
+                                    );
+                                  }
+                                },
+                                onReplyTap: () => _startReply(comment),
+                                onPinTap: () {
+                                  context.read<CommentBloc>().add(
+                                    TogglePinCommentRequested(
+                                      postId: _currentPost.id,
+                                      commentId: comment.id,
                                     ),
-                                  ],
-                          ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
                         ),
-                    ],
+                        // 1. Render surfaced author reply (Always visible first, if any)
+                        if (surfacedAuthorReply != null)
+                          renderReplyCard(surfacedAuthorReply),
+                        // 2. Render remaining replies (Collapsible, if any)
+                        if (collapsedReplies.isNotEmpty)
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            alignment: Alignment.topCenter,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: isExpanded
+                                  ? [
+                                      ...collapsedReplies.map(
+                                        (r) => renderReplyCard(r),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(bottom: 12.h),
+                                        child: InkWell(
+                                          splashColor: AppColors.transparent,
+                                          onTap: () {
+                                            setState(() {
+                                              _expandedCommentIds.remove(
+                                                comment.id,
+                                              );
+                                            });
+                                          },
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Divider(
+                                                  color: AppColors.borderLight,
+                                                ),
+                                              ),
+                                              sw(10),
+
+                                              CustomImageView(
+                                                imagePath: AppAssets.icUpArrow,
+                                                color: AppColors.grey,
+                                              ),
+                                              sw(4),
+                                              CustomText(
+                                                AppStrings.hideReplies,
+                                                style: AppTypography.caption
+                                                    .copyWith(
+                                                      color: AppColors.grey,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 13.sp,
+                                                    ),
+                                              ),
+                                              sw(10),
+
+                                              Expanded(
+                                                child: Divider(
+                                                  color: AppColors.borderLight,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ]
+                                  : [
+                                      Padding(
+                                        padding: EdgeInsets.only(bottom: 12.h),
+                                        child: InkWell(
+                                          splashColor: AppColors.transparent,
+                                          onTap: () {
+                                            setState(() {
+                                              _expandedCommentIds.add(
+                                                comment.id,
+                                              );
+                                            });
+                                          },
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Divider(
+                                                  color: AppColors.borderLight,
+                                                ),
+                                              ),
+                                              sw(10),
+                                              CustomImageView(
+                                                imagePath:
+                                                    AppAssets.icDownarrow,
+                                                color: AppColors.grey,
+                                              ),
+                                              sw(4),
+                                              CustomText(
+                                                'View ${collapsedReplies.length} ${collapsedReplies.length == 1 ? 'reply' : 'replies'}',
+                                                style: AppTypography.caption
+                                                    .copyWith(
+                                                      color: AppColors.grey,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 13.sp,
+                                                    ),
+                                              ),
+                                              sw(10),
+
+                                              Expanded(
+                                                child: Divider(
+                                                  color: AppColors.borderLight,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                            ),
+                          ),
+                      ],
+                    ),
                   );
                 },
               );
@@ -980,19 +1435,42 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
             color: AppColors.background,
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CustomText(
-                  'Replying to $_replyAuthorName',
-                  style: AppTypography.caption.copyWith(
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomText(
+                        'Replying to $_replyAuthorName',
+                        style: AppTypography.caption.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                      if (_replyCommentContent != null &&
+                          _replyCommentContent!.isNotEmpty) ...[
+                        sh(4),
+                        CustomText(
+                          _replyCommentContent!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.darkGrey,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const Spacer(),
+                sw(12),
                 GestureDetector(
                   onTap: _cancelReply,
                   child: const Icon(
                     Icons.close,
-                    size: 16,
+                    size: 18,
                     color: AppColors.grey,
                   ),
                 ),
@@ -1042,8 +1520,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                     color: _isSendEnabled
                         ? AppColors.white
                         : AppColors.placeholderText,
-                    height: 20.r,
-                    width: 20.r,
+                    height: 16.r,
+                    width: 16.r,
                   ),
                   onPressed: _isSendEnabled ? _submitComment : null,
                 ),
@@ -1238,42 +1716,25 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: CustomText(
-          AppStrings.deletePost,
-          style: AppTypography.cardTitle.copyWith(fontSize: 18.sp),
+      barrierDismissible: true,
+      builder: (dialogContext) => Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+        backgroundColor: Colors.transparent,
+        child: DialogWidget(
+          title: AppStrings.deletePost,
+          subTitle: AppStrings.deletePostConfirmation,
+          positiveLabel: AppStrings.delete,
+          negativeLabel: AppStrings.cancel,
+          showTopImage: false,
+          isRowButtons: true,
+          positiveBackgroundColor: AppColors.red,
+          positiveTap: () {
+            Navigator.pop(dialogContext);
+            context.read<PostActionBloc>().add(
+              DeletePostRequested(_currentPost.id),
+            );
+          },
         ),
-        content: CustomText(
-          AppStrings.deletePostConfirmation,
-          style: AppTypography.bodyText,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: CustomText(
-              AppStrings.cancel,
-              style: AppTypography.cardTitle.copyWith(
-                color: AppColors.grey,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.read<PostActionBloc>().add(
-                DeletePostRequested(_currentPost.id),
-              );
-            },
-            child: CustomText(
-              AppStrings.delete,
-              style: AppTypography.cardTitle.copyWith(
-                color: AppColors.red,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1364,4 +1825,88 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
       ),
     );
   }
+}
+
+class AnimatedCollapse extends StatefulWidget {
+  final Widget child;
+  final bool isDeleting;
+  final VoidCallback? onCollapsed;
+
+  const AnimatedCollapse({
+    super.key,
+    required this.child,
+    required this.isDeleting,
+    this.onCollapsed,
+  });
+
+  @override
+  State<AnimatedCollapse> createState() => _AnimatedCollapseState();
+}
+
+class _AnimatedCollapseState extends State<AnimatedCollapse>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _heightAnimation;
+  late final Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _heightAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+    _opacityAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(AnimatedCollapse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isDeleting && !oldWidget.isDeleting) {
+      _controller.reverse().then((_) {
+        widget.onCollapsed?.call();
+      });
+    } else if (!widget.isDeleting && oldWidget.isDeleting) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacityAnimation,
+      child: SizeTransition(
+        sizeFactor: _heightAnimation,
+        axis: Axis.vertical,
+        axisAlignment: -1.0,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class _PendingDelete {
+  final String commentId;
+  final String? parentCommentId;
+  final AppSnackBarController controller;
+
+  _PendingDelete({
+    required this.commentId,
+    this.parentCommentId,
+    required this.controller,
+  });
 }

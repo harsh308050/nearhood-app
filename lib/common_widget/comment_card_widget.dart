@@ -17,6 +17,9 @@ class CommentCardWidget extends StatelessWidget {
   final VoidCallback onLikeTap;
   final VoidCallback onReplyTap;
   final VoidCallback? onPinTap;
+  final bool showMenu;
+  final bool isHighlighted;
+  final VoidCallback? onMenuTap;
 
   const CommentCardWidget({
     super.key,
@@ -32,18 +35,18 @@ class CommentCardWidget extends StatelessWidget {
     this.showReply = true,
     this.isPinned = false,
     this.showPin = false,
+    this.showMenu = false,
+    this.isHighlighted = false,
     required this.onLikeTap,
     required this.onReplyTap,
     this.onPinTap,
+    this.onMenuTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: isReply ? 44.w : 0.0,
-        bottom: 16.h,
-      ),
+      padding: EdgeInsets.only(left: isReply ? 44.w : 0.0, bottom: 16.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -99,6 +102,17 @@ class CommentCardWidget extends StatelessWidget {
                         timeAgo,
                         style: AppTypography.caption.copyWith(fontSize: 12.sp),
                       ),
+                      if (showMenu && onMenuTap != null) ...[
+                        sw(8),
+                        GestureDetector(
+                          onTap: onMenuTap,
+                          child: Icon(
+                            Icons.more_vert_rounded,
+                            size: 16.r,
+                            color: AppColors.grey,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   sh(4),
@@ -114,7 +128,9 @@ class CommentCardWidget extends StatelessWidget {
                         child: Row(
                           children: [
                             CustomImageView(
-                              imagePath: isLiked ? AppAssets.icReactLike : AppAssets.icLike,
+                              imagePath: isLiked
+                                  ? AppAssets.icReactLike
+                                  : AppAssets.icLike,
                               height: 14.r,
                               width: 14.r,
                               color: isLiked ? null : AppColors.grey,
@@ -155,9 +171,13 @@ class CommentCardWidget extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                                isPinned
+                                    ? Icons.push_pin
+                                    : Icons.push_pin_outlined,
                                 size: 14.r,
-                                color: isPinned ? AppColors.primaryBlue : AppColors.grey,
+                                color: isPinned
+                                    ? AppColors.primaryBlue
+                                    : AppColors.grey,
                               ),
                               sw(4),
                               CustomText(
@@ -165,7 +185,9 @@ class CommentCardWidget extends StatelessWidget {
                                 style: AppTypography.caption.copyWith(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 12.sp,
-                                  color: isPinned ? AppColors.primaryBlue : AppColors.grey,
+                                  color: isPinned
+                                      ? AppColors.primaryBlue
+                                      : AppColors.grey,
                                 ),
                               ),
                             ],

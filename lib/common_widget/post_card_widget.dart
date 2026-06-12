@@ -29,8 +29,6 @@ class PostCardWidget extends StatelessWidget {
     this.onPollOptionTap,
   });
 
-
-
   Widget _buildCommentPreview(CommentModel comment) {
     final commentAuthorName = comment.author?.fullName ?? 'Neighbor';
     final commentTimeAgo = formatTimeAgo(comment.createdAt);
@@ -86,11 +84,7 @@ class PostCardWidget extends StatelessWidget {
     );
   }
 
-
-  Widget _buildPillAction({
-    required Widget iconWidget,
-    required int count,
-  }) {
+  Widget _buildPillAction({required Widget iconWidget, required int count}) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       decoration: BoxDecoration(
@@ -141,7 +135,6 @@ class PostCardWidget extends StatelessWidget {
     } else {
       likeIconPath = AppAssets.icLike;
     }
-
 
     return GestureDetector(
       onTap: onBodyTap,
@@ -260,17 +253,22 @@ class PostCardWidget extends StatelessWidget {
             ),
 
             // Metadata Header (Title)
-            PostMetadataWidget(
-              post: post,
-              mode: PostMetadataMode.header,
-            ),
+            PostMetadataWidget(post: post, mode: PostMetadataMode.header),
 
             // Content
             Padding(
-              padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h, bottom: 12.h),
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 4.h,
+                bottom: 12.h,
+              ),
               child: CustomText(
                 post.content,
-                style: (post.metadata != null && post.metadata!.isNotEmpty && post.category.toLowerCase() != 'safety alert')
+                style:
+                    (post.metadata != null &&
+                        post.metadata!.isNotEmpty &&
+                        post.category.toLowerCase() != 'safety alert')
                     ? AppTypography.bodyText.copyWith(
                         fontSize: 15.sp,
                         color: AppColors.darkGrey,
@@ -287,10 +285,7 @@ class PostCardWidget extends StatelessWidget {
             ),
 
             // Metadata Details
-            PostMetadataWidget(
-              post: post,
-              mode: PostMetadataMode.details,
-            ),
+            PostMetadataWidget(post: post, mode: PostMetadataMode.details),
 
             // Post Attachments (Media, Location, Poll in tabbed layout)
             PostAttachmentsWidget(
@@ -339,10 +334,7 @@ class PostCardWidget extends StatelessWidget {
             if (post.reactions.isNotEmpty || post.commentCount > 0)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Divider(
-                  height: 1.h,
-                  color: AppColors.borderLight,
-                ),
+                child: Divider(height: 1.h, color: AppColors.borderLight),
               ),
 
             // Bottom action row
@@ -357,8 +349,10 @@ class PostCardWidget extends StatelessWidget {
                 children: [
                   Builder(
                     builder: (buttonContext) {
-                      final ValueNotifier<Offset?> touchPositionNotifier = ValueNotifier<Offset?>(null);
-                      final ValueNotifier<String?> selectedReactionNotifier = ValueNotifier<String?>(null);
+                      final ValueNotifier<Offset?> touchPositionNotifier =
+                          ValueNotifier<Offset?>(null);
+                      final ValueNotifier<String?> selectedReactionNotifier =
+                          ValueNotifier<String?>(null);
                       bool hasDragged = false;
                       Offset? startPosition;
 
@@ -368,19 +362,26 @@ class PostCardWidget extends StatelessWidget {
                         onLongPressStart: onReactTap == null
                             ? null
                             : (details) {
-                                final RenderBox? renderBox = buttonContext.findRenderObject() as RenderBox?;
+                                final RenderBox? renderBox =
+                                    buttonContext.findRenderObject()
+                                        as RenderBox?;
                                 if (renderBox != null) {
-                                  final position = renderBox.localToGlobal(Offset.zero);
+                                  final position = renderBox.localToGlobal(
+                                    Offset.zero,
+                                  );
                                   final size = renderBox.size;
                                   startPosition = details.globalPosition;
                                   hasDragged = false;
-                                  touchPositionNotifier.value = details.globalPosition;
+                                  touchPositionNotifier.value =
+                                      details.globalPosition;
                                   ReactionPickerOverlay.show(
                                     context: context,
                                     buttonPosition: position,
                                     buttonSize: size,
-                                    touchPositionNotifier: touchPositionNotifier,
-                                    selectedReactionNotifier: selectedReactionNotifier,
+                                    touchPositionNotifier:
+                                        touchPositionNotifier,
+                                    selectedReactionNotifier:
+                                        selectedReactionNotifier,
                                     onReactionSelected: (reaction) {
                                       onReactTap?.call(reaction);
                                     },
@@ -390,9 +391,12 @@ class PostCardWidget extends StatelessWidget {
                         onLongPressMoveUpdate: onReactTap == null
                             ? null
                             : (details) {
-                                touchPositionNotifier.value = details.globalPosition;
+                                touchPositionNotifier.value =
+                                    details.globalPosition;
                                 if (startPosition != null) {
-                                  final distance = (details.globalPosition - startPosition!).distance;
+                                  final distance =
+                                      (details.globalPosition - startPosition!)
+                                          .distance;
                                   if (distance > 15.0) {
                                     hasDragged = true;
                                   }
@@ -402,7 +406,8 @@ class PostCardWidget extends StatelessWidget {
                             ? null
                             : (details) {
                                 if (hasDragged) {
-                                  final selected = selectedReactionNotifier.value;
+                                  final selected =
+                                      selectedReactionNotifier.value;
                                   if (selected != null) {
                                     onReactTap?.call(selected);
                                   }
@@ -422,7 +427,10 @@ class PostCardWidget extends StatelessWidget {
                                   likeIconPath,
                                   height: 18.r,
                                   width: 18.r,
-                                  colorFilter: const ColorFilter.mode(AppColors.grey, BlendMode.srcIn),
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.grey,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                           count: post.reactions.length,
                         ),
@@ -438,11 +446,50 @@ class PostCardWidget extends StatelessWidget {
                         AppAssets.icComment,
                         height: 18.r,
                         width: 18.r,
-                        colorFilter: const ColorFilter.mode(AppColors.grey, BlendMode.srcIn),
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.grey,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       count: post.commentCount,
                     ),
                   ),
+                  Spacer(),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap:
+                        onShareTap ??
+                        () {
+                          AppSnackBar.showMessage(context, 'Shared');
+                        },
+                    child: _buildPillAction(
+                      iconWidget: SvgPicture.asset(
+                        AppAssets.icShare,
+                        height: 18.r,
+                        width: 18.r,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.grey,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      count: 0,
+                    ),
+                  ),
+                  if (onMoreTap != null) ...[
+                    sw(8),
+                    GestureDetector(
+                      onTap: onMoreTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: _buildPillAction(
+                        count: 0,
+                        iconWidget: Icon(
+                          Icons.more_vert_rounded,
+                          color: AppColors.grey,
+                          size: 22.r,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -451,8 +498,6 @@ class PostCardWidget extends StatelessWidget {
       ),
     );
   }
-
-
 
   Widget _buildEngagementSummary(BuildContext context) {
     final totalReactions = post.reactions.length;
@@ -465,7 +510,8 @@ class PostCardWidget extends StatelessWidget {
     // Get distinct reaction types sorted by frequency
     final Map<String, int> reactionCounts = {};
     for (var r in post.reactions) {
-      reactionCounts[r.reactionType] = (reactionCounts[r.reactionType] ?? 0) + 1;
+      reactionCounts[r.reactionType] =
+          (reactionCounts[r.reactionType] ?? 0) + 1;
     }
 
     final sortedReactions = reactionCounts.keys.toList()
@@ -493,16 +539,10 @@ class PostCardWidget extends StatelessWidget {
                         for (int i = 0; i < topReactions.length; i++)
                           Positioned(
                             left: (i * 12).toDouble().r,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.white, width: 1.r),
-                              ),
-                              child: Image.asset(
-                                _getReactionAsset(topReactions[i]),
-                                height: 16.r,
-                                width: 16.r,
-                              ),
+                            child: Image.asset(
+                              _getReactionAsset(topReactions[i]),
+                              height: 16.r,
+                              width: 16.r,
                             ),
                           ),
                       ],

@@ -229,6 +229,20 @@ class PostRepository {
     );
   }
 
+  Future<ApiResult<void>> deleteComment({
+    required String postId,
+    required String commentId,
+  }) async {
+    final response = await dataSource.deleteComment(
+      postId: postId,
+      commentId: commentId,
+    );
+    return checkResponseStatusCode<void>(
+      response: response,
+      dataParser: (_) {},
+    );
+  }
+
   Future<ApiResult<PostModel>> votePoll(String postId, String optionId) async {
     final response = await dataSource.votePoll(postId, optionId);
     return checkResponseStatusCode<PostModel>(

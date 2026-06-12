@@ -215,10 +215,47 @@ class AttachedLocationModel {
   }
 }
 
+class PollVoter {
+  final String userId;
+  final UserProfile? user;
+
+  const PollVoter({
+    required this.userId,
+    this.user,
+  });
+
+  factory PollVoter.fromJson(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      final uId = (json['_id'] ?? json['id'])?.toString() ?? '';
+      return PollVoter(
+        userId: uId,
+        user: UserProfile.fromJson(json),
+      );
+    } else if (json is Map) {
+      final uId = (json['_id'] ?? json['id'])?.toString() ?? '';
+      return PollVoter(
+        userId: uId,
+        user: UserProfile.fromJson(Map<String, dynamic>.from(json)),
+      );
+    } else {
+      return PollVoter(
+        userId: json?.toString() ?? '',
+      );
+    }
+  }
+
+  dynamic toJson() {
+    if (user != null) {
+      return user!.toJson();
+    }
+    return userId;
+  }
+}
+
 class PollOptionModel {
   final String id;
   final String text;
-  final List<String> votes;
+  final List<PollVoter> votes;
 
   const PollOptionModel({
     required this.id,
@@ -231,13 +268,13 @@ class PollOptionModel {
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       text: json['text']?.toString() ?? '',
       votes:
-          (json['votes'] as List?)?.map((e) => e.toString()).toList() ??
+          (json['votes'] as List?)?.map((e) => PollVoter.fromJson(e)).toList() ??
           const [],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'text': text, 'votes': votes};
+    return {'id': id, 'text': text, 'votes': votes.map((e) => e.toJson()).toList()};
   }
 }
 

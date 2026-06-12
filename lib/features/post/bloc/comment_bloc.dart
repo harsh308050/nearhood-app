@@ -14,6 +14,9 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     on<LikeCommentRequested>(_onLikeCommentRequested);
     on<UnlikeCommentRequested>(_onUnlikeCommentRequested);
     on<TogglePinCommentRequested>(_onTogglePinCommentRequested);
+    on<DeleteCommentRequested>(_onDeleteCommentRequested);
+    on<LocalDeleteCommentRequested>(_onLocalDeleteCommentRequested);
+    on<LocalUndoDeleteCommentRequested>(_onLocalUndoDeleteCommentRequested);
   }
 
   Future<void> _onFetchCommentsRequested(
@@ -106,12 +109,15 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
           emit(state.copyWith(
             status: ApiCallState.success,
             comments: updatedComments,
+            totalCount: state.totalCount + 1,
             clearError: true,
           ));
         } else {
+          final pinned = state.comments.where((c) => c.isPinned).toList();
+          final unpinned = state.comments.where((c) => !c.isPinned).toList();
           emit(state.copyWith(
             status: ApiCallState.success,
-            comments: [...state.comments, data],
+            comments: [...pinned, data, ...unpinned],
             totalCount: state.totalCount + 1,
             clearError: true,
           ));
@@ -244,7 +250,19 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
 
         final updatedComments = state.comments.map((c) {
           if (c.id == event.commentId) {
-            return updatedComment;
+            return CommentModel(
+              id: updatedComment.id,
+              postId: updatedComment.postId,
+              author: updatedComment.author,
+              content: updatedComment.content,
+              parentCommentId: updatedComment.parentCommentId,
+              isDeleted: updatedComment.isDeleted,
+              isPinned: updatedComment.isPinned,
+              reactions: updatedComment.reactions,
+              replies: c.replies, // Preserve existing replies
+              createdAt: updatedComment.createdAt,
+              updatedAt: updatedComment.updatedAt,
+            );
           }
           // If a new comment is pinned, unpin all other comments
           if (isNowPinned && c.isPinned) {
@@ -293,5 +311,130 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
         ));
       },
     );
+  }
+
+  Future<void> _onDeleteCommentRequested(
+    DeleteCommentRequested event,
+    Emitter<CommentState> emit,
+  ) async {
+    final result = await repository.deleteComment(
+      postId: event.postId,
+      commentId: event.commentId,
+    );
+
+    result.when(
+      success: (_) {
+        // LocalDeleteCommentRequested already decremented count and set isDeleted.
+        // Just remove the comment from the local list.
+        if (event.parentCommentId != null) {
+          final updatedComments = state.comments.map((c) {
+            if (c.id == event.parentCommentId) {
+              final updatedReplies = c.replies.where((r) => r.id != event.commentId).toList();
+              return c.copyWith(replies: updatedReplies);
+            }
+            return c;
+          }).toList();
+
+          emit(state.copyWith(
+            status: ApiCallState.success,
+            comments: updatedComments,
+            clearError: true,
+          ));
+        } else {
+          final updatedComments = state.comments.where((c) => c.id != event.commentId).toList();
+          emit(state.copyWith(
+            status: ApiCallState.success,
+            comments: updatedComments,
+            clearError: true,
+          ));
+        }
+      },
+      failure: (error) {
+        // Revert the local isDeleted flag and restore the count
+        int countToRestore = 1;
+        if (event.parentCommentId == null) {
+          final matching = state.comments.where((c) => c.id == event.commentId);
+          if (matching.isNotEmpty) {
+            final repliesCount = matching.first.replies.where((r) => !r.isDeleted).length;
+            countToRestore += repliesCount;
+          }
+        }
+
+        final updatedComments = _setCommentDeletedFlag(state.comments, event.commentId, false);
+
+        emit(state.copyWith(
+          status: ApiCallState.failure,
+          comments: updatedComments,
+          totalCount: state.totalCount + countToRestore,
+          error: error,
+          message: error.message,
+        ));
+      },
+    );
+  }
+
+  List<CommentModel> _setCommentDeletedFlag(
+    List<CommentModel> currentComments,
+    String commentId,
+    bool isDeleted,
+  ) {
+    return currentComments.map((c) {
+      if (c.id == commentId) {
+        return c.copyWith(isDeleted: isDeleted);
+      }
+      
+      final updatedReplies = c.replies.map((reply) {
+        if (reply.id == commentId) {
+          return reply.copyWith(isDeleted: isDeleted);
+        }
+        return reply;
+      }).toList();
+
+      return c.copyWith(replies: updatedReplies);
+    }).toList();
+  }
+
+  void _onLocalDeleteCommentRequested(
+    LocalDeleteCommentRequested event,
+    Emitter<CommentState> emit,
+  ) {
+    int countToDecrement = 1;
+    if (event.parentCommentId == null) {
+      final matching = state.comments.where((c) => c.id == event.commentId);
+      if (matching.isNotEmpty) {
+        final repliesCount = matching.first.replies.where((r) => !r.isDeleted).length;
+        countToDecrement += repliesCount;
+      }
+    }
+
+    final updatedComments = _setCommentDeletedFlag(state.comments, event.commentId, true);
+    
+    emit(state.copyWith(
+      comments: updatedComments,
+      totalCount: state.totalCount >= countToDecrement 
+          ? state.totalCount - countToDecrement 
+          : 0,
+    ));
+  }
+
+  void _onLocalUndoDeleteCommentRequested(
+    LocalUndoDeleteCommentRequested event,
+    Emitter<CommentState> emit,
+  ) {
+    int countToIncrement = 1;
+    if (event.parentCommentId == null) {
+      final matching = state.comments.where((c) => c.id == event.commentId);
+      if (matching.isNotEmpty) {
+        final repliesCount = matching.first.replies.where((r) => !r.isDeleted).length;
+        countToIncrement += repliesCount;
+      }
+    }
+
+    final updatedComments = _setCommentDeletedFlag(state.comments, event.commentId, false);
+    
+    emit(state.copyWith(
+      comments: updatedComments,
+      totalCount: state.totalCount + countToIncrement,
+    ));
   }
 }

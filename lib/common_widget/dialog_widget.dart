@@ -33,6 +33,9 @@ class DialogWidget extends StatelessWidget {
     this.negativeTap,
     this.showTopImage = true,
     this.showNegativeButton = true,
+    this.isRowButtons = false,
+    this.positiveBackgroundColor,
+    this.positiveTextColor,
   });
 
   /// Asset path for the top illustration image.
@@ -61,6 +64,15 @@ class DialogWidget extends StatelessWidget {
 
   /// Whether to show the negative/cancel button.
   final bool showNegativeButton;
+
+  /// Whether to layout buttons side-by-side in a row with capsule styling.
+  final bool isRowButtons;
+
+  /// Custom background color for the positive button.
+  final Color? positiveBackgroundColor;
+
+  /// Custom text color for the positive button.
+  final Color? positiveTextColor;
 
   @override
   Widget build(BuildContext context) {
@@ -113,29 +125,71 @@ class DialogWidget extends StatelessWidget {
                 ),
                 sh(20),
 
-                // Positive button
-                if (positiveLabel != null && positiveLabel!.isNotEmpty) ...[
-                  CustomButton.filled(
-                    text: positiveLabel!,
-                    onPressed: positiveTap,
-                    height: 56.h,
-                  ),
-                  sh(20),
-                ],
-
-                // Negative button
-                if (showNegativeButton) ...[
-                  GestureDetector(
-                    onTap: negativeTap ?? () => Navigator.pop(context),
-                    child: CustomText(
-                      negativeLabel ?? 'OK',
-                      style: AppTypography.bodyText.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                // Dialog Actions (Row vs Column layout)
+                if (isRowButtons) ...[
+                  Row(
+                    children: [
+                      if (showNegativeButton)
+                        Expanded(
+                          child: CustomButton.outlined(
+                            text: negativeLabel ?? 'Cancel',
+                            onPressed:
+                                negativeTap ?? () => Navigator.pop(context),
+                            height: 40.h,
+                            textStyle: AppTypography.buttonLabel.copyWith(
+                              color: AppColors.grey,
+                            ),
+                            borderRadius: 100.r,
+                            borderColor: AppColors.borderLight,
+                            textColor: AppColors.grey,
+                          ),
+                        ),
+                      if (showNegativeButton &&
+                          (positiveLabel != null && positiveLabel!.isNotEmpty))
+                        sw(12),
+                      if (positiveLabel != null && positiveLabel!.isNotEmpty)
+                        Expanded(
+                          child: CustomButton.filled(
+                            text: positiveLabel!,
+                            onPressed: positiveTap,
+                            height: 40.h,
+                            borderRadius: 100.r,
+                            glowIntensity: 0.2,
+                            textStyle: AppTypography.buttonLabel,
+                            backgroundColor: positiveBackgroundColor,
+                            textColor: positiveTextColor,
+                          ),
+                        ),
+                    ],
                   ),
                   sh(10),
+                ] else ...[
+                  // Positive button
+                  if (positiveLabel != null && positiveLabel!.isNotEmpty) ...[
+                    CustomButton.filled(
+                      text: positiveLabel!,
+                      onPressed: positiveTap,
+                      height: 56.h,
+                      backgroundColor: positiveBackgroundColor,
+                      textColor: positiveTextColor,
+                    ),
+                    sh(20),
+                  ],
+
+                  // Negative button
+                  if (showNegativeButton) ...[
+                    GestureDetector(
+                      onTap: negativeTap ?? () => Navigator.pop(context),
+                      child: CustomText(
+                        negativeLabel ?? 'OK',
+                        style: AppTypography.bodyText.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    sh(10),
+                  ],
                 ],
               ],
             ),

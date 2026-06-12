@@ -195,12 +195,13 @@ class ReactionsBottomSheet extends StatelessWidget {
         if (email != null && email.isNotEmpty) {
           headlineParts.add(email);
         }
-        final localityName = user?.location?.locality?.name;
-        if (localityName != null && localityName.isNotEmpty) {
-          headlineParts.add(localityName);
-        }
+        // final localityName = user?.location?.locality?.name;
+        // if (localityName != null && localityName.isNotEmpty) {
+        //   headlineParts.add(localityName);
+        // }
+
         final headline = headlineParts.isNotEmpty
-            ? headlineParts.join(' • ')
+            ? headlineParts.join(' | ')
             : 'Resident';
 
         return Padding(

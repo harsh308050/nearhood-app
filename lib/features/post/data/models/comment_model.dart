@@ -67,6 +67,34 @@ class CommentModel {
     };
   }
 
+  CommentModel copyWith({
+    String? id,
+    String? postId,
+    UserProfile? author,
+    String? content,
+    String? parentCommentId,
+    bool? isDeleted,
+    bool? isPinned,
+    List<CommentReaction>? reactions,
+    List<CommentModel>? replies,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return CommentModel(
+      id: id ?? this.id,
+      postId: postId ?? this.postId,
+      author: author ?? this.author,
+      content: content ?? this.content,
+      parentCommentId: parentCommentId ?? this.parentCommentId,
+      isDeleted: isDeleted ?? this.isDeleted,
+      isPinned: isPinned ?? this.isPinned,
+      reactions: reactions ?? this.reactions,
+      replies: replies ?? this.replies,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   bool hasUserReacted(String userId, String reactionType) {
     return reactions.any((r) => r.userId == userId && r.reactionType == reactionType);
   }

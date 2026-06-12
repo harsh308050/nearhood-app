@@ -170,17 +170,12 @@ class _HomepageState extends State<Homepage> {
                                       context,
                                       PostDetailScreen(post: post),
                                     ).then((result) {
-                                      if (result is PostModel) {
-                                        context.read<FeedBloc>().add(
-                                          UpdatePostRequested(result),
-                                        );
-                                      } else if (result == true) {
-                                        context.read<FeedBloc>().add(
-                                          const FetchFeedRequested(
-                                            refresh: true,
-                                          ),
-                                        );
-                                      }
+                                      if (!context.mounted) return;
+                                      context.read<FeedBloc>().add(
+                                        const FetchFeedRequested(
+                                          refresh: true,
+                                        ),
+                                      );
                                     });
                                   },
                                   onBodyTap: () {
@@ -188,17 +183,12 @@ class _HomepageState extends State<Homepage> {
                                       context,
                                       PostDetailScreen(post: post),
                                     ).then((result) {
-                                      if (result is PostModel) {
-                                        context.read<FeedBloc>().add(
-                                          UpdatePostRequested(result),
-                                        );
-                                      } else if (result == true) {
-                                        context.read<FeedBloc>().add(
-                                          const FetchFeedRequested(
-                                            refresh: true,
-                                          ),
-                                        );
-                                      }
+                                      if (!context.mounted) return;
+                                      context.read<FeedBloc>().add(
+                                        const FetchFeedRequested(
+                                          refresh: true,
+                                        ),
+                                      );
                                     });
                                   },
                                   onPollOptionTap: (optionId) {
@@ -389,7 +379,9 @@ class _HomepageState extends State<Homepage> {
 
   void _showPostOptions(BuildContext context, PostModel post) {
     final currentUser = sharedPrefGetUser();
-    final isOwnPost = currentUser != null && post.author?.id == currentUser.id;
+    final isOwnPost =
+        currentUser != null && post.author?.id == currentUser.id;
+    final isAreaLead = currentUser?.role == 'area_lead';
 
     showModalBottomSheet(
       context: context,
@@ -408,7 +400,6 @@ class _HomepageState extends State<Homepage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Center(
                 child: Container(
                   height: 4.h,
@@ -421,7 +412,6 @@ class _HomepageState extends State<Homepage> {
               ),
               sh(16),
 
-              // Edit Post (only for own posts)
               if (isOwnPost)
                 ListTile(
                   leading: Icon(
@@ -444,7 +434,53 @@ class _HomepageState extends State<Homepage> {
                   },
                 ),
 
-              // Copy Link
+              if (isOwnPost && isAreaLead)
+                ListTile(
+                  leading: Icon(
+                    post.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                    color: AppColors.yellow,
+                  ),
+                  title: CustomText(
+                    post.isPinned ? 'Unpin Post' : 'Pin Post',
+                    style: AppTypography.cardTitle.copyWith(
+                      color: AppColors.darkGrey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    AppSnackBar.showMessage(
+                      context,
+                      post.isPinned ? "Post unpinned" : "Post pinned",
+                    );
+                  },
+                ),
+
+              if ((post.category == 'Safety Alert') &&
+                  (isOwnPost || isAreaLead))
+                ListTile(
+                  leading: Icon(
+                    post.isResolved
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    color: AppColors.green,
+                  ),
+                  title: CustomText(
+                    post.isResolved ? 'Mark as Unresolved' : 'Mark as Resolved',
+                    style: AppTypography.cardTitle.copyWith(
+                      color: AppColors.darkGrey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    AppSnackBar.showMessage(
+                      context,
+                      post.isResolved ? "Marked as unresolved" : "Marked as resolved",
+                    );
+                  },
+                ),
+
               ListTile(
                 leading: const Icon(Icons.link, color: AppColors.primaryBlue),
                 title: CustomText(
@@ -460,7 +496,6 @@ class _HomepageState extends State<Homepage> {
                 },
               ),
 
-              // Report Post (only for other people's posts)
               if (!isOwnPost)
                 ListTile(
                   leading: const Icon(
@@ -476,14 +511,10 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    AppSnackBar.showMessage(
-                      context,
-                      AppStrings.reportSubmitted,
-                    );
+                    _showReportDialog(context);
                   },
                 ),
 
-              // Delete Post (only for own posts)
               if (isOwnPost)
                 ListTile(
                   leading: const Icon(
@@ -499,13 +530,123 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    context.read<PostActionBloc>().add(
-                      DeletePostRequested(post.id),
-                    );
+                    _showDeleteConfirmation(context, post);
                   },
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context) {
+    final reasons = [
+      'Spam or misleading',
+      'Harassment or hate speech',
+      'Violence or dangerous content',
+      'False information',
+      'Inappropriate content',
+      'Other',
+    ];
+
+    String? selectedReason;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: CustomText(
+            AppStrings.reportPost,
+            style: AppTypography.cardTitle.copyWith(fontSize: 18.sp),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                AppStrings.whyReportingPost,
+                style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
+              ),
+              sh(12),
+              ...reasons.map(
+                (reason) => RadioListTile<String>(
+                  title: CustomText(
+                    reason,
+                    style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
+                  ),
+                  value: reason,
+                  groupValue: selectedReason,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedReason = value;
+                    });
+                  },
+                  activeColor: AppColors.primaryBlue,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: CustomText(
+                AppStrings.cancel,
+                style: AppTypography.cardTitle.copyWith(
+                  color: AppColors.grey,
+                  fontSize: 14.sp,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: selectedReason == null
+                  ? null
+                  : () {
+                      Navigator.pop(dialogContext);
+                      AppSnackBar.showMessage(
+                        context,
+                        AppStrings.postReportedMessage,
+                        borderColor: AppColors.green,
+                      );
+                    },
+              child: CustomText(
+                AppStrings.report,
+                style: AppTypography.cardTitle.copyWith(
+                  color: selectedReason == null
+                      ? AppColors.grey
+                      : AppColors.red,
+                  fontSize: 14.sp,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, PostModel post) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+        backgroundColor: Colors.transparent,
+        child: DialogWidget(
+          title: AppStrings.deletePost,
+          subTitle: AppStrings.deletePostConfirmation,
+          positiveLabel: AppStrings.delete,
+          negativeLabel: AppStrings.cancel,
+          showTopImage: false,
+          isRowButtons: true,
+          positiveBackgroundColor: AppColors.red,
+          positiveTap: () {
+            Navigator.pop(dialogContext);
+            context.read<PostActionBloc>().add(
+              DeletePostRequested(post.id),
+            );
+          },
         ),
       ),
     );
