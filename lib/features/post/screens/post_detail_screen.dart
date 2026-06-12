@@ -2,10 +2,13 @@ import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
+import 'package:nearhood/core/network/api_result.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
+import 'package:nearhood/core/utils/share_helper.dart';
 import 'package:nearhood/common_widget/reaction_picker_overlay.dart';
 import 'package:nearhood/common_widget/comment_card_widget.dart';
 import 'package:nearhood/common_widget/shimmer_comment_card.dart';
+import 'package:nearhood/common_widget/shimmer_post_detail.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_metadata_widget.dart';
 import 'package:nearhood/common_widget/reactions_bottom_sheet.dart';
@@ -22,9 +25,10 @@ import 'package:nearhood/features/post/bloc/post_action_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_state.dart';
 
 class PostDetailScreen extends StatelessWidget {
-  final PostModel post;
+  final PostModel? post;
+  final String? postId;
 
-  const PostDetailScreen({super.key, required this.post});
+  const PostDetailScreen({super.key, this.post, this.postId});
 
   @override
   Widget build(BuildContext context) {
@@ -33,23 +37,25 @@ class PostDetailScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<CommentBloc>(
-          create: (context) =>
-              CommentBloc(repository: postRepository)
-                ..add(FetchCommentsRequested(post.id, refresh: true)),
+          create: (context) => CommentBloc(repository: postRepository)
+            ..add(
+              FetchCommentsRequested(post?.id ?? postId ?? '', refresh: true),
+            ),
         ),
         BlocProvider<PostActionBloc>(
           create: (context) => PostActionBloc(repository: postRepository),
         ),
       ],
-      child: PostDetailScreenBody(initialPost: post),
+      child: PostDetailScreenBody(initialPost: post, postId: postId),
     );
   }
 }
 
 class PostDetailScreenBody extends StatefulWidget {
-  final PostModel initialPost;
+  final PostModel? initialPost;
+  final String? postId;
 
-  const PostDetailScreenBody({super.key, required this.initialPost});
+  const PostDetailScreenBody({super.key, this.initialPost, this.postId});
 
   @override
   State<PostDetailScreenBody> createState() => _PostDetailScreenBodyState();
@@ -60,6 +66,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   final FocusNode _commentFocusNode = FocusNode();
   bool _isSendEnabled = false;
   late PostModel _currentPost;
+  bool _isLoadingPost = false;
 
   // Replying state
   String? _replyParentId;
@@ -72,12 +79,62 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   @override
   void initState() {
     super.initState();
-    _currentPost = widget.initialPost;
+    if (widget.initialPost != null) {
+      _currentPost = widget.initialPost!;
+    } else {
+      _isLoadingPost = true;
+      _currentPost = PostModel(
+        id: widget.postId ?? '',
+        author: null,
+        content: '',
+        category: 'General',
+        mediaUrls: const [],
+        localityPlaceId: '',
+        city: '',
+        localityName: '',
+        visibilityRadius: 'MyArea',
+        maxRadiusMeters: 0,
+        isPinned: false,
+        isResolved: false,
+        isDeleted: false,
+        commentCount: 0,
+        reactions: const [],
+        topComments: const [],
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+      );
+      _loadPostDetails();
+    }
     _commentController.addListener(() {
       setState(() {
         _isSendEnabled = _commentController.text.trim().isNotEmpty;
       });
     });
+  }
+
+  Future<void> _loadPostDetails() async {
+    final postRepository = PostRepository(dataSource: PostRemoteDataSource());
+    final result = await postRepository.getPostDetails(widget.postId!);
+    if (mounted) {
+      if (result is Success<PostModel>) {
+        setState(() {
+          _currentPost = result.data;
+          _isLoadingPost = false;
+        });
+      } else if (result is Failure<PostModel>) {
+        setState(() {
+          _isLoadingPost = false;
+        });
+        AppSnackBar.showMessage(
+          context,
+          result.error.message,
+          isTop: true,
+          backgroundColor: AppColors.white,
+          borderColor: AppColors.red,
+        );
+        Navigator.pop(context);
+      }
+    }
   }
 
   void _initiateDelete(CommentModel comment, String? parentCommentId) {
@@ -458,6 +515,14 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingPost) {
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: _buildAppBar(null),
+        body: const ShimmerPostDetail(),
+      );
+    }
+
     final currentUser = sharedPrefGetUser();
 
     return MultiBlocListener(
@@ -607,14 +672,18 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
       title: AppStrings.post,
       onBackPressed: () => Navigator.pop(context, _currentPost),
       showShare: true,
-      onSharePressed: () {},
-      showVerticalMenu:
-          currentUser != null && _currentPost.author?.id == currentUser.id,
-      onVerticalMenuPressed: () => _showPostOptions(context),
+      onSharePressed: () {
+        sharePost(_currentPost);
+      },
+      showVerticalMenu: true, // Always show vertical menu for all users
+      onVerticalMenuPressed: () {
+        print('DEBUG: Vertical menu pressed'); // Debug log
+        _showPostOptions(context);
+      },
       verticalMenuIcon: CustomImageView(
         imagePath: AppAssets.icMenu,
-        height: 18.r,
-        width: 18.r,
+        height: 20.r,
+        width: 20.r,
         color: AppColors.darkGrey,
       ),
       bottom: PreferredSize(
@@ -1660,10 +1729,16 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                     fontSize: 16.sp,
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(sheetContext);
-                  // TODO: Implement copy link functionality
-                  AppSnackBar.showMessage(context, AppStrings.linkCopied);
+                  await copyPostLinkToClipboard(_currentPost.id);
+                  if (context.mounted) {
+                    AppSnackBar.showMessage(
+                      context,
+                      AppStrings.linkCopied,
+                      borderColor: AppColors.green,
+                    );
+                  }
                 },
               ),
 

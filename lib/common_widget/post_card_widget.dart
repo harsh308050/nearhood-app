@@ -1,5 +1,6 @@
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
+import 'package:nearhood/core/utils/share_helper.dart';
 import 'package:nearhood/common_widget/reaction_picker_overlay.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
@@ -460,7 +461,7 @@ class PostCardWidget extends StatelessWidget {
                     onTap:
                         onShareTap ??
                         () {
-                          AppSnackBar.showMessage(context, 'Shared');
+                          sharePost(post);
                         },
                     child: _buildPillAction(
                       iconWidget: SvgPicture.asset(

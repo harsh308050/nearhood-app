@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
+import 'package:nearhood/core/utils/share_helper.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_card_widget.dart';
@@ -172,9 +173,7 @@ class _HomepageState extends State<Homepage> {
                                     ).then((result) {
                                       if (!context.mounted) return;
                                       context.read<FeedBloc>().add(
-                                        const FetchFeedRequested(
-                                          refresh: true,
-                                        ),
+                                        const FetchFeedRequested(refresh: true),
                                       );
                                     });
                                   },
@@ -185,9 +184,7 @@ class _HomepageState extends State<Homepage> {
                                     ).then((result) {
                                       if (!context.mounted) return;
                                       context.read<FeedBloc>().add(
-                                        const FetchFeedRequested(
-                                          refresh: true,
-                                        ),
+                                        const FetchFeedRequested(refresh: true),
                                       );
                                     });
                                   },
@@ -379,8 +376,7 @@ class _HomepageState extends State<Homepage> {
 
   void _showPostOptions(BuildContext context, PostModel post) {
     final currentUser = sharedPrefGetUser();
-    final isOwnPost =
-        currentUser != null && post.author?.id == currentUser.id;
+    final isOwnPost = currentUser != null && post.author?.id == currentUser.id;
     final isAreaLead = currentUser?.role == 'area_lead';
 
     showModalBottomSheet(
@@ -476,7 +472,9 @@ class _HomepageState extends State<Homepage> {
                     Navigator.pop(sheetContext);
                     AppSnackBar.showMessage(
                       context,
-                      post.isResolved ? "Marked as unresolved" : "Marked as resolved",
+                      post.isResolved
+                          ? "Marked as unresolved"
+                          : "Marked as resolved",
                     );
                   },
                 ),
@@ -490,9 +488,16 @@ class _HomepageState extends State<Homepage> {
                     fontSize: 16.sp,
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(sheetContext);
-                  AppSnackBar.showMessage(context, AppStrings.linkCopied);
+                  await copyPostLinkToClipboard(post.id);
+                  if (context.mounted) {
+                    AppSnackBar.showMessage(
+                      context,
+                      AppStrings.linkCopied,
+                      borderColor: AppColors.green,
+                    );
+                  }
                 },
               ),
 
@@ -643,9 +648,7 @@ class _HomepageState extends State<Homepage> {
           positiveBackgroundColor: AppColors.red,
           positiveTap: () {
             Navigator.pop(dialogContext);
-            context.read<PostActionBloc>().add(
-              DeletePostRequested(post.id),
-            );
+            context.read<PostActionBloc>().add(DeletePostRequested(post.id));
           },
         ),
       ),

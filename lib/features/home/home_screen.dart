@@ -5,6 +5,8 @@ import 'package:nearhood/features/post/data/post_repository.dart';
 import 'package:nearhood/features/home/bloc/feed_bloc.dart';
 import 'package:nearhood/features/home/bloc/feed_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
+import 'package:nearhood/core/services/deeplink_service.dart';
+import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 
 import 'package:nearhood/features/home/screens/homepage.dart';
 import 'package:nearhood/features/explore/explore_screen.dart';
@@ -50,6 +52,18 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
     ChatScreen(),
     MarketScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (DeepLinkService.pendingPostId != null) {
+        final postId = DeepLinkService.pendingPostId!;
+        DeepLinkService.pendingPostId = null;
+        callNextScreen(context, PostDetailScreen(postId: postId));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
