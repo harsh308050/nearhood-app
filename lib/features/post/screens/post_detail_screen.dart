@@ -392,7 +392,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                       Positioned(
                         right: position.dx,
                         top: menuTop,
-                        width: isReply ? 160.w : 170.w,
+                        width: isReply ? 160.w : 190.w,
                         child: Material(
                           color: Colors.transparent,
                           child: Container(
@@ -648,14 +648,13 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
           body: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildPostContent(currentUser),
-                      _buildCommentsSection(),
-                    ],
-                  ),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _buildPostContent(currentUser),
+                    _buildCommentsSection(),
+                  ],
                 ),
               ),
               _buildStickyCommentInput(),
@@ -862,7 +861,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                       size: 40.r,
                       name: authorName,
                       imageUrl: _currentPost.author?.profilePhotoUrl ?? '',
-                      isVerified: isVerified,
+
                       isAreaLead: isAreaLead,
                     ),
                     sw(12),
@@ -973,6 +972,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                 attachedLocation: _currentPost.attachedLocation,
                 poll: _currentPost.poll,
                 currentUserId: currentUser?.id ?? '',
+                postAuthorId: _currentPost.author?.id,
                 onPollOptionTap: (optionId) {
                   context.read<PostActionBloc>().add(
                     VotePollRequested(_currentPost.id, optionId),

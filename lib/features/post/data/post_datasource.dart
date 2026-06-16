@@ -56,6 +56,7 @@ class PostRemoteDataSource extends HttpActions {
   Future<HttpResponse> getFeed({
     required String mode,
     String? category,
+    String? userId,
     int radius = 5000,
     int page = 1,
     int limit = 20,
@@ -67,8 +68,21 @@ class PostRemoteDataSource extends HttpActions {
       'limit': limit.toString(),
       if (category != null && category != 'All Posts' && category != 'All')
         'category': category,
+      if (userId != null) 'userId': userId,
     };
     return get('posts/feed', queryParameters: queryParameters);
+  }
+
+  Future<HttpResponse> getUserPosts({
+    required String userId,
+    int page = 1,
+    int limit = 100,
+  }) {
+    final Map<String, String> queryParameters = {
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    return get('posts/user/$userId', queryParameters: queryParameters);
   }
 
   Future<HttpResponse> getPostDetails(String postId) {

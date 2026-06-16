@@ -216,7 +216,6 @@ class ReactionsBottomSheet extends StatelessWidget {
                     size: 48,
                     imageUrl: user?.profilePhotoUrl,
                     name: name,
-                    isVerified: false,
                     isAreaLead: false,
                   ),
                   Positioned(

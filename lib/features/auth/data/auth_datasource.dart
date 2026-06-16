@@ -42,8 +42,24 @@ class AuthRemoteDataSource extends HttpActions {
     return get(urls.userProfile);
   }
 
-  Future<HttpResponse> updateProfile(UpdateProfileRequest request) {
-    return put(urls.userProfile, body: request.toJson());
+  Future<HttpResponse> updateProfile(UpdateProfileRequest request) async {
+    final photoUrl = request.profilePhotoUrl;
+    final isLocalFile =
+        photoUrl != null && !photoUrl.startsWith('http') && photoUrl.isNotEmpty;
+
+    if (isLocalFile) {
+      final multipartFile = await http.MultipartFile.fromPath(
+        'profilePhoto',
+        photoUrl,
+      );
+      return putMultipart(
+        urls.userProfile,
+        fields: {if (request.fullName != null) 'fullName': request.fullName!},
+        files: [multipartFile],
+      );
+    } else {
+      return put(urls.userProfile, body: request.toJson());
+    }
   }
 
   Future<HttpResponse> sendOtp(SendOtpRequest request) {

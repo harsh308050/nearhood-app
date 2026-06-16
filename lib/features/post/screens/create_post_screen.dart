@@ -417,7 +417,6 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
             size: 44.r,
             name: authorName,
             imageUrl: profilePhoto,
-            isVerified: user?.isVerified ?? false,
             isAreaLead: user?.role == 'area_lead',
           ),
           sw(12),

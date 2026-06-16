@@ -8,6 +8,7 @@ class PostAttachmentsWidget extends StatefulWidget {
   final AttachedLocationModel? attachedLocation;
   final PollModel? poll;
   final String currentUserId;
+  final String? postAuthorId;
   final Function(String optionId)? onPollOptionTap;
   final double imageHeight;
   final BorderRadius? borderRadius;
@@ -20,6 +21,7 @@ class PostAttachmentsWidget extends StatefulWidget {
     required this.attachedLocation,
     required this.poll,
     required this.currentUserId,
+    this.postAuthorId,
     this.onPollOptionTap,
     this.imageHeight = 220.0,
     this.borderRadius,
@@ -30,8 +32,12 @@ class PostAttachmentsWidget extends StatefulWidget {
   State<PostAttachmentsWidget> createState() => _PostAttachmentsWidgetState();
 }
 
-class _PostAttachmentsWidgetState extends State<PostAttachmentsWidget> {
+class _PostAttachmentsWidgetState extends State<PostAttachmentsWidget>
+    with AutomaticKeepAliveClientMixin {
   late String _activeTab;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -84,6 +90,8 @@ class _PostAttachmentsWidgetState extends State<PostAttachmentsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     final availableTabs = _getAvailableTabs();
     if (availableTabs.isEmpty) return const SizedBox.shrink();
 
@@ -187,6 +195,7 @@ class _PostAttachmentsWidgetState extends State<PostAttachmentsWidget> {
           child: PollWidget(
             poll: widget.poll!,
             currentUserId: widget.currentUserId,
+            postAuthorId: widget.postAuthorId,
             onOptionSelected: (optionId) {
               widget.onPollOptionTap?.call(optionId);
             },

@@ -17,7 +17,9 @@ import 'package:nearhood/features/post/bloc/post_action_state.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 
 class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+  final VoidCallback? onProfileTap;
+
+  const Homepage({super.key, this.onProfileTap});
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -26,65 +28,70 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PostActionBloc, PostActionState>(
-      listener: (context, state) {
-        if (state.status == ApiCallState.success) {
-          if (state.actionType == 'like' || state.actionType == 'unlike') {
-            final feedBloc = context.read<FeedBloc>();
-            final existingPostIndex = feedBloc.state.posts.indexWhere(
-              (p) => p.id == state.postId,
-            );
-            if (existingPostIndex != -1) {
-              final existingPost = feedBloc.state.posts[existingPostIndex];
-              final updatedPost = PostModel(
-                id: existingPost.id,
-                author: existingPost.author,
-                content: existingPost.content,
-                category: existingPost.category,
-                mediaUrls: existingPost.mediaUrls,
-                localityPlaceId: existingPost.localityPlaceId,
-                city: existingPost.city,
-                localityName: existingPost.localityName,
-                visibilityRadius: existingPost.visibilityRadius,
-                maxRadiusMeters: existingPost.maxRadiusMeters,
-                isPinned: existingPost.isPinned,
-                isResolved: existingPost.isResolved,
-                isDeleted: existingPost.isDeleted,
-                commentCount: existingPost.commentCount,
-                reactions: state.reactions ?? existingPost.reactions,
-                topComments: existingPost.topComments,
-                createdAt: existingPost.createdAt,
-                updatedAt: existingPost.updatedAt,
-                attachedLocation: existingPost.attachedLocation,
-                poll: existingPost.poll,
-                metadata: existingPost.metadata,
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<PostActionBloc, PostActionState>(
+          listener: (context, state) {
+            if (state.status == ApiCallState.success) {
+              if (state.actionType == 'like' || state.actionType == 'unlike') {
+                final feedBloc = context.read<FeedBloc>();
+                final existingPostIndex = feedBloc.state.posts.indexWhere(
+                  (p) => p.id == state.postId,
+                );
+                if (existingPostIndex != -1) {
+                  final existingPost = feedBloc.state.posts[existingPostIndex];
+                  final updatedPost = PostModel(
+                    id: existingPost.id,
+                    author: existingPost.author,
+                    content: existingPost.content,
+                    category: existingPost.category,
+                    mediaUrls: existingPost.mediaUrls,
+                    localityPlaceId: existingPost.localityPlaceId,
+                    city: existingPost.city,
+                    localityName: existingPost.localityName,
+                    visibilityRadius: existingPost.visibilityRadius,
+                    maxRadiusMeters: existingPost.maxRadiusMeters,
+                    isPinned: existingPost.isPinned,
+                    isResolved: existingPost.isResolved,
+                    isDeleted: existingPost.isDeleted,
+                    commentCount: existingPost.commentCount,
+                    reactions: state.reactions ?? existingPost.reactions,
+                    topComments: existingPost.topComments,
+                    createdAt: existingPost.createdAt,
+                    updatedAt: existingPost.updatedAt,
+                    attachedLocation: existingPost.attachedLocation,
+                    poll: existingPost.poll,
+                    metadata: existingPost.metadata,
+                  );
+                  feedBloc.add(UpdatePostRequested(updatedPost));
+                }
+              } else if (state.actionType == 'vote' && state.post != null) {
+                context.read<FeedBloc>().add(UpdatePostRequested(state.post!));
+              } else if (state.actionType == 'delete') {
+                AppSnackBar.showMessage(
+                  context,
+                  AppStrings.postDeletedSuccessfully,
+                  borderColor: AppColors.green,
+                );
+                context.read<FeedBloc>().add(
+                  const FetchFeedRequested(refresh: true),
+                );
+              }
+            } else if (state.status == ApiCallState.failure) {
+              AppSnackBar.showMessage(
+                context,
+                state.message ?? 'Action failed',
+                borderColor: AppColors.red,
               );
-              feedBloc.add(UpdatePostRequested(updatedPost));
             }
-          } else if (state.actionType == 'vote' && state.post != null) {
-            context.read<FeedBloc>().add(UpdatePostRequested(state.post!));
-          } else if (state.actionType == 'delete') {
-            AppSnackBar.showMessage(
-              context,
-              AppStrings.postDeletedSuccessfully,
-              borderColor: AppColors.green,
-            );
-            context.read<FeedBloc>().add(
-              const FetchFeedRequested(refresh: true),
-            );
-          }
-        } else if (state.status == ApiCallState.failure) {
-          AppSnackBar.showMessage(
-            context,
-            state.message ?? 'Action failed',
-            borderColor: AppColors.red,
-          );
-        }
-      },
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: _buildAppBar(context),
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               BlocBuilder<FeedBloc, FeedState>(
@@ -130,13 +137,16 @@ class _HomepageState extends State<Homepage> {
                                       showButton: false,
                                       subtitle:
                                           "Tap on the create post button to add a new post.",
+                                      // ignore: lines_longer_than_80_chars
                                     ),
                             )
                           : ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20.w,
-                                vertical: 12.h,
+                              padding: EdgeInsets.fromLTRB(
+                                20.w,
+                                12.h,
+                                20.w,
+                                96.h,
                               ),
                               itemCount: state.posts.length,
                               itemBuilder: (context, index) {
@@ -206,17 +216,23 @@ class _HomepageState extends State<Homepage> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showCategoryPicker(context);
-          },
-          backgroundColor: AppColors.secondary,
-          elevation: 4,
-          child: CustomImageView(
-            imagePath: AppAssets.icAdd,
-            color: AppColors.white,
-            height: 16.r,
-            width: 16.r,
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 75.h),
+          child: FloatingActionButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50.h),
+            ),
+            onPressed: () {
+              _showCategoryPicker(context);
+            },
+            backgroundColor: AppColors.secondary,
+            elevation: 4,
+            child: CustomImageView(
+              imagePath: AppAssets.icAdd,
+              color: AppColors.white,
+              height: 16.r,
+              width: 16.r,
+            ),
           ),
         ),
       ),
@@ -250,10 +266,15 @@ class _HomepageState extends State<Homepage> {
             constraints: const BoxConstraints(),
           ),
           sw(12),
-          UserAvatarWidget(
-            size: 30.r,
-            name: user?.fullName,
-            imageUrl: user?.profilePhotoUrl,
+          GestureDetector(
+            onTap: () {
+              widget.onProfileTap?.call();
+            },
+            child: UserAvatarWidget(
+              size: 30.r,
+              name: user?.fullName,
+              imageUrl: user?.profilePhotoUrl,
+            ),
           ),
         ],
       ),

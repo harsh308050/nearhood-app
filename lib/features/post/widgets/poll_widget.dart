@@ -141,7 +141,8 @@ class PollWidget extends StatelessWidget {
                                     color: AppColors.grey,
                                   ),
                                 ),
-                                if (poll.showVoters &&
+                                if ((poll.showVoters ||
+                                        postAuthorId == currentUserId) &&
                                     optionVotesCount > 0) ...[
                                   sw(2),
                                   Icon(
@@ -463,7 +464,7 @@ class AllVotersBottomSheet extends StatelessWidget {
                                   size: 44.r,
                                   imageUrl: user.profilePhotoUrl,
                                   name: name,
-                                  isVerified: user.isVerified ?? false,
+
                                   isAreaLead: user.role == 'area_lead',
                                 ),
                                 sw(12),
@@ -670,7 +671,6 @@ class VotersBottomSheet extends StatelessWidget {
                               size: 48.r,
                               imageUrl: user.profilePhotoUrl,
                               name: name,
-                              isVerified: user.isVerified ?? false,
                               isAreaLead: user.role == 'area_lead',
                             ),
                             sw(16),

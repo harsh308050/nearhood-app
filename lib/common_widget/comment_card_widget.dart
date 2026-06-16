@@ -54,7 +54,6 @@ class CommentCardWidget extends StatelessWidget {
             size: 32.r,
             name: authorName,
             imageUrl: imageUrl ?? '',
-            isVerified: isVerified,
             isAreaLead: isAreaLead,
           ),
           sw(12),

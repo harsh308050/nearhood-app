@@ -42,6 +42,7 @@ class PostRepository {
   Future<ApiResult<Map<String, dynamic>>> getFeed({
     required String mode,
     String? category,
+    String? userId,
     int radius = 5000,
     int page = 1,
     int limit = 20,
@@ -49,6 +50,7 @@ class PostRepository {
     final response = await dataSource.getFeed(
       mode: mode,
       category: category,
+      userId: userId,
       radius: radius,
       page: page,
       limit: limit,
@@ -67,6 +69,30 @@ class PostRepository {
           'totalCount': map['totalCount'] ?? 0,
           'mode': map['mode'] ?? mode,
         };
+      },
+    );
+  }
+
+  Future<ApiResult<List<PostModel>>> getUserPosts({
+    required String userId,
+    int page = 1,
+    int limit = 100,
+  }) async {
+    final response = await dataSource.getUserPosts(
+      userId: userId,
+      page: page,
+      limit: limit,
+    );
+    return checkResponseStatusCode<List<PostModel>>(
+      response: response,
+      dataParser: (data) {
+        final map = data as Map<String, dynamic>;
+        final postsList =
+            (map['posts'] as List?)
+                ?.map((e) => PostModel.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
+        return postsList;
       },
     );
   }
@@ -261,9 +287,7 @@ class PostRepository {
       response: response,
       dataParser: (data) {
         final map = data as Map<String, dynamic>;
-        return FormSchemaModel.fromJson(
-          map['schema'] as Map<String, dynamic>,
-        );
+        return FormSchemaModel.fromJson(map['schema'] as Map<String, dynamic>);
       },
     );
   }

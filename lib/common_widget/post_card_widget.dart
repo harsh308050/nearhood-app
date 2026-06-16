@@ -167,7 +167,6 @@ class PostCardWidget extends StatelessWidget {
                     size: 40.r,
                     name: authorName,
                     imageUrl: post.author?.profilePhotoUrl ?? '',
-                    isVerified: isVerified,
                     isAreaLead: isAreaLead,
                   ),
                   sw(12),
@@ -290,10 +289,12 @@ class PostCardWidget extends StatelessWidget {
 
             // Post Attachments (Media, Location, Poll in tabbed layout)
             PostAttachmentsWidget(
+              key: ValueKey('attachments_${post.id}'),
               mediaUrls: post.mediaUrls,
               attachedLocation: post.attachedLocation,
               poll: post.poll,
               currentUserId: currentUser?.id ?? '',
+              postAuthorId: post.author?.id,
               onPollOptionTap: onPollOptionTap,
               imageHeight: 220.0,
             ),
