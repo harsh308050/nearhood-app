@@ -17,10 +17,12 @@ import 'package:nearhood/features/post/data/models/form_schema_model.dart';
 /// when the controlling field changes.
 class DynamicFormBuilder extends StatefulWidget {
   final FormSchemaModel schema;
+  final Map<String, dynamic>? initialValues;
 
   const DynamicFormBuilder({
     super.key,
     required this.schema,
+    this.initialValues,
   });
 
   @override
@@ -42,12 +44,21 @@ class DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
   void _initializeFields() {
     for (final field in widget.schema.fields) {
+      final initialVal = widget.initialValues?[field.key];
       if (field.renderType == 'text_input' ||
           field.renderType == 'number_input') {
-        _textControllers[field.key] = TextEditingController();
-      }
-      if (field.renderType == 'toggle') {
-        _values[field.key] = false;
+        _textControllers[field.key] = TextEditingController(
+          text: initialVal?.toString() ?? '',
+        );
+        if (initialVal != null) {
+          _values[field.key] = initialVal;
+        }
+      } else if (field.renderType == 'toggle') {
+        _values[field.key] = initialVal is bool ? initialVal : false;
+      } else {
+        if (initialVal != null) {
+          _values[field.key] = initialVal;
+        }
       }
     }
   }

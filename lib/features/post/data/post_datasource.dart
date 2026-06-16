@@ -163,6 +163,51 @@ class PostRemoteDataSource extends HttpActions {
     return post('posts/$postId/poll/vote', body: {'optionId': optionId});
   }
 
+  Future<HttpResponse> updatePost({
+    required String postId,
+    required String content,
+    required String visibilityRadius,
+    int? maxRadiusMeters,
+    List<String>? newMediaPaths,
+    List<String>? existingMediaUrls,
+    Map<String, dynamic>? attachedLocation,
+    Map<String, dynamic>? poll,
+    Map<String, dynamic>? metadata,
+  }) async {
+    if (newMediaPaths == null || newMediaPaths.isEmpty) {
+      final Map<String, dynamic> body = {
+        'content': content,
+        'visibilityRadius': visibilityRadius,
+        if (maxRadiusMeters != null) 'maxRadiusMeters': maxRadiusMeters,
+        if (existingMediaUrls != null) 'existingMedia': existingMediaUrls,
+        if (attachedLocation != null) 'attachedLocation': attachedLocation,
+        if (poll != null) 'poll': poll,
+        if (metadata != null) 'metadata': metadata,
+      };
+      return put('posts/$postId', body: body);
+    }
+
+    final Map<String, String> fields = {
+      'content': content,
+      'visibilityRadius': visibilityRadius,
+      if (maxRadiusMeters != null)
+        'maxRadiusMeters': maxRadiusMeters.toString(),
+      if (existingMediaUrls != null)
+        'existingMedia': jsonEncode(existingMediaUrls),
+      if (attachedLocation != null)
+        'attachedLocation': jsonEncode(attachedLocation),
+      if (poll != null) 'poll': jsonEncode(poll),
+      if (metadata != null) 'metadata': jsonEncode(metadata),
+    };
+
+    final List<http.MultipartFile> files = [];
+    for (final path in newMediaPaths) {
+      files.add(await http.MultipartFile.fromPath('media', path));
+    }
+
+    return putMultipart('posts/$postId', fields: fields, files: files);
+  }
+
   /// Fetch the SDUI form schema for a given category.
   /// Public endpoint — no auth required.
   Future<HttpResponse> getFormSchema(String category) {

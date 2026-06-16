@@ -9,6 +9,7 @@ import 'package:nearhood/features/post/widgets/visibility_picker_sheet.dart';
 import 'package:nearhood/features/post/bloc/create_post_bloc.dart';
 import 'package:nearhood/features/post/bloc/create_post_event.dart';
 import 'package:nearhood/features/post/bloc/create_post_state.dart';
+import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/features/post/data/models/form_schema_model.dart';
 import 'package:nearhood/features/post/data/post_datasource.dart';
 import 'package:nearhood/features/post/data/post_repository.dart';
@@ -19,8 +20,9 @@ import 'package:nearhood/features/post/widgets/location_map_preview_widget.dart'
 
 class CreatePostScreen extends StatelessWidget {
   final String category;
+  final PostModel? postToEdit;
 
-  const CreatePostScreen({super.key, required this.category});
+  const CreatePostScreen({super.key, required this.category, this.postToEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +30,16 @@ class CreatePostScreen extends StatelessWidget {
       create: (context) => CreatePostBloc(
         repository: PostRepository(dataSource: PostRemoteDataSource()),
       ),
-      child: CreatePostScreenBody(category: category),
+      child: CreatePostScreenBody(category: category, postToEdit: postToEdit),
     );
   }
 }
 
 class CreatePostScreenBody extends StatefulWidget {
   final String category;
+  final PostModel? postToEdit;
 
-  const CreatePostScreenBody({super.key, required this.category});
+  const CreatePostScreenBody({super.key, required this.category, this.postToEdit});
 
   @override
   State<CreatePostScreenBody> createState() => _CreatePostScreenBodyState();
@@ -68,6 +71,27 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
   @override
   void initState() {
     super.initState();
+    if (widget.postToEdit != null) {
+      _contentController.text = widget.postToEdit!.content;
+      _selectedVisibility = widget.postToEdit!.visibilityRadius;
+      _selectedRadius = widget.postToEdit!.maxRadiusMeters.toInt();
+      _mediaPaths.addAll(widget.postToEdit!.mediaUrls);
+
+      if (widget.postToEdit!.attachedLocation != null) {
+        _selectedLocation = {
+          'address': widget.postToEdit!.attachedLocation!.address,
+          'latitude': widget.postToEdit!.attachedLocation!.latitude,
+          'longitude': widget.postToEdit!.attachedLocation!.longitude,
+        };
+      }
+      if (widget.postToEdit!.poll != null) {
+        _createdPoll = {
+          'question': widget.postToEdit!.poll!.question,
+          'options': widget.postToEdit!.poll!.options.map((e) => e.text).toList(),
+        };
+      }
+      _isPostEnabled = widget.postToEdit!.content.trim().isNotEmpty;
+    }
     _contentController.addListener(_validatePostEnabled);
     _fetchFormSchema();
   }
@@ -103,14 +127,18 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
 
   /// Apply defaults from the fetched schema (visibility, content placeholder, etc.)
   void _applySchemaDefaults(FormSchemaModel schema) {
-    _selectedVisibility = schema.defaultVisibility.radius;
-    _selectedRadius = schema.defaultVisibility.maxRadiusMeters;
+    if (widget.postToEdit == null) {
+      _selectedVisibility = schema.defaultVisibility.radius;
+      _selectedRadius = schema.defaultVisibility.maxRadiusMeters;
+    }
   }
 
   /// Fallback defaults when schema fetch fails.
   void _applyFallbackDefaults() {
-    _selectedVisibility = 'MyArea';
-    _selectedRadius = 10000;
+    if (widget.postToEdit == null) {
+      _selectedVisibility = 'MyArea';
+      _selectedRadius = 10000;
+    }
   }
 
   @override
@@ -255,14 +283,16 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
         if (state.status == ApiCallState.success) {
           AppSnackBar.showMessage(
             context,
-            AppStrings.postCreatedSuccessfully,
+            widget.postToEdit != null
+                ? AppStrings.postUpdatedSuccessfully
+                : AppStrings.postCreatedSuccessfully,
             borderColor: AppColors.green,
           );
           Navigator.pop(context, true);
         } else if (state.status == ApiCallState.failure) {
           AppSnackBar.showMessage(
             context,
-            state.message ?? 'Failed to create post',
+            state.message ?? (widget.postToEdit != null ? 'Failed to update post' : 'Failed to create post'),
             borderColor: AppColors.red,
           );
         }
@@ -283,7 +313,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
               height: 14.r,
               width: 14.r,
             ),
-            title: AppStrings.createPost,
+            title: widget.postToEdit != null ? AppStrings.editPost : AppStrings.createPost,
             centerTitle: true,
             actionButton: isBusy
                 ? const Center(
@@ -298,7 +328,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                 : CustomButton.filled(
                     height: 32.h,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    text: AppStrings.post,
+                    text: widget.postToEdit != null ? AppStrings.apply : AppStrings.post,
                     onPressed: _isPostEnabled
                         ? () => _submitPost(context)
                         : null,
@@ -387,20 +417,44 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
     // Get metadata from the dynamic form builder
     final metadata = _formBuilderKey.currentState?.getMetadata();
 
-    context.read<CreatePostBloc>().add(
-      CreatePostSubmitted(
-        content: _contentController.text.trim(),
-        category: widget.category,
-        visibilityRadius: _selectedVisibility,
-        maxRadiusMeters: _selectedVisibility == 'Nearby'
-            ? _selectedRadius
-            : null,
-        mediaPaths: _mediaPaths,
-        attachedLocation: _selectedLocation,
-        poll: _createdPoll,
-        metadata: metadata != null && metadata.isNotEmpty ? metadata : null,
-      ),
-    );
+    final isEditMode = widget.postToEdit != null;
+
+    if (isEditMode) {
+      final existingMediaUrls = _mediaPaths.where((path) => path.startsWith('http')).toList();
+      final newMediaPaths = _mediaPaths.where((path) => !path.startsWith('http')).toList();
+
+      context.read<CreatePostBloc>().add(
+        EditPostSubmitted(
+          postId: widget.postToEdit!.id,
+          content: _contentController.text.trim(),
+          category: widget.category,
+          visibilityRadius: _selectedVisibility,
+          maxRadiusMeters: _selectedVisibility == 'Nearby'
+              ? _selectedRadius
+              : null,
+          newMediaPaths: newMediaPaths,
+          existingMediaUrls: existingMediaUrls,
+          attachedLocation: _selectedLocation,
+          poll: _createdPoll,
+          metadata: metadata != null && metadata.isNotEmpty ? metadata : null,
+        ),
+      );
+    } else {
+      context.read<CreatePostBloc>().add(
+        CreatePostSubmitted(
+          content: _contentController.text.trim(),
+          category: widget.category,
+          visibilityRadius: _selectedVisibility,
+          maxRadiusMeters: _selectedVisibility == 'Nearby'
+              ? _selectedRadius
+              : null,
+          mediaPaths: _mediaPaths,
+          attachedLocation: _selectedLocation,
+          poll: _createdPoll,
+          metadata: metadata != null && metadata.isNotEmpty ? metadata : null,
+        ),
+      );
+    }
   }
 
   Widget _buildAuthorRow() {
@@ -492,7 +546,11 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
-      child: DynamicFormBuilder(key: _formBuilderKey, schema: _formSchema!),
+      child: DynamicFormBuilder(
+        key: _formBuilderKey,
+        schema: _formSchema!,
+        initialValues: widget.postToEdit?.metadata,
+      ),
     );
   }
 
@@ -650,6 +708,8 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
         scrollDirection: Axis.horizontal,
         itemCount: _mediaPaths.length,
         itemBuilder: (context, index) {
+          final path = _mediaPaths[index];
+          final isNetwork = path.startsWith('http');
           return Stack(
             children: [
               Container(
@@ -660,7 +720,9 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                   borderRadius: BorderRadius.circular(10.r),
                   border: Border.all(color: AppColors.borderLight),
                   image: DecorationImage(
-                    image: FileImage(File(_mediaPaths[index])),
+                    image: isNetwork
+                        ? NetworkImage(path) as ImageProvider
+                        : FileImage(File(path)),
                     fit: BoxFit.cover,
                   ),
                 ),

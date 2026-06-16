@@ -25,6 +25,9 @@ ApiResult<T> checkResponseStatusCode<T>({
     final map = response.data as Map<String, dynamic>;
     final base = BaseResponse<T>.fromJson(map, dataParser);
     if (base.success) {
+      if (base.data == null && (T == bool || true is T)) {
+        return ApiResult.success(true as T);
+      }
       return ApiResult.success(base.data as T);
     }
     return ApiResult.failure(ErrorModel.fromResponseMap(map));

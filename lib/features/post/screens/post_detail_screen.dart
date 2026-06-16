@@ -20,6 +20,7 @@ import 'package:nearhood/features/post/data/post_repository.dart';
 import 'package:nearhood/features/post/bloc/comment_bloc.dart';
 import 'package:nearhood/features/post/bloc/comment_event.dart';
 import 'package:nearhood/features/post/bloc/comment_state.dart';
+import 'package:nearhood/features/post/screens/create_post_screen.dart';
 import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
 import 'package:nearhood/features/post/bloc/post_action_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_state.dart';
@@ -114,7 +115,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
 
   Future<void> _loadPostDetails() async {
     final postRepository = PostRepository(dataSource: PostRemoteDataSource());
-    final result = await postRepository.getPostDetails(widget.postId!);
+    final result = await postRepository.getPostDetails(_currentPost.id);
     if (mounted) {
       if (result is Success<PostModel>) {
         setState(() {
@@ -1654,11 +1655,19 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    // TODO: Navigate to edit post screen
-                    AppSnackBar.showMessage(
+                    Navigator.push(
                       context,
-                      AppStrings.editPostComingSoon,
-                    );
+                      MaterialPageRoute(
+                        builder: (context) => CreatePostScreen(
+                          category: _currentPost.category,
+                          postToEdit: _currentPost,
+                        ),
+                      ),
+                    ).then((updated) {
+                      if (updated == true && context.mounted) {
+                        _loadPostDetails();
+                      }
+                    });
                   },
                 ),
 

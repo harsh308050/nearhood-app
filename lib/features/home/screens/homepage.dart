@@ -7,6 +7,7 @@ import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_card_widget.dart';
 import 'package:nearhood/common_widget/shimmer_post_card.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
+import 'package:nearhood/features/post/screens/create_post_screen.dart';
 import 'package:nearhood/features/post/widgets/category_picker_sheet.dart';
 import 'package:nearhood/features/home/bloc/feed_bloc.dart';
 import 'package:nearhood/features/home/bloc/feed_event.dart';
@@ -444,10 +445,19 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    AppSnackBar.showMessage(
+                    callNextScreenWithResult(
                       context,
-                      AppStrings.editPostComingSoon,
-                    );
+                      CreatePostScreen(
+                        category: post.category,
+                        postToEdit: post,
+                      ),
+                    ).then((result) {
+                      if (result == true && context.mounted) {
+                        context.read<FeedBloc>().add(
+                          const FetchFeedRequested(refresh: true),
+                        );
+                      }
+                    });
                   },
                 ),
 

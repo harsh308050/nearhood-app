@@ -9,6 +9,7 @@ class CreatePostBloc extends Bloc<CreatePostEvent, CreatePostState> {
 
   CreatePostBloc({required this.repository}) : super(const CreatePostState()) {
     on<CreatePostSubmitted>(_onCreatePostSubmitted);
+    on<EditPostSubmitted>(_onEditPostSubmitted);
   }
 
   Future<void> _onCreatePostSubmitted(
@@ -43,8 +44,53 @@ class CreatePostBloc extends Bloc<CreatePostEvent, CreatePostState> {
         ),
       ),
       failure: (error) {
-        // Compose a user-friendly message that includes specific
-        // validation errors (e.g. "Path `content` is required.")
+        final errorMessage = error.errors.isNotEmpty
+            ? error.errors.join('\n')
+            : error.message;
+        emit(
+          state.copyWith(
+            status: ApiCallState.failure,
+            error: error,
+            message: errorMessage,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _onEditPostSubmitted(
+    EditPostSubmitted event,
+    Emitter<CreatePostState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: ApiCallState.busy,
+        clearError: true,
+        clearMessage: true,
+      ),
+    );
+
+    final result = await repository.updatePost(
+      postId: event.postId,
+      content: event.content,
+      visibilityRadius: event.visibilityRadius,
+      maxRadiusMeters: event.maxRadiusMeters,
+      newMediaPaths: event.newMediaPaths,
+      existingMediaUrls: event.existingMediaUrls,
+      attachedLocation: event.attachedLocation,
+      poll: event.poll,
+      metadata: event.metadata,
+    );
+
+    result.when(
+      success: (data) => emit(
+        state.copyWith(
+          status: ApiCallState.success,
+          post: data,
+          clearError: true,
+        ),
+      ),
+      failure: (error) {
         final errorMessage = error.errors.isNotEmpty
             ? error.errors.join('\n')
             : error.message;

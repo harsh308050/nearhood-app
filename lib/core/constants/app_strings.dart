@@ -230,6 +230,7 @@ class AppStrings {
   static const String reportPost = 'Report Post';
   static const String deletePost = 'Delete Post';
   static const String postDeletedSuccessfully = 'Post deleted successfully';
+  static const String postUpdatedSuccessfully = 'Post updated successfully';
   static const String editPostComingSoon = 'Edit post coming soon';
   static const String linkCopied = 'Link copied to clipboard';
   static const String reportSubmitted = 'Report submitted';

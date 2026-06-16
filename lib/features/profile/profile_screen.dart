@@ -13,6 +13,7 @@ import 'package:nearhood/features/post/bloc/post_action_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_state.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
+import 'package:nearhood/features/post/screens/create_post_screen.dart';
 import 'package:nearhood/features/profile/bloc/profile_feed_bloc.dart';
 import 'package:nearhood/features/profile/bloc/profile_feed_event.dart';
 import 'package:nearhood/features/profile/bloc/profile_feed_state.dart';
@@ -304,6 +305,36 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
                     ),
                   ),
                   onTap: () => Navigator.pop(sheetContext),
+                ),
+              if (isOwnPost)
+                ListTile(
+                  leading: Icon(
+                    Icons.edit_outlined,
+                    color: AppColors.primaryBlue,
+                  ),
+                  title: CustomText(
+                    AppStrings.editPost,
+                    style: AppTypography.cardTitle.copyWith(
+                      color: AppColors.darkGrey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreatePostScreen(
+                          category: post.category,
+                          postToEdit: post,
+                        ),
+                      ),
+                    ).then((updated) {
+                      if (updated == true) {
+                        _fetchPosts(_tabs[_tabController.index].mode);
+                      }
+                    });
+                  },
                 ),
               if (isOwnPost)
                 ListTile(

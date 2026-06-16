@@ -280,6 +280,37 @@ class PostRepository {
     );
   }
 
+  Future<ApiResult<PostModel>> updatePost({
+    required String postId,
+    required String content,
+    required String visibilityRadius,
+    int? maxRadiusMeters,
+    List<String>? newMediaPaths,
+    List<String>? existingMediaUrls,
+    Map<String, dynamic>? attachedLocation,
+    Map<String, dynamic>? poll,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await dataSource.updatePost(
+      postId: postId,
+      content: content,
+      visibilityRadius: visibilityRadius,
+      maxRadiusMeters: maxRadiusMeters,
+      newMediaPaths: newMediaPaths,
+      existingMediaUrls: existingMediaUrls,
+      attachedLocation: attachedLocation,
+      poll: poll,
+      metadata: metadata,
+    );
+    return checkResponseStatusCode<PostModel>(
+      response: response,
+      dataParser: (data) {
+        final map = data as Map<String, dynamic>;
+        return PostModel.fromJson(map['post'] as Map<String, dynamic>);
+      },
+    );
+  }
+
   /// Fetch the SDUI form schema for a given post category.
   Future<ApiResult<FormSchemaModel>> getFormSchema(String category) async {
     final response = await dataSource.getFormSchema(category);
