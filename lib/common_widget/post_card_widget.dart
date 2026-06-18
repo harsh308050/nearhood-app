@@ -192,7 +192,11 @@ class PostCardWidget extends StatelessWidget {
                                     sw(4),
                                     Icon(
                                       Icons.verified,
-                                      color: AppColors.primaryBlue,
+                                      color: post.author?.role == 'system'
+                                          ? const Color(
+                                              0xFFFFD700,
+                                            ) // Golden badge for official Nearhood account
+                                          : AppColors.primaryBlue,
                                       size: 16.r,
                                     ),
                                   ],
@@ -616,6 +620,8 @@ class PostCardWidget extends StatelessWidget {
       case 'Recommendation':
         return const Color(0xFF00BCD4); // Cyan
       case 'General':
+      case 'Local News':
+        return const Color(0xFFE65100); // Deep orange for news
       default:
         return AppColors.grey;
     }

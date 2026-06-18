@@ -887,7 +887,9 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                                 sw(4),
                                 Icon(
                                   Icons.verified,
-                                  color: AppColors.primaryBlue,
+                                  color: _currentPost.author?.role == 'system'
+                                      ? const Color(0xFFFFD700)
+                                      : AppColors.primaryBlue,
                                   size: 16.r,
                                 ),
                               ],

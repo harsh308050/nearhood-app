@@ -3,6 +3,7 @@ import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/features/getstarted/getstarted_screen.dart';
+import 'package:nearhood/features/news/local_news_screen.dart';
 import 'package:nearhood/features/profile/profile_screen.dart';
 
 class ProfileDrawer extends StatelessWidget {
@@ -13,7 +14,6 @@ class ProfileDrawer extends StatelessWidget {
     final user = sharedPrefGetUser();
     final userName = user?.fullName ?? 'Neighbor';
     final userEmail = user?.email ?? '';
-    final locality = user?.location?.locality?.name ?? 'My Area';
     return Drawer(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       backgroundColor: AppColors.white,
@@ -110,7 +110,7 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'Local News',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to local news screen
+                      callNextScreen(context, const LocalNewsScreen());
                     },
                   ),
                   _buildMenuItem(

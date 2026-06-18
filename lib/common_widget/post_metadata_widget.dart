@@ -4,6 +4,7 @@ import 'package:nearhood/core/theme/app_typography.dart';
 import 'package:nearhood/core/utils/cm.dart';
 import 'package:nearhood/common_widget/custom_text.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum PostMetadataMode { header, details }
 
@@ -462,8 +463,162 @@ class PostMetadataWidget extends StatelessWidget {
           ),
         );
 
+      case 'local news':
+        final sourceUrl = metadata['sourceUrl']?.toString();
+        final sourceName = metadata['sourceName']?.toString();
+        final publishDate = metadata['publishDate']?.toString();
+        final authors = metadata['authors'] as List<dynamic>?;
+        final title = metadata['title']?.toString();
+
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: hp, vertical: 8.h),
+          padding: EdgeInsets.all(12.r),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE65100).withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFE65100).withValues(alpha: 0.15),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null && title.isNotEmpty) ...[
+                CustomText(
+                  title,
+                  style: AppTypography.cardTitle.copyWith(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.darkGrey,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                sh(8),
+              ],
+              if (sourceName != null && sourceName.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(
+                      Icons.article_outlined,
+                      size: 14.r,
+                      color: const Color(0xFFE65100),
+                    ),
+                    sw(6),
+                    Expanded(
+                      child: CustomText(
+                        sourceName,
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFE65100),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                sh(6),
+              ],
+              if (authors != null && authors.isNotEmpty) ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 14.r,
+                      color: AppColors.grey,
+                    ),
+                    sw(6),
+                    Expanded(
+                      child: CustomText(
+                        authors.join(', '),
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 11.sp,
+                          color: AppColors.darkGrey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                sh(6),
+              ],
+              if (publishDate != null && publishDate.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 14.r,
+                      color: AppColors.grey,
+                    ),
+                    sw(6),
+                    CustomText(
+                      publishDate,
+                      style: AppTypography.caption.copyWith(
+                        fontSize: 11.sp,
+                        color: AppColors.darkGrey,
+                      ),
+                    ),
+                  ],
+                ),
+                if (sourceUrl != null && sourceUrl.isNotEmpty) sh(6),
+              ],
+              if (sourceUrl != null && sourceUrl.isNotEmpty) ...[
+                GestureDetector(
+                  onTap: () {
+                    // Open URL in browser
+                    _launchUrl(sourceUrl);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 6.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE65100).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(
+                        color: const Color(0xFFE65100).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.open_in_new_rounded,
+                          size: 14.r,
+                          color: const Color(0xFFE65100),
+                        ),
+                        sw(6),
+                        Expanded(
+                          child: CustomText(
+                            'Read full article',
+                            style: AppTypography.buttonLabel.copyWith(
+                              fontSize: 12.sp,
+                              color: const Color(0xFFE65100),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+
       default:
         return const SizedBox.shrink();
+    }
+  }
+
+  void _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
