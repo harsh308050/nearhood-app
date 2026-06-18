@@ -1718,7 +1718,6 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    // TODO: Implement resolve/unresolve functionality
                     AppSnackBar.showMessage(
                       context,
                       _currentPost.isResolved

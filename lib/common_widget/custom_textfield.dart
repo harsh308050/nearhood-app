@@ -174,7 +174,7 @@ class CustomTextField extends StatefulWidget {
     this.label,
     this.errorText,
     this.helperText,
-    this.prefixIcon = AppAssets.icUser, // TODO: Add lock icon to assets
+    this.prefixIcon = AppAssets.icUser,
     this.prefix,
     this.textInputAction,
     this.enabled = true,

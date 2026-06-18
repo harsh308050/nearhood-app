@@ -7,8 +7,6 @@ import 'package:nearhood/core/network/api_call_state.dart';
 import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
 import 'package:nearhood/features/auth/bloc/auth_event.dart';
 import 'package:nearhood/features/auth/bloc/auth_state.dart';
-import 'package:nearhood/features/auth/data/auth_repository.dart';
-import 'package:nearhood/features/auth/data/auth_datasource.dart';
 import 'package:nearhood/features/auth/model/auth_request_models.dart';
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 
@@ -17,12 +15,9 @@ class EditProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (context) => AuthBloc(
-        repository: AuthRepository(
-          dataSource: AuthRemoteDataSource(),
-        ),
-      ),
+    // Forward the global AuthBloc so updates propagate to homescreen immediately
+    return BlocProvider<AuthBloc>.value(
+      value: context.read<AuthBloc>(),
       child: const EditProfileScreenBody(),
     );
   }

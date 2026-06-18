@@ -7,6 +7,10 @@ import 'package:nearhood/core/theme/app_theme.dart';
 import 'package:nearhood/core/services/deeplink_service.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/common_widget/connectivity_wrapper.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
+import 'package:nearhood/features/auth/data/auth_datasource.dart';
+import 'package:nearhood/features/auth/data/auth_repository.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = DeepLinkService.navigatorKey;
 
@@ -24,14 +28,21 @@ class NearhoodApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      theme: AppTheme.lightTheme,
-      builder: (context, child) {
-        return ConnectivityWrapper(child: child!);
-      },
-      home: const SplashScreen(),
+    return BlocProvider<AuthBloc>(
+      create: (context) => AuthBloc(
+        repository: AuthRepository(
+          dataSource: AuthRemoteDataSource(),
+        ),
+      ),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        theme: AppTheme.lightTheme,
+        builder: (context, child) {
+          return ConnectivityWrapper(child: child!);
+        },
+        home: const SplashScreen(),
+      ),
     );
   }
 }

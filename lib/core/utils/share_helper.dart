@@ -5,21 +5,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 
-String getPostDeepLink(String postId) {
-  final String apiBaseUrl =
-      dotenv.env['BASE_URL'] ?? 'https://nearhood-api.onrender.com/api';
-  // Strip trailing '/api' from the base URL to get the web domain
-  final String cleanBaseUrl = apiBaseUrl.replaceAll('/api', '');
-  return '$cleanBaseUrl/share/posts/$postId';
-}
-
-Future<void> copyPostLinkToClipboard(String postId) async {
-  final deepLink = getPostDeepLink(postId);
-  await Clipboard.setData(ClipboardData(text: deepLink));
-}
-
+final String apiBaseUrl =
+    dotenv.env['BASE_URL'] ?? 'https://nearhood-api.onrender.com/api';
+final String cleanBaseUrl = apiBaseUrl.replaceAll('/api', '');
 void sharePost(PostModel post) {
-  final String shareUrl = getPostDeepLink(post.id);
+  final String shareUrl = '$cleanBaseUrl/share/posts/${post.id}';
 
   // Format short preview text
   String postContent = post.content.trim();
@@ -36,4 +26,9 @@ void sharePost(PostModel post) {
       ShareParams(text: shareMessage, subject: 'Check this post on Nearhood'),
     ),
   );
+}
+
+Future<void> copyPostLinkToClipboard(String postId) async {
+  final String postUrl = '$cleanBaseUrl/share/posts/$postId';
+  await Clipboard.setData(ClipboardData(text: postUrl));
 }

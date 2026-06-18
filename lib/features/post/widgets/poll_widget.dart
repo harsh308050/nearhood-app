@@ -224,16 +224,17 @@ class PollWidget extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
         child: Row(
+          crossAxisAlignment: .center,
           children: [
             // Stacked Avatars (up to 3)
             if (displayVoters.isNotEmpty) ...[
               SizedBox(
-                height: 24.r,
+                height: 32.r,
                 width: displayVoters.length == 1
-                    ? 24.r
+                    ? 32.r
                     : displayVoters.length == 2
-                    ? 36.r
-                    : (16 + (displayVoters.length - 1) * 14).toDouble().r,
+                    ? 38.r
+                    : (18 + (displayVoters.length - 1) * 14).toDouble().r,
                 child: Stack(
                   children: [
                     for (int i = 0; i < displayVoters.length; i++)

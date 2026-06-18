@@ -3,6 +3,9 @@ import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/core/utils/share_helper.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
+import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
+import 'package:nearhood/features/auth/bloc/auth_state.dart';
+import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_card_widget.dart';
 import 'package:nearhood/common_widget/shimmer_post_card.dart';
@@ -88,161 +91,173 @@ class _HomepageState extends State<Homepage> {
           },
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: _buildAppBar(context),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              BlocBuilder<FeedBloc, FeedState>(
-                builder: (context, state) {
-                  return _buildFeedModeToggle(state, context);
-                },
-              ),
-              Expanded(
-                child: BlocBuilder<FeedBloc, FeedState>(
-                  builder: (context, state) {
-                    if (state.status == ApiCallState.busy &&
-                        state.posts.isEmpty) {
-                      return const ShimmerPostCardList();
-                    }
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final user = authState.userProfile ?? sharedPrefGetUser();
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: _buildAppBar(context, user),
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  BlocBuilder<FeedBloc, FeedState>(
+                    builder: (context, state) {
+                      return _buildFeedModeToggle(state, context, user);
+                    },
+                  ),
+                  Expanded(
+                    child: BlocBuilder<FeedBloc, FeedState>(
+                      builder: (context, state) {
+                        if (state.status == ApiCallState.busy &&
+                            state.posts.isEmpty) {
+                          return const ShimmerPostCardList();
+                        }
 
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<FeedBloc>().add(
-                          const FetchFeedRequested(refresh: true),
-                        );
-                      },
-                      child: state.posts.isEmpty
-                          ? SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(vertical: 40.h),
-                              child: state.status == ApiCallState.failure
-                                  ? EmptyStateWidget(
-                                      title: AppStrings.unableToLoadFeed,
-                                      subtitle:
-                                          state.message ??
-                                          'Something went wrong. Please pull down to refresh or try again later.',
-                                      btnText: AppStrings.retry,
-                                      onPressed: () {
-                                        context.read<FeedBloc>().add(
-                                          const FetchFeedRequested(
-                                            refresh: true,
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<FeedBloc>().add(
+                              const FetchFeedRequested(refresh: true),
+                            );
+                          },
+                          child: state.posts.isEmpty
+                              ? SingleChildScrollView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: EdgeInsets.symmetric(vertical: 40.h),
+                                  child: state.status == ApiCallState.failure
+                                      ? EmptyStateWidget(
+                                          title: AppStrings.unableToLoadFeed,
+                                          subtitle:
+                                              state.message ??
+                                              'Something went wrong. Please pull down to refresh or try again later.',
+                                          btnText: AppStrings.retry,
+                                          onPressed: () {
+                                            context.read<FeedBloc>().add(
+                                              const FetchFeedRequested(
+                                                refresh: true,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : EmptyStateWidget(
+                                          title: AppStrings.noPostsYet,
+                                          showButton: false,
+                                          subtitle:
+                                              "Tap on the create post button to add a new post.",
+                                          // ignore: lines_longer_than_80_chars
+                                        ),
+                                )
+                              : ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: EdgeInsets.fromLTRB(
+                                    20.w,
+                                    12.h,
+                                    20.w,
+                                    96.h,
+                                  ),
+                                  itemCount: state.posts.length,
+                                  itemBuilder: (context, index) {
+                                    final post = state.posts[index];
+                                    final currentUser = sharedPrefGetUser();
+                                    final isLiked =
+                                        currentUser != null &&
+                                        post.reactions.any(
+                                          (r) => r.userId == currentUser.id,
+                                        );
+
+                                    return PostCardWidget(
+                                      post: post,
+                                      onLikeTap: () {
+                                        if (isLiked) {
+                                          context.read<PostActionBloc>().add(
+                                            UnlikePostRequested(post.id),
+                                          );
+                                        } else {
+                                          context.read<PostActionBloc>().add(
+                                            LikePostRequested(post.id),
+                                          );
+                                        }
+                                      },
+                                      onReactTap: (reaction) {
+                                        context.read<PostActionBloc>().add(
+                                          ReactToPostRequested(
+                                            post.id,
+                                            reaction,
                                           ),
                                         );
                                       },
-                                    )
-                                  : EmptyStateWidget(
-                                      title: AppStrings.noPostsYet,
-                                      showButton: false,
-                                      subtitle:
-                                          "Tap on the create post button to add a new post.",
-                                      // ignore: lines_longer_than_80_chars
-                                    ),
-                            )
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.fromLTRB(
-                                20.w,
-                                12.h,
-                                20.w,
-                                96.h,
-                              ),
-                              itemCount: state.posts.length,
-                              itemBuilder: (context, index) {
-                                final post = state.posts[index];
-                                final currentUser = sharedPrefGetUser();
-                                final isLiked =
-                                    currentUser != null &&
-                                    post.reactions.any(
-                                      (r) => r.userId == currentUser.id,
-                                    );
-
-                                return PostCardWidget(
-                                  post: post,
-                                  onLikeTap: () {
-                                    if (isLiked) {
-                                      context.read<PostActionBloc>().add(
-                                        UnlikePostRequested(post.id),
-                                      );
-                                    } else {
-                                      context.read<PostActionBloc>().add(
-                                        LikePostRequested(post.id),
-                                      );
-                                    }
-                                  },
-                                  onReactTap: (reaction) {
-                                    context.read<PostActionBloc>().add(
-                                      ReactToPostRequested(post.id, reaction),
+                                      onCommentTap: () {
+                                        callNextScreenWithResult(
+                                          context,
+                                          PostDetailScreen(post: post),
+                                        ).then((result) {
+                                          if (!context.mounted) return;
+                                          context.read<FeedBloc>().add(
+                                            const FetchFeedRequested(
+                                              refresh: true,
+                                            ),
+                                          );
+                                        });
+                                      },
+                                      onBodyTap: () {
+                                        callNextScreenWithResult(
+                                          context,
+                                          PostDetailScreen(post: post),
+                                        ).then((result) {
+                                          if (!context.mounted) return;
+                                          context.read<FeedBloc>().add(
+                                            const FetchFeedRequested(
+                                              refresh: true,
+                                            ),
+                                          );
+                                        });
+                                      },
+                                      onPollOptionTap: (optionId) {
+                                        context.read<PostActionBloc>().add(
+                                          VotePollRequested(post.id, optionId),
+                                        );
+                                      },
+                                      onMoreTap: () {
+                                        _showPostOptions(context, post);
+                                      },
                                     );
                                   },
-                                  onCommentTap: () {
-                                    callNextScreenWithResult(
-                                      context,
-                                      PostDetailScreen(post: post),
-                                    ).then((result) {
-                                      if (!context.mounted) return;
-                                      context.read<FeedBloc>().add(
-                                        const FetchFeedRequested(refresh: true),
-                                      );
-                                    });
-                                  },
-                                  onBodyTap: () {
-                                    callNextScreenWithResult(
-                                      context,
-                                      PostDetailScreen(post: post),
-                                    ).then((result) {
-                                      if (!context.mounted) return;
-                                      context.read<FeedBloc>().add(
-                                        const FetchFeedRequested(refresh: true),
-                                      );
-                                    });
-                                  },
-                                  onPollOptionTap: (optionId) {
-                                    context.read<PostActionBloc>().add(
-                                      VotePollRequested(post.id, optionId),
-                                    );
-                                  },
-                                  onMoreTap: () {
-                                    _showPostOptions(context, post);
-                                  },
-                                );
-                              },
-                            ),
-                    );
-                  },
+                                ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            floatingActionButton: Padding(
+              padding: EdgeInsets.only(bottom: 105.h),
+              child: FloatingActionButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50.h),
+                ),
+                onPressed: () {
+                  _showCategoryPicker(context);
+                },
+                backgroundColor: AppColors.secondary,
+                elevation: 4,
+                child: CustomImageView(
+                  imagePath: AppAssets.icAdd,
+                  color: AppColors.white,
+                  height: 16.r,
+                  width: 16.r,
                 ),
               ),
-            ],
-          ),
-        ),
-        floatingActionButton: Padding(
-          padding: EdgeInsets.only(bottom: 75.h),
-          child: FloatingActionButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50.h),
             ),
-            onPressed: () {
-              _showCategoryPicker(context);
-            },
-            backgroundColor: AppColors.secondary,
-            elevation: 4,
-            child: CustomImageView(
-              imagePath: AppAssets.icAdd,
-              color: AppColors.white,
-              height: 16.r,
-              width: 16.r,
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final user = sharedPrefGetUser();
-
+  PreferredSizeWidget _buildAppBar(BuildContext context, UserProfile? user) {
     return CommonAppBar(
       backgroundColor: AppColors.white,
       showBackButton: false,
@@ -282,8 +297,11 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildFeedModeToggle(FeedState state, BuildContext context) {
-    final user = sharedPrefGetUser();
+  Widget _buildFeedModeToggle(
+    FeedState state,
+    BuildContext context,
+    UserProfile? user,
+  ) {
     final localityName = user?.location?.locality?.name ?? 'My Area';
 
     return Container(

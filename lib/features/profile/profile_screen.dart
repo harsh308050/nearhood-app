@@ -19,11 +19,14 @@ import 'package:nearhood/features/profile/bloc/profile_feed_event.dart';
 import 'package:nearhood/features/profile/bloc/profile_feed_state.dart';
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/features/profile/edit_profile_screen.dart';
+import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
+import 'package:nearhood/features/auth/bloc/auth_event.dart';
+import 'package:nearhood/features/auth/bloc/auth_state.dart';
 
 // Height of the expanded (column) profile header
-const double _kExpandedHeaderHeight = 180.0;
+double get _expandedHeaderHeight => 185.h;
 // Height of the collapsed (row) profile header
-const double _kCollapsedHeaderHeight = 72.0;
+double get _collapsedHeaderHeight => 72.h;
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -73,6 +76,9 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchPosts(_tabs[0].mode);
+      if (mounted) {
+        context.read<AuthBloc>().add(GetProfileRequested());
+      }
     });
   }
 
@@ -99,25 +105,39 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PostActionBloc, PostActionState>(
-      listener: (context, state) {
-        if (state.status == ApiCallState.success) {
-          if (state.actionType == 'delete') {
-            AppSnackBar.showMessage(
-              context,
-              AppStrings.postDeletedSuccessfully,
-              borderColor: AppColors.green,
-            );
-            _fetchPosts(_tabs[_tabController.index].mode);
-          }
-        } else if (state.status == ApiCallState.failure) {
-          AppSnackBar.showMessage(
-            context,
-            state.message ?? 'Action failed',
-            borderColor: AppColors.red,
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<PostActionBloc, PostActionState>(
+          listener: (context, state) {
+            if (state.status == ApiCallState.success) {
+              if (state.actionType == 'delete') {
+                AppSnackBar.showMessage(
+                  context,
+                  AppStrings.postDeletedSuccessfully,
+                  borderColor: AppColors.green,
+                );
+                _fetchPosts(_tabs[_tabController.index].mode);
+              }
+            } else if (state.status == ApiCallState.failure) {
+              AppSnackBar.showMessage(
+                context,
+                state.message ?? 'Action failed',
+                borderColor: AppColors.red,
+              );
+            }
+          },
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state.status == ApiCallState.success &&
+                state.userProfile != null) {
+              setState(() {
+                user = state.userProfile;
+              });
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: CustomScrollView(
@@ -420,8 +440,8 @@ class _AnimatedProfileHeader extends StatelessWidget {
 
     // Interpolated values
     final double headerHeight = lerpDouble(
-      _kExpandedHeaderHeight + topPadding,
-      _kCollapsedHeaderHeight + topPadding,
+      _expandedHeaderHeight + topPadding,
+      _collapsedHeaderHeight + topPadding,
       progress,
     )!;
 
@@ -440,9 +460,9 @@ class _AnimatedProfileHeader extends StatelessWidget {
     )!;
 
     // Avatar vertical position: center in expanded area → center in collapsed bar
-    final double avatarTopExpanded = topPadding + 20.h;
+    final double avatarTopExpanded = topPadding + 15.h;
     final double avatarTopCollapsed =
-        topPadding + (_kCollapsedHeaderHeight - avatarSize.r) / 2;
+        topPadding + (_collapsedHeaderHeight - avatarSize.r) / 2;
     final double avatarTop = lerpDouble(
       avatarTopExpanded,
       avatarTopCollapsed,
@@ -686,13 +706,13 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent =>
-      _kCollapsedHeaderHeight +
+      _collapsedHeaderHeight +
       MediaQuery.of(context).padding.top +
       tabBar.preferredSize.height;
 
   @override
   double get maxExtent =>
-      _kExpandedHeaderHeight +
+      _expandedHeaderHeight +
       MediaQuery.of(context).padding.top +
       tabBar.preferredSize.height;
 
@@ -703,7 +723,7 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final scrollDelta = _kExpandedHeaderHeight - _kCollapsedHeaderHeight;
+    final scrollDelta = _expandedHeaderHeight - _collapsedHeaderHeight;
     final progress = (shrinkOffset / scrollDelta).clamp(0.0, 1.0);
     final currentHeight = (maxExtent - shrinkOffset).clamp(
       minExtent,
@@ -726,14 +746,14 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
 
           // Custom back button - visible only when scrolled up
           Positioned(
-            top: topPadding + (_kCollapsedHeaderHeight - 32.h) / 2,
+            top: topPadding + (_collapsedHeaderHeight - 32.h) / 2,
             left: 16.w,
             child: CustomBackButton(screenContext: context),
           ),
 
           // Edit button - always visible on the top right
           Positioned(
-            top: topPadding + (_kCollapsedHeaderHeight - 32.h) / 2,
+            top: topPadding + (_collapsedHeaderHeight - 35.h) / 2,
             right: 16.w,
             child: CustomButton(
               onPressed: onEditPressed,
