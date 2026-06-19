@@ -47,3 +47,11 @@ UserProfile? sharedPrefGetUser() {
   }
   return null;
 }
+
+/// Returns the Firebase ID token stored after login, or null if not logged in.
+/// Uses the cached UserProfile to determine login state; actual bearer tokens
+/// are fetched fresh from FirebaseAuth at request time, so this just checks
+/// whether a user session exists.
+bool sharedPrefIsLoggedIn() {
+  return sharedPrefGetUser() != null;
+}

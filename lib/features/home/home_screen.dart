@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/features/post/data/post_datasource.dart';
 import 'package:nearhood/features/post/data/post_repository.dart';
@@ -7,8 +9,13 @@ import 'package:nearhood/features/home/bloc/feed_bloc.dart';
 import 'package:nearhood/features/home/bloc/feed_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
 import 'package:nearhood/core/services/deeplink_service.dart';
+import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 import 'package:nearhood/common_widget/profile_drawer.dart';
+import 'package:nearhood/core/theme/app_colors.dart';
+import 'package:nearhood/core/theme/app_typography.dart';
+import 'package:nearhood/features/notifications/screens/notification_screen.dart';
+import 'package:nearhood/features/notifications/data/notification_datasource.dart';
 
 import 'package:nearhood/features/home/screens/homepage.dart';
 import 'package:nearhood/features/explore/explore_screen.dart';
@@ -49,34 +56,121 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
   int _bottomNavIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late final List<Widget> _screens;
+  final NotificationDataSource _notificationDataSource =
+      NotificationDataSource();
+  int _unreadNotificationCount = 0;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
   void initState() {
     super.initState();
-    _screens = [
-      Homepage(onProfileTap: () => _scaffoldKey.currentState?.openEndDrawer()),
-      const ExploreScreen(),
-      const ChatScreen(),
-      const MarketScreen(),
-    ];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (DeepLinkService.pendingPostId != null) {
-        final postId = DeepLinkService.pendingPostId!;
-        DeepLinkService.pendingPostId = null;
-        callNextScreen(context, PostDetailScreen(postId: postId));
+    _fcmSubscription = FCMService().onMessage.listen((message) {
+      _loadUnreadCount();
+      if (message.data['type'] == 'NEW_POST') {
+        if (mounted) {
+          context.read<FeedBloc>().add(const FetchFeedRequested(refresh: true));
+        }
       }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleDeepLink();
+      _initNotifications();
+      _loadUnreadCount();
     });
   }
 
   @override
+  void dispose() {
+    _fcmSubscription?.cancel();
+    super.dispose();
+  }
+
+  // ── Load unread notification count ────────────────────────────────────────
+  Future<void> _loadUnreadCount() async {
+    final count = await _notificationDataSource.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadNotificationCount = count;
+      });
+    }
+  }
+
+  // ── Navigate to notification screen ───────────────────────────────────────
+  void _openNotifications() async {
+    await callNextScreenWithResult(context, const NotificationScreen());
+    // Reload count when returning from notification screen
+    _loadUnreadCount();
+  }
+
+  // ── Deep link ────────────────────────────────────────────────────────────
+  void _handleDeepLink() {
+    if (DeepLinkService.pendingPostId != null) {
+      final postId = DeepLinkService.pendingPostId!;
+      DeepLinkService.pendingPostId = null;
+      callNextScreen(context, PostDetailScreen(postId: postId));
+    }
+  }
+
+  // ── Notification permission + token registration ──────────────────────────
+  Future<void> _initNotifications() async {
+    final fcm = FCMService();
+
+    // Check if we already have permission; if not, ask once.
+    final alreadyGranted = await fcm.isPermissionGranted();
+    if (!alreadyGranted) {
+      // Small delay so the home feed has a moment to render first —
+      // the permission dialog appears in context, not at a blank splash.
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
+
+      final granted = await fcm.requestPermission();
+      if (!mounted) return;
+
+      if (!granted) {
+        // Show a gentle nudge banner so the user knows they missed it.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Enable notifications to get alerts from your neighborhood.',
+            ),
+            action: SnackBarAction(
+              label: 'Enable',
+              onPressed: () async {
+                await fcm.requestPermission();
+                await fcm.registerAfterLogin();
+              },
+            ),
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
+    // Permission is granted — register the FCM token with the backend.
+    await fcm.registerAfterLogin();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screens = [
+      Homepage(
+        onProfileTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+        onNotificationTap: _openNotifications,
+        unreadNotificationCount: _unreadNotificationCount,
+      ),
+      const ExploreScreen(),
+      const ChatScreen(),
+      const MarketScreen(),
+    ];
+
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
       backgroundColor: AppColors.background,
       endDrawer: const ProfileDrawer(),
-      body: IndexedStack(index: _bottomNavIndex, children: _screens),
+      body: IndexedStack(index: _bottomNavIndex, children: screens),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -85,7 +179,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
     return SafeArea(
       bottom: true,
       child: Container(
-        margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
+        margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 10.h),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30.r),
           boxShadow: [
@@ -204,8 +298,14 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
     return Expanded(
       child: Tooltip(
         message: label,
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        textStyle: AppTypography.buttonLabel.copyWith(fontSize: 12.sp),
         preferBelow: false,
-        verticalOffset: 24.h,
+        verticalOffset: 30.h,
+        decoration: BoxDecoration(
+          color: AppColors.grey,
+          borderRadius: BorderRadius.circular(100.h),
+        ),
         triggerMode: TooltipTriggerMode.longPress,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,

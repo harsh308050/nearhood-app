@@ -22,8 +22,15 @@ import 'package:nearhood/features/post/data/models/post_model.dart';
 
 class Homepage extends StatefulWidget {
   final VoidCallback? onProfileTap;
+  final VoidCallback? onNotificationTap;
+  final int unreadNotificationCount;
 
-  const Homepage({super.key, this.onProfileTap});
+  const Homepage({
+    super.key,
+    this.onProfileTap,
+    this.onNotificationTap,
+    this.unreadNotificationCount = 0,
+  });
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -233,7 +240,9 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             floatingActionButton: Padding(
-              padding: EdgeInsets.only(bottom: 105.h),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom,
+              ),
               child: FloatingActionButton(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50.h),
@@ -270,16 +279,51 @@ class _HomepageState extends State<Homepage> {
       actionButton: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: CustomImageView(
-              imagePath: AppAssets.icNotification,
-              color: AppColors.darkGrey,
-              height: 22.r,
-              width: 22.r,
-            ),
-            onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          // Notification icon with badge
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: CustomImageView(
+                  imagePath: AppAssets.icNotification,
+                  color: AppColors.darkGrey,
+                  height: 22.r,
+                  width: 22.r,
+                ),
+                onPressed: widget.onNotificationTap,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              // Unread badge
+              if (widget.unreadNotificationCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    width: widget.unreadNotificationCount > 99 ? 20.w : 18.w,
+                    height: 18.h,
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.red,
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(color: AppColors.white, width: 1.5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.unreadNotificationCount > 99
+                            ? '99+'
+                            : widget.unreadNotificationCount.toString(),
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           sw(12),
           GestureDetector(
@@ -401,9 +445,9 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  void _showCategoryPicker(BuildContext context) {
+  void _showCategoryPicker(BuildContext context) async {
     final feedBloc = context.read<FeedBloc>();
-    showModalBottomSheet(
+    final selectedCategory = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -412,6 +456,16 @@ class _HomepageState extends State<Homepage> {
         child: const CategoryPickerSheet(),
       ),
     );
+
+    if (selectedCategory != null && context.mounted) {
+      final result = await callNextScreenWithResult(
+        context,
+        CreatePostScreen(category: selectedCategory),
+      );
+      if (result == true && context.mounted) {
+        feedBloc.add(const FetchFeedRequested(refresh: true));
+      }
+    }
   }
 
   void _showPostOptions(BuildContext context, PostModel post) {

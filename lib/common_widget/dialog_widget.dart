@@ -135,9 +135,10 @@ class DialogWidget extends StatelessWidget {
                             text: negativeLabel ?? 'Cancel',
                             onPressed:
                                 negativeTap ?? () => Navigator.pop(context),
-                            height: 56.h,
+                            height: 50.h,
                             textStyle: AppTypography.buttonLabel.copyWith(
                               color: AppColors.grey,
+                              fontSize: 16.sp,
                             ),
                             borderRadius: 100.r,
                             borderColor: AppColors.borderLight,
@@ -152,10 +153,12 @@ class DialogWidget extends StatelessWidget {
                           child: CustomButton.filled(
                             text: positiveLabel!,
                             onPressed: positiveTap,
-                            height: 56.h,
+                            height: 50.h,
                             borderRadius: 100.r,
                             glowIntensity: 0.2,
-                            textStyle: AppTypography.buttonLabel,
+                            textStyle: AppTypography.buttonLabel.copyWith(
+                              fontSize: 16.sp,
+                            ),
                             backgroundColor: positiveBackgroundColor,
                             textColor: positiveTextColor,
                           ),
@@ -169,7 +172,7 @@ class DialogWidget extends StatelessWidget {
                     CustomButton.filled(
                       text: positiveLabel!,
                       onPressed: positiveTap,
-                      height: 56.h,
+                      height: 50.h,
                       backgroundColor: positiveBackgroundColor,
                       textColor: positiveTextColor,
                     ),

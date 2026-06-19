@@ -74,6 +74,8 @@ class EmptyStateWidget extends StatelessWidget {
                 child:
                     illustration ??
                     CustomImageView(
+                      height: 150.h,
+                      width: 150.h,
                       imagePath: illustrationPath,
                       fit: BoxFit.fill,
                     ),

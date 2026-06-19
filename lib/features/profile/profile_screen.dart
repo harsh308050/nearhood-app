@@ -341,13 +341,11 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    Navigator.push(
+                    callNextScreenWithResult(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => CreatePostScreen(
-                          category: post.category,
-                          postToEdit: post,
-                        ),
+                      CreatePostScreen(
+                        category: post.category,
+                        postToEdit: post,
                       ),
                     ).then((updated) {
                       if (updated == true) {

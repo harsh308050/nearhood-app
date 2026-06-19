@@ -4,6 +4,17 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
+	<!-- Allow Firebase to swizzle AppDelegate methods for APNs token forwarding -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+
+	<!-- Background execution modes required for FCM data messages (silent push) -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to automatically find your neighborhood.</string>
 	<key>CFBundleDevelopmentRegion</key>

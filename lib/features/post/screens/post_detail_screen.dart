@@ -113,6 +113,28 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     });
   }
 
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Safety Alert':
+        return AppColors.red;
+      case 'Question':
+        return AppColors.primaryBlue;
+      case 'Lost & Found':
+        return const Color(0xFFFF9800); // Orange
+      case 'For Sale':
+        return const Color(0xFF4CAF50); // Green
+      case 'Event':
+        return const Color(0xFF9C27B0); // Purple
+      case 'Recommendation':
+        return const Color(0xFF00BCD4); // Cyan
+      case 'Local News':
+        return const Color(0xFFE65100); // News color
+      case 'General':
+      default:
+        return AppColors.grey;
+    }
+  }
+
   Future<void> _loadPostDetails() async {
     final postRepository = PostRepository(dataSource: PostRemoteDataSource());
     final result = await postRepository.getPostDetails(_currentPost.id);
@@ -871,51 +893,61 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Flexible(
-                                child: CustomText(
-                                  authorName,
-                                  style: AppTypography.cardTitle.copyWith(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: CustomText(
+                                        authorName,
+                                        style: AppTypography.cardTitle.copyWith(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isVerified) ...[
+                                      sw(4),
+                                      Icon(
+                                        Icons.verified,
+                                        color: _currentPost.author?.role == 'system'
+                                            ? const Color(0xFFFFD700)
+                                            : AppColors.primaryBlue,
+                                        size: 16.r,
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
-                              if (isVerified) ...[
-                                sw(4),
-                                Icon(
-                                  Icons.verified,
-                                  color: AppColors.primaryBlue,
-                                  size: 16.r,
-                                ),
-                              ],
-                              if (_currentPost.category == 'Safety Alert') ...[
-                                sw(6),
+                              if (_currentPost.category.isNotEmpty)
                                 Container(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: 6.w,
+                                    horizontal: 9.w,
                                     vertical: 2.h,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF5F5),
-                                    borderRadius: BorderRadius.circular(4.r),
+                                    color: _getCategoryColor(
+                                      _currentPost.category,
+                                    ).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(100.r),
                                     border: Border.all(
-                                      color: AppColors.red.withValues(
-                                        alpha: 0.2,
-                                      ),
+                                      color: _getCategoryColor(
+                                        _currentPost.category,
+                                      ).withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: CustomText(
-                                    'Alert',
-                                    style: AppTypography.overline.copyWith(
-                                      color: AppColors.red,
-                                      fontSize: 9.sp,
+                                    _currentPost.category,
+                                    style: AppTypography.bodyText.copyWith(
+                                      color: _getCategoryColor(_currentPost.category),
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                              ],
                             ],
                           ),
                           sh(2),
@@ -1655,13 +1687,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    Navigator.push(
+                    callNextScreenWithResult(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => CreatePostScreen(
-                          category: _currentPost.category,
-                          postToEdit: _currentPost,
-                        ),
+                      CreatePostScreen(
+                        category: _currentPost.category,
+                        postToEdit: _currentPost,
                       ),
                     ).then((updated) {
                       if (updated == true && context.mounted) {

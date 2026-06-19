@@ -192,7 +192,9 @@ class PostCardWidget extends StatelessWidget {
                                     sw(4),
                                     Icon(
                                       Icons.verified,
-                                      color: AppColors.primaryBlue,
+                                      color: post.author?.role == 'system'
+                                          ? const Color(0xFFFFD700)
+                                          : AppColors.primaryBlue,
                                       size: 16.r,
                                     ),
                                   ],

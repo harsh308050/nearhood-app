@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
-import 'package:nearhood/features/post/screens/create_post_screen.dart';
-import 'package:nearhood/features/home/bloc/feed_bloc.dart';
-import 'package:nearhood/features/home/bloc/feed_event.dart';
 
 class CategoryPickerSheet extends StatelessWidget {
   const CategoryPickerSheet({super.key});
@@ -91,7 +86,10 @@ class CategoryPickerSheet extends StatelessWidget {
           sh(4),
           CustomText(
             AppStrings.whatWouldYouLikeToShare,
-            style: AppTypography.bodyText.copyWith(color: AppColors.grey, fontSize: 15.sp),
+            style: AppTypography.bodyText.copyWith(
+              color: AppColors.grey,
+              fontSize: 15.sp,
+            ),
           ),
           sh(24),
           Flexible(
@@ -102,23 +100,14 @@ class CategoryPickerSheet extends StatelessWidget {
                 runSpacing: 24.h,
                 alignment: WrapAlignment.center,
                 children: _categories.map((cat) {
-                  final feedBloc = context.read<FeedBloc>();
                   return GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CreatePostScreen(category: cat['name']),
-                        ),
-                      ).then((result) {
-                        if (result == true) {
-                          feedBloc.add(const FetchFeedRequested(refresh: true));
-                        }
-                      });
+                      Navigator.pop(context, cat['name']);
                     },
                     child: SizedBox(
-                      width: (MediaQuery.of(context).size.width - 48.w - 48.w) / 3, // 3 columns
+                      width:
+                          (MediaQuery.of(context).size.width - 48.w - 48.w) /
+                          3, // 3 columns
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -142,7 +131,9 @@ class CategoryPickerSheet extends StatelessWidget {
                           CustomText(
                             cat['name'],
                             style: AppTypography.caption.copyWith(
-                              color: cat['name'] == AppStrings.safetyAlert ? AppColors.red : AppColors.darkGrey,
+                              color: cat['name'] == AppStrings.safetyAlert
+                                  ? AppColors.red
+                                  : AppColors.darkGrey,
                               fontSize: 12.sp,
                             ),
                             textAlign: TextAlign.center,
