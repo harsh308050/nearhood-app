@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiUrls {
-  final String baseUrl = dotenv.env['DEV_URL']!;
+  final String baseUrl = dotenv.env['BASE_URL']!;
 
   String get health => '$baseUrl/health';
 
