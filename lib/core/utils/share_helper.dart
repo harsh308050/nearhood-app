@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
+import 'package:nearhood/core/network/api_urls.dart';
 
-final String apiBaseUrl =
-    dotenv.env['BASE_URL'] ?? 'https://nearhood-api.onrender.com/api';
-final String cleanBaseUrl = apiBaseUrl.replaceAll('/api', '');
+final String cleanBaseUrl = ApiUrls().baseUrl.replaceAll('/api', '');
 void sharePost(PostModel post) {
   final String shareUrl = '$cleanBaseUrl/share/posts/${post.id}';
 

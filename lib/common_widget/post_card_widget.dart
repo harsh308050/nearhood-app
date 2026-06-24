@@ -190,12 +190,11 @@ class PostCardWidget extends StatelessWidget {
                                   ),
                                   if (isVerified) ...[
                                     sw(4),
-                                    Icon(
-                                      Icons.verified,
-                                      color: post.author?.role == 'system'
-                                          ? const Color(0xFFFFD700)
-                                          : AppColors.primaryBlue,
-                                      size: 16.r,
+                                    CustomImageView(
+                                      imagePath: AppAssets.icVerified,
+                                      height: 14.r,
+                                      width: 14.r,
+                                      color: AppColors.primaryBlue,
                                     ),
                                   ],
                                 ],

@@ -19,6 +19,9 @@ import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
 import 'package:nearhood/features/post/bloc/post_action_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_state.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
+import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
+import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
+import 'package:nearhood/features/chat/models/chat_user.dart';
 
 class Homepage extends StatefulWidget {
   final VoidCallback? onProfileTap;
@@ -244,6 +247,7 @@ class _HomepageState extends State<Homepage> {
                 bottom: MediaQuery.of(context).padding.bottom,
               ),
               child: FloatingActionButton(
+                heroTag: 'home_fab',
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50.h),
                 ),
@@ -348,6 +352,10 @@ class _HomepageState extends State<Homepage> {
   ) {
     final localityName = user?.location?.locality?.name ?? 'My Area';
 
+    int selectedIndex = 0;
+    if (state.mode == 'nearby') selectedIndex = 1;
+    if (state.mode == 'city') selectedIndex = 2;
+
     return Container(
       color: AppColors.white,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -358,42 +366,81 @@ class _HomepageState extends State<Homepage> {
           borderRadius: BorderRadius.circular(100.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: Row(
-          children: [
-            _buildSegmentTab(
-              label: localityName,
-              isSelected: state.mode == 'myarea',
-              onTap: () {
-                if (state.mode != 'myarea') {
-                  context.read<FeedBloc>().add(
-                    const FetchFeedRequested(mode: 'myarea', refresh: true),
-                  );
-                }
-              },
-            ),
-            _buildSegmentTab(
-              label: AppStrings.nearby,
-              isSelected: state.mode == 'nearby',
-              onTap: () {
-                if (state.mode != 'nearby') {
-                  context.read<FeedBloc>().add(
-                    const FetchFeedRequested(mode: 'nearby', refresh: true),
-                  );
-                }
-              },
-            ),
-            _buildSegmentTab(
-              label: AppStrings.city,
-              isSelected: state.mode == 'city',
-              onTap: () {
-                if (state.mode != 'city') {
-                  context.read<FeedBloc>().add(
-                    const FetchFeedRequested(mode: 'city', refresh: true),
-                  );
-                }
-              },
-            ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double barWidth = constraints.maxWidth;
+            final double cellWidth = barWidth / 3;
+            final double capsuleWidth = cellWidth - 4.r;
+            final double capsuleHeight = 40.h - 4.r - 2.w; // account for border
+
+            return Stack(
+              children: [
+                // Animated sliding background capsule
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOutCubic,
+                  left: (selectedIndex * cellWidth) + 2.r,
+                  top: 2.r - 1.w,
+                  width: capsuleWidth,
+                  height: capsuleHeight,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(100.r),
+                    ),
+                  ),
+                ),
+
+                // Row of tabs
+                Row(
+                  children: [
+                    _buildSegmentTab(
+                      label: localityName,
+                      isSelected: state.mode == 'myarea',
+                      onTap: () {
+                        if (state.mode != 'myarea') {
+                          context.read<FeedBloc>().add(
+                            const FetchFeedRequested(
+                              mode: 'myarea',
+                              refresh: true,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    _buildSegmentTab(
+                      label: AppStrings.nearby,
+                      isSelected: state.mode == 'nearby',
+                      onTap: () {
+                        if (state.mode != 'nearby') {
+                          context.read<FeedBloc>().add(
+                            const FetchFeedRequested(
+                              mode: 'nearby',
+                              refresh: true,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    _buildSegmentTab(
+                      label: AppStrings.city,
+                      isSelected: state.mode == 'city',
+                      onTap: () {
+                        if (state.mode != 'city') {
+                          context.read<FeedBloc>().add(
+                            const FetchFeedRequested(
+                              mode: 'city',
+                              refresh: true,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -408,12 +455,11 @@ class _HomepageState extends State<Homepage> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(100.r),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           alignment: Alignment.center,
           margin: EdgeInsets.all(2.r),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryBlue : AppColors.transparent,
+            color: AppColors.transparent,
             borderRadius: BorderRadius.circular(100.r),
           ),
           child: Padding(
@@ -435,9 +481,6 @@ class _HomepageState extends State<Homepage> {
               fadedBorder: isSelected,
               fadedBorderWidth: 0.1,
               fadeBorderSide: FadeBorderSide.right,
-              // padding: isSelected
-              //     ? EdgeInsets.only(left: 6.w, right: 6.w)
-              //     : EdgeInsets.zero,
             ),
           ),
         ),
@@ -466,6 +509,23 @@ class _HomepageState extends State<Homepage> {
         feedBloc.add(const FetchFeedRequested(refresh: true));
       }
     }
+  }
+
+  void _startConversation(BuildContext context, dynamic author) {
+    final chatUser = ChatUser(
+      id: author.id,
+      fullName: author.fullName ?? 'Neighbor',
+      profilePhotoUrl: author.profilePhotoUrl ?? '',
+      isVerified: author.isVerified ?? false,
+      locality: author.location?.locality?.name ?? '',
+    );
+    callNextScreenBuilder(
+      context,
+      (ctx) => BlocProvider(
+        create: (_) => ChatBloc(),
+        child: ChatDetailScreen(receiverId: author.id, otherUser: chatUser),
+      ),
+    );
   }
 
   void _showPostOptions(BuildContext context, PostModel post) {
@@ -604,7 +664,24 @@ class _HomepageState extends State<Homepage> {
                 },
               ),
 
-              if (!isOwnPost)
+              if (!isOwnPost) ...[
+                ListTile(
+                  leading: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: AppColors.primaryBlue,
+                  ),
+                  title: CustomText(
+                    AppStrings.startConversation,
+                    style: AppTypography.cardTitle.copyWith(
+                      color: AppColors.darkGrey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _startConversation(context, post.author!);
+                  },
+                ),
                 ListTile(
                   leading: const Icon(
                     Icons.flag_outlined,
@@ -622,6 +699,7 @@ class _HomepageState extends State<Homepage> {
                     _showReportDialog(context);
                   },
                 ),
+              ],
 
               if (isOwnPost)
                 ListTile(

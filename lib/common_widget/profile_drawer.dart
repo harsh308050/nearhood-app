@@ -4,6 +4,7 @@ import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/features/getstarted/getstarted_screen.dart';
 import 'package:nearhood/features/profile/profile_screen.dart';
+import 'package:nearhood/features/chat/services/socket_service.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -57,10 +58,11 @@ class ProfileDrawer extends StatelessWidget {
                             ),
                             if (user?.isVerified == true) ...[
                               sw(4),
-                              Icon(
-                                Icons.verified,
+                              CustomImageView(
+                                imagePath: AppAssets.icVerified,
+                                height: 14.r,
+                                width: 14.r,
                                 color: AppColors.primaryBlue,
-                                size: 16.r,
                               ),
                             ],
                           ],
@@ -169,7 +171,6 @@ class ProfileDrawer extends StatelessWidget {
               child: CustomButton.outlined(
                 text: 'Logout',
                 onPressed: () {
-                  Navigator.pop(context);
                   _showLogoutDialog(context);
                 },
                 leading: CustomImageView(
@@ -249,6 +250,7 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   Future<void> _performLogout(BuildContext context) async {
+    final navigator = Navigator.of(context);
     try {
       // Show loading indicator
       showDialog(
@@ -259,6 +261,9 @@ class ProfileDrawer extends StatelessWidget {
         ),
       );
 
+      // Reset socket to clear session info and avoid lingering listeners
+      SocketService().reset();
+
       // Clear shared preferences
       await sharedPrefClearAllData();
 
@@ -266,19 +271,21 @@ class ProfileDrawer extends StatelessWidget {
       await FirebaseAuth.instance.signOut();
 
       // Close loading dialog
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
+      navigator.pop();
 
       // Navigate to GetStarted screen and clear stack
-      if (context.mounted) {
-        callNextScreenAndClearStack(context, const GetstartedScreen());
-      }
+      navigator.pushAndRemoveUntil(
+        CustomPageRoute(
+          page: const GetstartedScreen(),
+          transitionType: PageTransitionType.fade,
+        ),
+        (_) => false,
+      );
     } catch (e) {
       // Close loading dialog if still open
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
+      try {
+        navigator.pop();
+      } catch (_) {}
 
       // Show error message
       if (context.mounted) {

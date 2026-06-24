@@ -508,10 +508,11 @@ class _AnimatedProfileHeader extends StatelessWidget {
                       ),
                       if (user?.isVerified == true) ...[
                         sw(2),
-                        Icon(
-                          Icons.verified,
+                        CustomImageView(
+                          imagePath: AppAssets.icVerified,
+                          height: 14.r,
+                          width: 14.r,
                           color: AppColors.primaryBlue,
-                          size: 18.r,
                         ),
                       ],
                     ],
@@ -589,10 +590,11 @@ class _AnimatedProfileHeader extends StatelessWidget {
                       ),
                       if (user?.isVerified == true) ...[
                         sw(4),
-                        Icon(
-                          Icons.verified,
+                        CustomImageView(
+                          imagePath: AppAssets.icVerified,
+                          height: 14.r,
+                          width: 14.r,
                           color: AppColors.primaryBlue,
-                          size: 14.r,
                         ),
                       ],
                     ],

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
@@ -12,6 +11,7 @@ import 'package:nearhood/common_widget/shimmer_post_detail.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_metadata_widget.dart';
 import 'package:nearhood/common_widget/reactions_bottom_sheet.dart';
+import 'package:nearhood/common_widget/long_press_overlay_menu.dart';
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/features/post/data/models/comment_model.dart';
@@ -24,6 +24,9 @@ import 'package:nearhood/features/post/screens/create_post_screen.dart';
 import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
 import 'package:nearhood/features/post/bloc/post_action_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_state.dart';
+import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
+import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
+import 'package:nearhood/features/chat/models/chat_user.dart';
 
 class PostDetailScreen extends StatelessWidget {
   final PostModel? post;
@@ -287,7 +290,6 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   }) async {
     if (comment.isDeleted == true) return;
 
-    final double screenHeight = MediaQuery.of(context).size.height;
     final navigator = Navigator.of(context);
 
     var renderBox = cardContext.findRenderObject() as RenderBox?;
@@ -355,180 +357,69 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
         currentUser != null &&
         comment.reactions.any((r) => r.userId == currentUser.id);
 
-    final double menuHeight = (canPin && canDelete) ? 115.h : 60.h;
+    final menuItems = <OverlayMenuItem>[];
+    if (canPin) {
+      menuItems.add(OverlayMenuItem(
+        icon: comment.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+        label: comment.isPinned ? 'Unpin comment' : 'Pin comment',
+        color: comment.isPinned ? AppColors.primaryBlue : AppColors.darkGrey,
+        onTap: () {
+          context.read<CommentBloc>().add(
+            TogglePinCommentRequested(
+              postId: _currentPost.id,
+              commentId: comment.id,
+            ),
+          );
+        },
+      ));
+    }
+    if (canDelete) {
+      menuItems.add(OverlayMenuItem(
+        icon: Icons.delete_outline_rounded,
+        label: AppStrings.delete,
+        color: AppColors.red,
+        onTap: () => _initiateDelete(comment, parentCommentId),
+      ));
+    } else {
+      menuItems.add(OverlayMenuItem(
+        icon: Icons.flag_outlined,
+        label: 'Report',
+        color: AppColors.red,
+        onTap: () {
+          AppSnackBar.showMessage(context, 'Report submitted');
+        },
+      ));
+    }
 
-    // Check if there's enough room below the card for the menu
-    final bool showMenuBelow =
-        (position.dy + size.height + menuHeight + 20.h) < screenHeight;
-    final double menuTop = showMenuBelow
-        ? (position.dy + size.height - 8.h)
-        : (position.dy - menuHeight - 8.h);
-
-    navigator
-        .push(
-          RawDialogRoute(
-            barrierDismissible: true,
-            barrierLabel: 'dismiss',
-            barrierColor: Colors.black.withValues(alpha: 0.6),
-            transitionDuration: const Duration(milliseconds: 200),
-            pageBuilder: (dialogContext, anim1, anim2) {
-              return BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Scaffold(
-                  backgroundColor: Colors.transparent,
-                  body: Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(dialogContext),
-                        behavior: HitTestBehavior.opaque,
-                        child: const SizedBox.expand(),
-                      ),
-                      // Exact Positioned Comment Card
-                      Positioned(
-                        left: position.dx,
-                        top: position.dy,
-                        width: size.width,
-                        height: size.height,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: CommentCardWidget(
-                            authorName: comment.author?.fullName ?? 'Neighbor',
-                            imageUrl: comment.author?.profilePhotoUrl,
-                            isVerified: comment.author?.isVerified ?? false,
-                            isAreaLead: comment.author?.role == 'area_lead',
-                            timeAgo: formatTimeAgo(comment.createdAt),
-                            content: comment.content,
-                            likeCount: comment.reactions.length,
-                            isLiked: isCommentLiked,
-                            isReply: isReply,
-                            showReply: false,
-                            isPinned: comment.isPinned,
-                            showPin: false,
-                            showMenu: false,
-                            isHighlighted: true,
-                            onLikeTap: () {},
-                            onReplyTap: () {},
-                          ),
-                        ),
-                      ),
-                      // Positioned Actions Menu
-                      Positioned(
-                        right: position.dx,
-                        top: menuTop,
-                        width: isReply ? 160.w : 190.w,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(16.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.15),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16.r),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (canPin) ...[
-                                    ListTile(
-                                      leading: Icon(
-                                        comment.isPinned
-                                            ? Icons.push_pin
-                                            : Icons.push_pin_outlined,
-                                        color: comment.isPinned
-                                            ? AppColors.primaryBlue
-                                            : AppColors.darkGrey,
-                                      ),
-                                      title: CustomText(
-                                        comment.isPinned
-                                            ? 'Unpin comment'
-                                            : 'Pin comment',
-                                        style: AppTypography.bodyText.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: comment.isPinned
-                                              ? AppColors.primaryBlue
-                                              : AppColors.darkGrey,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(dialogContext);
-                                        context.read<CommentBloc>().add(
-                                          TogglePinCommentRequested(
-                                            postId: _currentPost.id,
-                                            commentId: comment.id,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    const Divider(
-                                      height: 1,
-                                      color: AppColors.borderLight,
-                                    ),
-                                  ],
-                                  if (canDelete) ...[
-                                    ListTile(
-                                      leading: const Icon(
-                                        Icons.delete_outline_rounded,
-                                        color: AppColors.red,
-                                      ),
-                                      title: CustomText(
-                                        AppStrings.delete,
-                                        style: AppTypography.bodyText.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.red,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(dialogContext);
-                                        _initiateDelete(
-                                          comment,
-                                          parentCommentId,
-                                        );
-                                      },
-                                    ),
-                                  ] else ...[
-                                    ListTile(
-                                      leading: const Icon(
-                                        Icons.flag_outlined,
-                                        color: AppColors.red,
-                                      ),
-                                      title: CustomText(
-                                        'Report',
-                                        style: AppTypography.bodyText.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.red,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(dialogContext);
-                                        AppSnackBar.showMessage(
-                                          context,
-                                          'Report submitted',
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        )
-        .then((_) {
-          if (_highlightedCommentId == comment.id) {
+    LongPressOverlayMenu.show(
+      context: context,
+      position: position,
+      size: size,
+      menuWidth: isReply ? 160 : 190,
+      menuBorderRadius: 16,
+      menuSpacing: 8,
+      menuRight: position.dx,
+      child: CommentCardWidget(
+        authorName: comment.author?.fullName ?? 'Neighbor',
+        imageUrl: comment.author?.profilePhotoUrl,
+        isVerified: comment.author?.isVerified ?? false,
+        isAreaLead: comment.author?.role == 'area_lead',
+        timeAgo: formatTimeAgo(comment.createdAt),
+        content: comment.content,
+        likeCount: comment.reactions.length,
+        isLiked: isCommentLiked,
+        isReply: isReply,
+        showReply: false,
+        isPinned: comment.isPinned,
+        showPin: false,
+        showMenu: false,
+        isHighlighted: true,
+        onLikeTap: () {},
+        onReplyTap: () {},
+      ),
+      menuItems: menuItems,
+    ).then((_) {
+      if (_highlightedCommentId == comment.id) {
             setState(() {
               _highlightedCommentId = null;
             });
@@ -911,12 +802,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                                     ),
                                     if (isVerified) ...[
                                       sw(4),
-                                      Icon(
-                                        Icons.verified,
-                                        color: _currentPost.author?.role == 'system'
-                                            ? const Color(0xFFFFD700)
-                                            : AppColors.primaryBlue,
-                                        size: 16.r,
+                                      CustomImageView(
+                                        imagePath: AppAssets.icVerified,
+                                        height: 14.r,
+                                        width: 14.r,
+                                        color: AppColors.primaryBlue,
                                       ),
                                     ],
                                   ],
@@ -942,7 +832,9 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                                   child: CustomText(
                                     _currentPost.category,
                                     style: AppTypography.bodyText.copyWith(
-                                      color: _getCategoryColor(_currentPost.category),
+                                      color: _getCategoryColor(
+                                        _currentPost.category,
+                                      ),
                                       fontSize: 11.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -1780,6 +1672,26 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                 },
               ),
 
+              // Start Conversation (only for other people's posts)
+              if (!isOwnPost)
+                ListTile(
+                  leading: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: AppColors.primaryBlue,
+                  ),
+                  title: CustomText(
+                    AppStrings.startConversation,
+                    style: AppTypography.cardTitle.copyWith(
+                      color: AppColors.darkGrey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _startConversation(context, _currentPost.author!);
+                  },
+                ),
+
               // Report Post (only for other people's posts)
               if (!isOwnPost)
                 ListTile(
@@ -1822,6 +1734,23 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _startConversation(BuildContext context, dynamic author) {
+    final chatUser = ChatUser(
+      id: author.id,
+      fullName: author.fullName ?? 'Neighbor',
+      profilePhotoUrl: author.profilePhotoUrl ?? '',
+      isVerified: author.isVerified ?? false,
+      locality: author.location?.locality?.name ?? '',
+    );
+    callNextScreenBuilder(
+      context,
+      (ctx) => BlocProvider(
+        create: (_) => ChatBloc(),
+        child: ChatDetailScreen(receiverId: author.id, otherUser: chatUser),
       ),
     );
   }

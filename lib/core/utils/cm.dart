@@ -182,6 +182,45 @@ void callReplaceScreen(
   );
 }
 
+/// Push a new screen using a builder function, allowing access to context.
+/// Useful for passing providers or values that require context.
+void callNextScreenBuilder(
+  BuildContext context,
+  Widget Function(BuildContext) builder, {
+  PageTransitionType transitionType = PageTransitionType.rightToLeft,
+}) {
+  Navigator.push(
+    context,
+    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+  );
+}
+
+/// Replace the current screen using a builder function.
+/// Useful for passing providers or values that require context.
+void callReplaceScreenBuilder(
+  BuildContext context,
+  Widget Function(BuildContext) builder, {
+  PageTransitionType transitionType = PageTransitionType.rightToLeft,
+}) {
+  Navigator.pushReplacement(
+    context,
+    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+  );
+}
+
+/// Push a new screen using a builder function and wait for a result.
+/// Useful for passing providers or values that require context.
+Future<T?> callNextScreenBuilderWithResult<T>(
+  BuildContext context,
+  Widget Function(BuildContext) builder, {
+  PageTransitionType transitionType = PageTransitionType.rightToLeft,
+}) async {
+  return Navigator.push<T>(
+    context,
+    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+  );
+}
+
 Widget shimmer({required Widget child}) {
   return Shimmer.fromColors(
     baseColor: Colors.grey.withValues(alpha: 0.2),

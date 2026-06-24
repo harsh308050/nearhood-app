@@ -36,10 +36,16 @@ class DialogWidget extends StatelessWidget {
     this.isRowButtons = false,
     this.positiveBackgroundColor,
     this.positiveTextColor,
+    this.neutralLabel,
+    this.neutralTap,
+    this.topWidget,
   });
 
   /// Asset path for the top illustration image.
   final String? topImage;
+
+  /// Custom top widget (e.g. icon badge) which takes priority over topImage.
+  final Widget? topWidget;
 
   /// Dialog title text.
   final String title;
@@ -50,11 +56,17 @@ class DialogWidget extends StatelessWidget {
   /// Label for the positive (primary) button. Hidden if null/empty.
   final String? positiveLabel;
 
-  /// Label for the negative (secondary) button. Defaults to "OK".
+  /// Label for the neutral (secondary column) button. Hidden if null/empty.
+  final String? neutralLabel;
+
+  /// Label for the negative (cancel/dismiss) button. Defaults to "OK".
   final String? negativeLabel;
 
   /// Callback when positive button is tapped.
   final VoidCallback positiveTap;
+
+  /// Callback when neutral button is tapped.
+  final VoidCallback? neutralTap;
 
   /// Callback when negative button is tapped. Defaults to Navigator.pop.
   final VoidCallback? negativeTap;
@@ -94,7 +106,10 @@ class DialogWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Top icon / illustration
-                if (showTopImage && topImage != null) ...[
+                if (topWidget != null) ...[
+                  topWidget!,
+                  sh(10),
+                ] else if (showTopImage && topImage != null) ...[
                   CustomImageView(
                     imagePath: topImage!,
                     height: 120.h,
@@ -107,7 +122,7 @@ class DialogWidget extends StatelessWidget {
                 // Dialog title
                 Padding(
                   padding: EdgeInsets.symmetric(
-                    vertical: showTopImage ? 10 : 0,
+                    vertical: (showTopImage || topWidget != null) ? 10 : 0,
                   ),
                   child: CustomText(
                     title,
@@ -176,7 +191,23 @@ class DialogWidget extends StatelessWidget {
                       backgroundColor: positiveBackgroundColor,
                       textColor: positiveTextColor,
                     ),
-                    sh(20),
+                    sh(12),
+                  ],
+
+                  // Neutral button
+                  if (neutralLabel != null && neutralLabel!.isNotEmpty) ...[
+                    CustomButton(
+                      text: neutralLabel!,
+                      onPressed: neutralTap,
+                      height: 50.h,
+                      backgroundColor: AppColors.background,
+                      textColor: AppColors.darkGrey,
+                      borderSide: const BorderSide(
+                        color: AppColors.borderLight,
+                      ),
+                      enableGlow: false,
+                    ),
+                    sh(12),
                   ],
 
                   // Negative button
@@ -187,6 +218,7 @@ class DialogWidget extends StatelessWidget {
                         negativeLabel ?? 'OK',
                         style: AppTypography.bodyText.copyWith(
                           fontWeight: FontWeight.w600,
+                          color: AppColors.grey,
                         ),
                         textAlign: TextAlign.center,
                       ),

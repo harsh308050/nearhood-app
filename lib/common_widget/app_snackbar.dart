@@ -20,6 +20,8 @@ class AppSnackBar {
     VoidCallback? onButtonPressed,
     VoidCallback? onTimeout,
     Duration duration = const Duration(seconds: 3),
+    bool showIcon = false,
+    Widget? iconWidget,
   }) {
     return _showSnackBar(
       context: context,
@@ -31,6 +33,8 @@ class AppSnackBar {
       onButtonPressed: onButtonPressed,
       onTimeout: onTimeout,
       duration: duration,
+      showIcon: showIcon,
+      iconWidget: iconWidget,
     );
   }
 
@@ -44,6 +48,8 @@ class AppSnackBar {
     VoidCallback? onButtonPressed,
     VoidCallback? onTimeout,
     Duration duration = const Duration(seconds: 3),
+    bool showIcon = false,
+    Widget? iconWidget,
   }) {
     final overlay = Overlay.of(context);
     final statusBarHeight = MediaQuery.of(context).padding.top;
@@ -110,12 +116,8 @@ class AppSnackBar {
                 padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
                 child: Row(
                   children: [
-                    if (!isTop) ...[
-                      const Icon(
-                        Icons.delete_outline_rounded,
-                        color: AppColors.red,
-                        size: 20,
-                      ),
+                    if (showIcon && iconWidget != null) ...[
+                      iconWidget,
                       sw(12),
                     ],
                     Expanded(

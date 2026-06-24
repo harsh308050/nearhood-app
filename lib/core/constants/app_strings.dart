@@ -245,6 +245,7 @@ class AppStrings {
   // Placeholder Screens (Explore, Chat, Market)
   static const String messages = 'Messages';
   static const String neighborMessages = 'Neighbor Messages';
+  static const String startConversation = "Start Conversation";
   static const String chatComingSoonDesc =
       'Chat directly with verified neighbors around you to coordinate events, discuss issues, or offer help. Coming soon!';
   static const String exploreNeighborhood = 'Explore the Neighborhood';
@@ -285,4 +286,91 @@ class AppStrings {
   static const String selectRadius = 'Select Radius: ';
   static const String apply = 'Apply';
   static const String directions = 'Directions';
+
+  // Chat - General
+  static const String chatOnline = 'Online';
+  static const String chatNewMessage = 'New Message';
+  static const String chatStartConversation = 'Start a conversation';
+  static const String chatSendAMessageTo = 'Send a message to';
+
+  // Chat - Status
+  static const String chatTyping = 'typing...';
+  static const String chatEdited = 'edited';
+  static const String chatAttachment = 'Attachment';
+  static const String chatYou = 'You';
+  static const String chatUnknown = 'Unknown';
+  static const String chatNearbyNeighbor = 'Nearby neighbor';
+
+  // Chat - Search
+  static const String chatSearchChats = 'Search chats...';
+  static const String chatSearchNeighborsByName = 'Search neighbors by name...';
+
+  // Chat - Actions
+  static const String chatCopy = 'Copy';
+  static const String chatEdit = 'Edit';
+  static const String chatMuteNotifications = 'Mute notifications';
+  static const String chatOpenChat = 'Open chat';
+  static const String chatHideChat = 'Hide chat';
+  static const String chatUndo = 'Undo';
+
+  // Chat - Attachments
+  static const String chatCamera = 'Camera';
+  static const String chatGallery = 'Gallery';
+  static const String chatLocation = 'Location';
+
+  // Chat - Empty / Error States
+  static const String chatNoConversationsYet = 'No conversations yet';
+  static const String chatStartChatting = 'Start chatting with your neighbors!';
+  static const String chatNoMessagesFound = 'No messages found';
+  static const String chatSearchSomethingElse = 'Try searching for something else';
+  static const String chatSomethingWentWrong = 'Something went wrong';
+  static const String chatNoNeighborsFound = 'No neighbors found';
+  static const String chatTryDifferentName = 'Try typing a different name';
+  static const String chatHidden = 'Chat hidden';
+
+  // Chat - Messages
+  static const String chatMessageCopied = 'Message copied to clipboard';
+  static const String chatMessageWasDeleted = 'This message was deleted';
+  static const String chatEditingMessage = 'Editing message';
+
+  // Chat - Delete Dialog
+  static const String chatDeleteMessage = 'Delete message?';
+  static const String chatDeleteForEveryoneSubtitle =
+      'Do you want to delete this message for everyone or just for yourself?';
+  static const String chatDeleteForMeSubtitle =
+      'This message will be deleted for you. Others in the chat will still be able to see it.';
+  static const String chatDeleteForEveryone = 'Delete for everyone';
+  static const String chatDeleteForMe = 'Delete for me';
+
+  // Chat - API Error Messages
+  static const String chatFailedToLoadConversations = 'Failed to load conversations';
+  static const String chatFailedToLoadMessages = 'Failed to load messages';
+  static const String chatFailedToLoadUsers = 'Failed to load users';
+  static const String chatFailedToCreateConversation = 'Failed to create conversation';
+  static const String chatFailedToSendMessage = 'Failed to send message';
+  static const String chatFailedToMarkAsRead = 'Failed to mark as read';
+  static const String chatFailedToGetUnreadCount = 'Failed to get unread count';
+  static const String chatFailedToHideConversation = 'Failed to hide conversation';
+
+  // Chat - Block
+  static const String chatBlockUser = 'Block user';
+  static const String chatUnblockUser = 'Unblock user';
+  static const String chatBlocked = 'Blocked';
+  static const String chatYouBlocked = 'You blocked this person';
+  static const String chatBlockedByOther = 'You cannot message this person';
+  static const String chatBlockConfirmation = 'Block this person?';
+  static const String chatBlockConfirmationSubtitle =
+      'They won\'t be able to send you messages. You can unblock them anytime.';
+  static const String chatUnblockConfirmation = 'Unblock this person?';
+  static const String chatUnblockConfirmationSubtitle =
+      'They will be able to send you messages again.';
+  static const String chatFailedToBlockUser = 'Failed to block user';
+  static const String chatFailedToUnblockUser = 'Failed to unblock user';
+  static const String chatBlockedByReceiver = 'You have been blocked by this user';
+
+  // Chat - Blocked Users Screen
+  static const String chatBlockedUsers = 'Blocked Users';
+  static const String chatNoBlockedUsers = 'No blocked users';
+  static const String chatNoBlockedUsersDesc = 'You haven\'t blocked anyone yet.';
+  static const String chatBlockedUsersMenu = 'Blocked users';
 }

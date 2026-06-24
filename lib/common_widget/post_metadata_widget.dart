@@ -301,9 +301,10 @@ class PostMetadataWidget extends StatelessWidget {
                     ),
                     child: CustomText(
                       condition,
-                      style: AppTypography.overline.copyWith(
+                      style: AppTypography.caption.copyWith(
                         color: AppColors.primaryBlue,
                         fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
