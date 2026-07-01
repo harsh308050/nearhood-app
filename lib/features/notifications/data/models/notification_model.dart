@@ -13,6 +13,8 @@ class NotificationModel {
   final Map<String, dynamic> data;
   final bool isRead;
   final DateTime? readAt;
+  final String? senderId;
+  final int messageCount;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -27,6 +29,8 @@ class NotificationModel {
     required this.data,
     required this.isRead,
     this.readAt,
+    this.senderId,
+    this.messageCount = 1,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -48,6 +52,8 @@ class NotificationModel {
       readAt: json['readAt'] != null
           ? DateTime.parse(json['readAt'] as String)
           : null,
+      senderId: json['senderId'] as String?,
+      messageCount: json['messageCount'] as int? ?? 1,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -66,6 +72,8 @@ class NotificationModel {
       'data': data,
       'isRead': isRead,
       'readAt': readAt?.toIso8601String(),
+      'senderId': senderId,
+      'messageCount': messageCount,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -83,6 +91,8 @@ class NotificationModel {
     Map<String, dynamic>? data,
     bool? isRead,
     DateTime? readAt,
+    String? senderId,
+    int? messageCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -97,6 +107,8 @@ class NotificationModel {
       data: data ?? this.data,
       isRead: isRead ?? this.isRead,
       readAt: readAt ?? this.readAt,
+      senderId: senderId ?? this.senderId,
+      messageCount: messageCount ?? this.messageCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -318,7 +318,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
                     color: AppColors.yellow,
                   ),
                   title: CustomText(
-                    post.isPinned ? 'Unpin Post' : 'Pin Post',
+                    post.isPinned ? AppStrings.unpinPost : AppStrings.pinPost,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -431,9 +431,9 @@ class _AnimatedProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userName = user?.fullName ?? 'Neighbor';
+    final userName = user?.fullName ?? AppStrings.neighbor;
     final userEmail = user?.email ?? '';
-    final locality = user?.location?.locality?.name ?? 'My Area';
+    final locality = user?.location?.locality?.name ?? AppStrings.myArea;
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Interpolated values
@@ -534,7 +534,7 @@ class _AnimatedProfileHeader extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      sw(6.w),
+                      sw(6),
                       CustomText(
                         "|",
                         style: AppTypography.caption.copyWith(
@@ -542,7 +542,7 @@ class _AnimatedProfileHeader extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      sw(6.w),
+                      sw(6),
 
                       Flexible(
                         child: CustomText(

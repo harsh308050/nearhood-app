@@ -59,7 +59,7 @@ class _VisibilityPickerSheetState extends State<VisibilityPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final user = sharedPrefGetUser();
-    final localityName = user?.location?.locality?.name ?? 'My Area';
+    final localityName = user?.location?.locality?.name ?? AppStrings.myArea;
     final cityName = user?.location?.city?.name ?? 'City';
 
     final List<Map<String, String>> options = [

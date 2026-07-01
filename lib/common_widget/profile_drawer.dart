@@ -12,9 +12,9 @@ class ProfileDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = sharedPrefGetUser();
-    final userName = user?.fullName ?? 'Neighbor';
+    final userName = user?.fullName ?? AppStrings.neighbor;
     final userEmail = user?.email ?? '';
-    final locality = user?.location?.locality?.name ?? 'My Area';
+    final locality = user?.location?.locality?.name ?? AppStrings.myArea;
     return Drawer(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       backgroundColor: AppColors.white,

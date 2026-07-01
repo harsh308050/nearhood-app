@@ -12,6 +12,7 @@ import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_metadata_widget.dart';
 import 'package:nearhood/common_widget/reactions_bottom_sheet.dart';
 import 'package:nearhood/common_widget/long_press_overlay_menu.dart';
+import 'package:nearhood/common_widget/report_dialog.dart';
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/features/post/data/models/comment_model.dart';
@@ -267,7 +268,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   void _startReply(CommentModel comment) {
     setState(() {
       _replyParentId = comment.id;
-      _replyAuthorName = comment.author?.fullName ?? 'Neighbor';
+      _replyAuthorName = comment.author?.fullName ?? AppStrings.neighbor;
       _replyCommentContent = comment.content;
     });
     _commentFocusNode.requestFocus();
@@ -359,36 +360,65 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
 
     final menuItems = <OverlayMenuItem>[];
     if (canPin) {
-      menuItems.add(OverlayMenuItem(
-        icon: comment.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-        label: comment.isPinned ? 'Unpin comment' : 'Pin comment',
-        color: comment.isPinned ? AppColors.primaryBlue : AppColors.darkGrey,
-        onTap: () {
-          context.read<CommentBloc>().add(
-            TogglePinCommentRequested(
-              postId: _currentPost.id,
-              commentId: comment.id,
-            ),
-          );
-        },
-      ));
+      menuItems.add(
+        OverlayMenuItem(
+          icon: comment.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+          label: comment.isPinned ? 'Unpin comment' : 'Pin comment',
+          color: comment.isPinned ? AppColors.primaryBlue : AppColors.darkGrey,
+          onTap: () {
+            context.read<CommentBloc>().add(
+              TogglePinCommentRequested(
+                postId: _currentPost.id,
+                commentId: comment.id,
+              ),
+            );
+          },
+        ),
+      );
     }
     if (canDelete) {
-      menuItems.add(OverlayMenuItem(
-        icon: Icons.delete_outline_rounded,
-        label: AppStrings.delete,
-        color: AppColors.red,
-        onTap: () => _initiateDelete(comment, parentCommentId),
-      ));
-    } else {
-      menuItems.add(OverlayMenuItem(
-        icon: Icons.flag_outlined,
-        label: 'Report',
-        color: AppColors.red,
-        onTap: () {
-          AppSnackBar.showMessage(context, 'Report submitted');
-        },
-      ));
+      menuItems.add(
+        OverlayMenuItem(
+          icon: Icons.delete_outline_rounded,
+          label: AppStrings.delete,
+          color: AppColors.red,
+          onTap: () => _initiateDelete(comment, parentCommentId),
+        ),
+      );
+    }
+    if (isPostAuthor && !isCommentAuthor) {
+      menuItems.add(
+        OverlayMenuItem(
+          icon: Icons.flag_outlined,
+          label: AppStrings.report,
+          color: AppColors.red,
+          onTap: () {
+            ReportDialog.show(
+              context,
+              targetType: ReportTargetType.comment,
+              targetId: comment.id,
+              parentPostId: _currentPost.id,
+              onReportAndDelete: () => _initiateDelete(comment, parentCommentId),
+            );
+          },
+        ),
+      );
+    } else if (!canDelete) {
+      menuItems.add(
+        OverlayMenuItem(
+          icon: Icons.flag_outlined,
+          label: AppStrings.report,
+          color: AppColors.red,
+          onTap: () {
+            ReportDialog.show(
+              context,
+              targetType: ReportTargetType.comment,
+              targetId: comment.id,
+              parentPostId: _currentPost.id,
+            );
+          },
+        ),
+      );
     }
 
     LongPressOverlayMenu.show(
@@ -400,7 +430,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
       menuSpacing: 8,
       menuRight: position.dx,
       child: CommentCardWidget(
-        authorName: comment.author?.fullName ?? 'Neighbor',
+        authorName: comment.author?.fullName ?? AppStrings.neighbor,
         imageUrl: comment.author?.profilePhotoUrl,
         isVerified: comment.author?.isVerified ?? false,
         isAreaLead: comment.author?.role == 'area_lead',
@@ -420,11 +450,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
       menuItems: menuItems,
     ).then((_) {
       if (_highlightedCommentId == comment.id) {
-            setState(() {
-              _highlightedCommentId = null;
-            });
-          }
+        setState(() {
+          _highlightedCommentId = null;
         });
+      }
+    });
   }
 
   @override
@@ -739,13 +769,13 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
         ? _currentPost.getUserReaction(currentUser.id ?? '')
         : null;
     final isLiked = userReaction != null;
-    final authorName = _currentPost.author?.fullName ?? 'Neighbor';
+    final authorName = _currentPost.author?.fullName ?? AppStrings.neighbor;
     final isVerified = _currentPost.author?.isVerified ?? false;
     final isAreaLead = _currentPost.author?.role == 'area_lead';
     final locality =
         _currentPost.localityName ??
         _currentPost.author?.location?.locality?.name ??
-        'My Area';
+        AppStrings.myArea;
     final timeAgo = formatTimeAgo(_currentPost.createdAt);
 
     String likeIconPath;
@@ -1176,7 +1206,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                               isReply: true,
                             ),
                             child: CommentCardWidget(
-                              authorName: reply.author?.fullName ?? 'Neighbor',
+                              authorName:
+                                  reply.author?.fullName ?? AppStrings.neighbor,
                               imageUrl: reply.author?.profilePhotoUrl,
                               isVerified: reply.author?.isVerified ?? false,
                               isAreaLead: reply.author?.role == 'area_lead',
@@ -1238,7 +1269,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                               ),
                               child: CommentCardWidget(
                                 authorName:
-                                    comment.author?.fullName ?? 'Neighbor',
+                                    comment.author?.fullName ??
+                                    AppStrings.neighbor,
                                 imageUrl: comment.author?.profilePhotoUrl,
                                 isVerified: comment.author?.isVerified ?? false,
                                 isAreaLead: comment.author?.role == 'area_lead',
@@ -1603,7 +1635,9 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                     color: AppColors.yellow,
                   ),
                   title: CustomText(
-                    _currentPost.isPinned ? 'Unpin Post' : 'Pin Post',
+                    _currentPost.isPinned
+                        ? AppStrings.unpinPost
+                        : AppStrings.pinPost,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -1631,8 +1665,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   title: CustomText(
                     _currentPost.isResolved
-                        ? 'Mark as Unresolved'
-                        : 'Mark as Resolved',
+                        ? AppStrings.markAsUnresolved
+                        : AppStrings.markAsResolved,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -1708,7 +1742,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    _showReportDialog(context);
+                    ReportDialog.show(
+                      context,
+                      targetType: ReportTargetType.post,
+                      targetId: _currentPost.id,
+                    );
                   },
                 ),
 
@@ -1741,7 +1779,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
   void _startConversation(BuildContext context, dynamic author) {
     final chatUser = ChatUser(
       id: author.id,
-      fullName: author.fullName ?? 'Neighbor',
+      fullName: author.fullName ?? AppStrings.neighbor,
       profilePhotoUrl: author.profilePhotoUrl ?? '',
       isVerified: author.isVerified ?? false,
       locality: author.location?.locality?.name ?? '',
@@ -1776,93 +1814,6 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
               DeletePostRequested(_currentPost.id),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  void _showReportDialog(BuildContext context) {
-    final reasons = [
-      'Spam or misleading',
-      'Harassment or hate speech',
-      'Violence or dangerous content',
-      'False information',
-      'Inappropriate content',
-      'Other',
-    ];
-
-    String? selectedReason;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: CustomText(
-            AppStrings.reportPost,
-            style: AppTypography.cardTitle.copyWith(fontSize: 18.sp),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomText(
-                AppStrings.whyReportingPost,
-                style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
-              ),
-              sh(12),
-              ...reasons.map(
-                (reason) => RadioListTile<String>(
-                  title: CustomText(
-                    reason,
-                    style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
-                  ),
-                  value: reason,
-                  groupValue: selectedReason,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedReason = value;
-                    });
-                  },
-                  activeColor: AppColors.primaryBlue,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: CustomText(
-                AppStrings.cancel,
-                style: AppTypography.cardTitle.copyWith(
-                  color: AppColors.grey,
-                  fontSize: 14.sp,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: selectedReason == null
-                  ? null
-                  : () {
-                      Navigator.pop(dialogContext);
-                      // TODO: Implement report API call
-                      AppSnackBar.showMessage(
-                        context,
-                        AppStrings.postReportedMessage,
-                        borderColor: AppColors.green,
-                      );
-                    },
-              child: CustomText(
-                AppStrings.report,
-                style: AppTypography.cardTitle.copyWith(
-                  color: selectedReason == null
-                      ? AppColors.grey
-                      : AppColors.red,
-                  fontSize: 14.sp,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

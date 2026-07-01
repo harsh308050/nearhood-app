@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,8 @@ import 'package:nearhood/features/chat/models/message_model.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/long_press_overlay_menu.dart';
+import 'package:nearhood/common_widget/report_dialog.dart';
+import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -33,14 +36,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _messageFocusNode = FocusNode();
-  bool _isTyping = false;
   late final String? _currentUserId;
   ChatBloc? _chatBloc;
   String? _conversationId;
   bool _isInitialized = false;
   final Set<String> _markedMessageIds = {};
-  String? _highlightedMessageId;
   int? _previousMessageCount;
+  Timer? _typingDebounceTimer;
 
   @override
   void initState() {
@@ -48,6 +50,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _currentUserId = sharedPrefGetUser()?.id;
     _chatBloc = context.read<ChatBloc>();
     _conversationId = widget.conversationId;
+
+    // Suppress foreground notifications for this conversation
+    FCMService().activeConversationId = _conversationId;
 
     _messageController.addListener(_onMessageChanged);
     _scrollController.addListener(_onScroll);
@@ -73,11 +78,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void dispose() {
     _messageController.removeListener(_onMessageChanged);
     _scrollController.removeListener(_onScroll);
+    final wasTyping = _typingDebounceTimer != null;
+    _typingDebounceTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
 
-    if (_isTyping && _conversationId != null) {
+    // Clear active conversation so notifications resume
+    FCMService().activeConversationId = null;
+
+    if (wasTyping) {
       _chatBloc?.add(
         StopTyping(
           conversationId: _conversationId,
@@ -94,24 +104,44 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _onMessageChanged() {
+    final wasTyping = _typingDebounceTimer != null;
+    _typingDebounceTimer?.cancel();
+    _typingDebounceTimer = null;
     final hasText = _messageController.text.trim().isNotEmpty;
-    if (hasText && !_isTyping && _conversationId != null) {
-      _isTyping = true;
+
+    if (!hasText) {
+      if (wasTyping) {
+        _chatBloc?.add(
+          StopTyping(
+            conversationId: _conversationId,
+            receiverId: widget.otherUser.id,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!wasTyping) {
       _chatBloc?.add(
         StartTyping(
           conversationId: _conversationId,
           receiverId: widget.otherUser.id,
         ),
       );
-    } else if (!hasText && _isTyping && _conversationId != null) {
-      _isTyping = false;
-      _chatBloc?.add(
-        StopTyping(
-          conversationId: _conversationId,
-          receiverId: widget.otherUser.id,
-        ),
-      );
     }
+
+    // Automatically send StopTyping if the user ceases typing for 3 seconds
+    _typingDebounceTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        _typingDebounceTimer = null;
+        _chatBloc?.add(
+          StopTyping(
+            conversationId: _conversationId,
+            receiverId: widget.otherUser.id,
+          ),
+        );
+      }
+    });
   }
 
   void _scrollToBottom({bool smooth = true}) {
@@ -157,6 +187,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       listener: (context, state) {
         if (state.currentConversationId != null && _conversationId == null) {
           _conversationId = state.currentConversationId;
+          FCMService().activeConversationId = _conversationId;
           _joinAndLoadMessages(state.currentConversationId!);
         }
         if (state.messages.isNotEmpty && _conversationId != null) {
@@ -187,9 +218,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           _isInitialized = true;
           _scrollToBottom(smooth: false);
         } else if (state.messages.isNotEmpty && _isNearBottom()) {
-          final justTyping =
-              state.typingUsers[widget.otherUser.id] ?? false;
-          if (justTyping || state.messages.length > (_previousMessageCount ?? 0)) {
+          final justTyping = state.typingUsers[widget.otherUser.id] ?? false;
+          if (justTyping ||
+              state.messages.length > (_previousMessageCount ?? 0)) {
             _scrollToBottom(smooth: true);
           }
         }
@@ -317,9 +348,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               (state.isLoadingMessages ? 1 : 0) +
               (showTyping ? 1 : 0),
           itemBuilder: (context, index) {
+            // Case 1: Typing indicator is active and index is 0 (bottom-most in reverse list)
+            if (showTyping && index == 0) {
+              return _buildTypingIndicatorBubble();
+            }
+
+            // Adjust message index if typing indicator is shown (since index 0 is consumed by it)
+            final msgIndex = showTyping ? index - 1 : index;
             final itemCount = items.length;
-            if (index < itemCount) {
-              final item = items[index];
+
+            // Case 2: Render message items
+            if (msgIndex < itemCount) {
+              final item = items[msgIndex];
               if (item is _DateDividerItem) {
                 return _buildDateDivider(item.date);
               }
@@ -336,8 +376,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               );
             }
 
-            final extraIndex = index - itemCount;
-            if (state.isLoadingMessages && extraIndex == 0) {
+            // Case 3: Render loading indicator (at the top-most position in reverse list)
+            if (state.isLoadingMessages) {
               return Center(
                 child: Padding(
                   padding: EdgeInsets.all(8.r),
@@ -346,7 +386,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               );
             }
 
-            return _buildTypingIndicatorBubble();
+            return const SizedBox.shrink();
           },
         );
       },
@@ -602,10 +642,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
         decoration: BoxDecoration(
           color:
-              (isMine
-                      ? AppColors.white.withValues(alpha: 0.15)
-                      : AppColors.primaryBlue.withValues(alpha: 0.08))
-                  .withValues(alpha: 0.5),
+              (isMine ? AppColors.white : AppColors.primaryBlue).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(8.r),
           border: Border(
             left: BorderSide(
@@ -835,39 +872,39 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                               ),
                             ),
                             textCapitalization: TextCapitalization.sentences,
-                            onChanged: (value) {
-                              setState(() {});
-                            },
                           ),
                         ),
                       ),
                       sw(8),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        child: _messageController.text.trim().isNotEmpty
-                            ? IconButton(
-                                icon: Container(
-                                  padding: EdgeInsets.all(8.r),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.send,
-                                    color: AppColors.white,
-                                    size: 18.r,
-                                  ),
-                                ),
-                                onPressed: _sendMessage,
-                              )
-                            : IconButton(
-                                icon: Icon(
-                                  Icons.mic,
-                                  color: AppColors.primaryBlue,
-                                  size: 28.r,
-                                ),
-                                onPressed: () {},
-                              ),
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _messageController,
+                        builder: (context, value, child) {
+                          final hasText = value.text.trim().isNotEmpty;
+                          return hasText
+                                ? IconButton(
+                                    icon: Container(
+                                      padding: EdgeInsets.all(8.r),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryBlue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.send,
+                                        color: AppColors.white,
+                                        size: 18.r,
+                                      ),
+                                    ),
+                                    onPressed: _sendMessage,
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      Icons.mic,
+                                      color: AppColors.primaryBlue,
+                                      size: 28.r,
+                                    ),
+                                    onPressed: () {},
+                                  );
+                        },
                       ),
                     ],
                   ),
@@ -1106,8 +1143,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       );
     }
 
+    _typingDebounceTimer?.cancel();
+    _typingDebounceTimer = null;
     _messageController.clear();
-    _isTyping = false;
     _chatBloc?.add(
       StopTyping(
         conversationId: _conversationId,
@@ -1217,6 +1255,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           builder: (context, state) {
             final isBlocked = state.isCurrentConversationBlocked;
 
+            final currentConv = state.conversations.where(
+              (c) => c.id == _conversationId,
+            ).firstOrNull;
+            final isMuted = currentConv?.isMuted ?? false;
+
             return Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
@@ -1241,17 +1284,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     sh(16),
                     ListTile(
                       leading: Icon(
-                        Icons.notifications_off,
-                        color: AppColors.grey,
+                        isMuted ? Icons.notifications : Icons.notifications_off,
+                        color: isMuted ? AppColors.primaryBlue : AppColors.grey,
                       ),
                       title: CustomText(
-                        AppStrings.chatMuteNotifications,
-                        style: AppTypography.bodyText.copyWith(
-                          color: AppColors.darkGrey,
+                        isMuted ? AppStrings.chatUnmuteNotifications : AppStrings.chatMuteNotifications,
+                        style: AppTypography.cardTitle.copyWith(
+                          color: isMuted ? AppColors.primaryBlue : AppColors.darkGrey,
                           fontSize: 16.sp,
                         ),
                       ),
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (_conversationId != null) {
+                          _chatBloc?.add(MuteConversation(_conversationId!));
+                        }
+                      },
                     ),
                     ListTile(
                       leading: Icon(
@@ -1264,7 +1312,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         isBlocked
                             ? AppStrings.chatUnblockUser
                             : AppStrings.chatBlockUser,
-                        style: AppTypography.bodyText.copyWith(
+                        style: AppTypography.cardTitle.copyWith(
                           color: isBlocked
                               ? AppColors.primaryBlue
                               : AppColors.red,
@@ -1280,26 +1328,40 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         }
                       },
                     ),
-                    ListTile(
-                      leading: Icon(Icons.flag, color: AppColors.red),
-                      title: CustomText(
-                        AppStrings.report,
-                        style: AppTypography.bodyText.copyWith(
+                    if (!isBlocked)
+                      ListTile(
+                        leading: const Icon(
+                          Icons.flag_outlined,
                           color: AppColors.red,
-                          fontSize: 16.sp,
                         ),
+                        title: CustomText(
+                          AppStrings.report,
+                          style: AppTypography.cardTitle.copyWith(
+                            color: AppColors.red,
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ReportDialog.show(
+                            context,
+                            targetType: ReportTargetType.user,
+                            targetId: widget.otherUser.id,
+                            onReportAndDelete: () {
+                              _showBlockDialog();
+                            },
+                          );
+                        },
                       ),
-                      onTap: () => Navigator.pop(context),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildTypingIndicatorBubble() {
     return Padding(
@@ -1348,92 +1410,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     if (message.isDeleted == true) return;
 
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final navigator = Navigator.of(context);
-
-    var renderBox = bubbleContext.findRenderObject() as RenderBox?;
+    final renderBox = bubbleContext.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
-    var size = renderBox.size;
-    var position = renderBox.localToGlobal(Offset.zero);
-
-    // Scroll if needed to keep bubble visible
-    final scrollable = Scrollable.maybeOf(bubbleContext);
-    bool needsScroll = false;
-    if (scrollable != null) {
-      final scrollableRenderBox =
-          scrollable.context.findRenderObject() as RenderBox?;
-      if (scrollableRenderBox != null) {
-        final scrollablePosition = scrollableRenderBox.localToGlobal(
-          Offset.zero,
-        );
-        final scrollableSize = scrollableRenderBox.size;
-
-        final double viewportTop = scrollablePosition.dy;
-        final double viewportBottom =
-            scrollablePosition.dy + scrollableSize.height;
-
-        final double cardTop = position.dy;
-        final double cardBottom = position.dy + size.height;
-
-        if (cardTop < viewportTop + 8 || cardBottom > viewportBottom - 8) {
-          needsScroll = true;
-        }
-      }
-    }
-
-    if (needsScroll) {
-      Scrollable.ensureVisible(
-        bubbleContext,
-        duration: const Duration(milliseconds: 250),
-        alignment: 0.3,
-      );
-      Future.delayed(const Duration(milliseconds: 280), () {
-        if (!bubbleContext.mounted) return;
-        if (!navigator.context.mounted) return;
-
-        renderBox = bubbleContext.findRenderObject() as RenderBox?;
-        if (renderBox == null) return;
-        size = renderBox!.size;
-        position = renderBox!.localToGlobal(Offset.zero);
-        _openOverlay(
-          navigator,
-          position,
-          size,
-          screenHeight,
-          screenWidth,
-          message,
-          showAvatar,
-        );
-      });
-    } else {
-      _openOverlay(
-        navigator,
-        position,
-        size,
-        screenHeight,
-        screenWidth,
-        message,
-        showAvatar,
-      );
-    }
-  }
-
-  void _openOverlay(
-    NavigatorState navigator,
-    Offset position,
-    Size size,
-    double screenHeight,
-    double screenWidth,
-    MessageModel message,
-    bool showAvatar,
-  ) {
+    final size = renderBox.size;
+    final position = renderBox.localToGlobal(Offset.zero);
     final isMine = message.senderId == _currentUserId;
-
-    setState(() {
-      _highlightedMessageId = message.id;
-    });
+    final screenWidth = MediaQuery.of(context).size.width;
 
     final double? menuLeft = isMine ? null : position.dx;
     final double? menuRight = isMine
@@ -1485,13 +1468,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           onTap: () => _showDeleteDialog(message),
         ),
       ],
-    ).then((_) {
-      if (_highlightedMessageId == message.id) {
-        setState(() {
-          _highlightedMessageId = null;
-        });
-      }
-    });
+    );
   }
 
   void _startEditingMessage(MessageModel message) {
@@ -1626,10 +1603,7 @@ class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
-    _anim = Tween<double>(
-      begin: 0,
-      end: 0,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
+    _anim = _animController; // ponytail: unused until _onDragEnd, starts at 0
   }
 
   @override
@@ -1659,40 +1633,23 @@ class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
 
   void _onDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
-    bool triggered = false;
 
-    if (widget.isMine) {
-      if (_dragOffset < -_replyThreshold || velocity < -300) {
-        triggered = true;
-      }
-    } else {
-      if (_dragOffset > _replyThreshold || velocity > 300) {
-        triggered = true;
-      }
-    }
+    final triggered = widget.isMine
+        ? (_dragOffset < -_replyThreshold || velocity < -300)
+        : (_dragOffset > _replyThreshold || velocity > 300);
 
-    if (triggered) {
-      widget.onReply();
-    }
+    if (triggered) widget.onReply();
 
+    // Animate back to 0
     _anim = Tween<double>(begin: _dragOffset, end: 0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.elasticOut),
+      CurvedAnimation(
+        parent: _animController,
+        curve: triggered ? Curves.elasticOut : Curves.easeOut,
+      ),
     );
     _animController.forward(from: 0).then((_) {
-      setState(() {
-        _dragOffset = 0;
-      });
+      if (mounted) setState(() => _dragOffset = 0);
     });
-
-    setState(() {
-      _dragOffset = triggered ? 0 : _dragOffset;
-    });
-    if (!triggered) {
-      _anim = Tween<double>(begin: _dragOffset, end: 0).animate(
-        CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-      );
-      _animController.forward(from: 0);
-    }
   }
 
   @override
@@ -1700,9 +1657,8 @@ class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
     final showReplyIcon =
         (widget.isMine && _dragOffset < -20) ||
         (!widget.isMine && _dragOffset > 20);
-    final replyProgress = widget.isMine
-        ? (_dragOffset.abs() / _replyThreshold).clamp(0.0, 1.0)
-        : (_dragOffset.abs() / _replyThreshold).clamp(0.0, 1.0);
+    final replyProgress =
+        (_dragOffset.abs() / _replyThreshold).clamp(0.0, 1.0);
 
     return GestureDetector(
       onHorizontalDragStart: _onDragStart,

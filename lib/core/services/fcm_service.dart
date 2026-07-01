@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:nearhood/core/network/api_urls.dart';
 import 'package:nearhood/core/network/http_actions.dart';
@@ -28,6 +29,8 @@ class FCMService extends HttpActions {
 
   // ── Firebase Messaging instance ────────────────────────────────────────────
   final FirebaseMessaging _fm = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   // ── Broadcast streams – listened to by NotificationHandler ────────────────
   final StreamController<RemoteMessage> _foregroundCtrl =
@@ -41,6 +44,9 @@ class FCMService extends HttpActions {
   String? _currentToken;
   String? get currentToken => _currentToken;
 
+  /// Set by ChatDetailScreen when active — suppresses foreground notifications for that conversation.
+  String? activeConversationId;
+
   // ── Initialise ─────────────────────────────────────────────────────────────
   /// Call from main() AFTER Firebase.initializeApp().
   /// Only sets up listeners and silently fetches the FCM token.
@@ -50,6 +56,41 @@ class FCMService extends HttpActions {
   Future<void> initialize() async {
     try {
       debugPrint('📱 FCMService: initialising…');
+
+      // Initialize local notifications for foreground display
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+      await _localNotifications.initialize(
+        settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
+        onDidReceiveNotificationResponse: (details) {
+          if (details.payload != null && details.payload!.isNotEmpty) {
+            try {
+              final data = Map<String, String>.from(
+                Uri.parse('nearhood://?${details.payload!}').queryParameters,
+              );
+              _openedCtrl.add(RemoteMessage(data: data));
+            } catch (_) {}
+          }
+        },
+      );
+
+      // Create Android notification channel
+      if (Platform.isAndroid) {
+        const channel = AndroidNotificationChannel(
+          'nearhood_messages',
+          'Messages',
+          description: 'New message notifications',
+          importance: Importance.high,
+        );
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(channel);
+      }
 
       _currentToken = await _fm.getToken();
       debugPrint('📱 FCM token: $_currentToken');
@@ -61,10 +102,11 @@ class FCMService extends HttpActions {
         if (sharedPrefIsLoggedIn()) registerAfterLogin();
       });
 
-      // Foreground messages → in-app banner via NotificationHandler
+      // Foreground messages → show system tray notification + in-app stream
       FirebaseMessaging.onMessage.listen((msg) {
         debugPrint('📬 Foreground message: ${msg.messageId}');
         _foregroundCtrl.add(msg);
+        _showSystemNotification(msg);
       });
 
       // Tapped while app was in background
@@ -85,6 +127,40 @@ class FCMService extends HttpActions {
     } catch (e) {
       debugPrint('❌ FCMService init error: $e');
     }
+  }
+
+  void _showSystemNotification(RemoteMessage message) {
+    final n = message.notification;
+    if (n == null) return;
+
+    // Don't show notification if user is viewing that conversation
+    if (message.data['type'] == 'CHAT_MESSAGE' &&
+        message.data['conversationId'] == activeConversationId) {
+      return;
+    }
+
+    // Build payload string from data map for tap handling
+    final payload = message.data.entries
+        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+
+    _localNotifications.show(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: n.title,
+      body: n.body,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'nearhood_messages',
+          'Messages',
+          channelDescription: 'New message notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      payload: payload,
+    );
   }
 
   // ── Permission ─────────────────────────────────────────────────────────────

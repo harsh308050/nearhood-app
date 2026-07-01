@@ -5,7 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/core/network/api_urls.dart';
 
-final String cleanBaseUrl = ApiUrls().baseUrl.replaceAll('/api', '');
+final String cleanBaseUrl = ApiUrls().baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
 void sharePost(PostModel post) {
   final String shareUrl = '$cleanBaseUrl/share/posts/${post.id}';
 

@@ -10,6 +10,7 @@ import 'package:nearhood/features/home/bloc/feed_event.dart';
 import 'package:nearhood/features/post/bloc/post_action_bloc.dart';
 import 'package:nearhood/core/services/deeplink_service.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
+import 'package:nearhood/features/chat/services/socket_service.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 import 'package:nearhood/common_widget/profile_drawer.dart';
 import 'package:nearhood/core/theme/app_colors.dart';
@@ -60,6 +61,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
       NotificationDataSource();
   int _unreadNotificationCount = 0;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
+  StreamSubscription<dynamic>? _postDeletedSub;
 
   @override
   void initState() {
@@ -72,6 +74,11 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
         }
       }
     });
+    _postDeletedSub = SocketService().postDeletedStream.listen((data) {
+      if (mounted) {
+        context.read<FeedBloc>().add(const FetchFeedRequested(refresh: true));
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleDeepLink();
       _initNotifications();
@@ -82,6 +89,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
   @override
   void dispose() {
     _fcmSubscription?.cancel();
+    _postDeletedSub?.cancel();
     super.dispose();
   }
 

@@ -11,15 +11,7 @@ import 'package:nearhood/core/constants/app_strings.dart';
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final SocketService _socketService;
   final ChatApiService _chatApiService;
-  StreamSubscription? _messageSubscription;
-  StreamSubscription? _conversationSubscription;
-  StreamSubscription? _userListSubscription;
-  StreamSubscription? _typingSubscription;
-  StreamSubscription? _connectionSubscription;
-  StreamSubscription? _readReceiptSubscription;
-  StreamSubscription? _messageDeletedSubscription;
-  StreamSubscription? _messageEditedSubscription;
-  StreamSubscription? _messageErrorSubscription;
+  final List<StreamSubscription> _subscriptions = [];
 
   ChatBloc({SocketService? socketService, ChatApiService? chatApiService})
     : _socketService = socketService ?? SocketService(),
@@ -48,6 +40,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<DeleteMessage>(_onDeleteMessage);
     on<MessageDeleted>(_onMessageDeleted);
     on<HideConversation>(_onHideConversation);
+    on<UnhideConversation>(_onUnhideConversation);
     on<SetReplyTo>(_onSetReplyTo);
     on<ClearReplyTo>(_onClearReplyTo);
     on<EditMessage>(_onEditMessage);
@@ -58,72 +51,63 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<UnblockUser>(_onUnblockUser);
     on<MessageError>(_onMessageError);
     on<LoadBlockedUsers>(_onLoadBlockedUsers);
+    on<MuteConversation>(_onMuteConversation);
 
     _setupSocketListeners();
   }
 
   void _setupSocketListeners() {
-    _messageSubscription = _socketService.messageStream.listen((message) {
-      add(MessageReceived(message));
-    });
-
-    _conversationSubscription = _socketService.conversationStream.listen((
-      conversations,
-    ) {
-      add(ConversationsLoaded(conversations));
-    });
-
-    _userListSubscription = _socketService.userListStream.listen((users) {
-      add(UsersLoaded(users));
-    });
-
-    _typingSubscription = _socketService.typingStream.listen((data) {
-      add(
-        TypingIndicator(
-          userId: data['userId'],
-          conversationId: data['conversationId'],
-          isTyping: data['isTyping'],
-        ),
-      );
-    });
-
-    _connectionSubscription = _socketService.connectionStream.listen((
-      connected,
-    ) {
-      add(ConnectionChanged(connected));
-    });
-
-    _messageEditedSubscription = _socketService.messageEditedStream.listen((message) {
-      add(MessageEdited(message));
-    });
-
-    _messageErrorSubscription = _socketService.messageErrorStream.listen((error) {
-      add(MessageError(error));
-    });
-
-    _readReceiptSubscription = _socketService.readReceiptStream.listen((data) {
-      add(
-        ReadReceiptReceived(
-          conversationId: data['conversationId'],
-          messageIds: data['messageIds'],
-          readBy: data['readBy'],
-        ),
-      );
-    });
-
-    _messageDeletedSubscription = _socketService.messageDeletedStream.listen((data) {
-      add(
-        MessageDeleted(
-          messageId: data['messageId'],
-          conversationId: data['conversationId'],
-          isDeletedForEveryone: data['isDeleted'],
-          deletedForMe: data['deletedForMe'],
-          updatedMessage: data['message'] != null
-              ? MessageModel.fromJson(data['message'])
-              : null,
-        ),
-      );
-    });
+    _subscriptions.addAll([
+      _socketService.messageStream.listen((message) {
+        add(MessageReceived(message));
+      }),
+      _socketService.conversationStream.listen((conversations) {
+        add(ConversationsLoaded(conversations));
+      }),
+      _socketService.userListStream.listen((users) {
+        add(UsersLoaded(users));
+      }),
+      _socketService.typingStream.listen((data) {
+        add(
+          TypingIndicator(
+            userId: data['userId'],
+            conversationId: data['conversationId'],
+            isTyping: data['isTyping'],
+          ),
+        );
+      }),
+      _socketService.connectionStream.listen((connected) {
+        add(ConnectionChanged(connected));
+      }),
+      _socketService.messageEditedStream.listen((message) {
+        add(MessageEdited(message));
+      }),
+      _socketService.messageErrorStream.listen((error) {
+        add(MessageError(error));
+      }),
+      _socketService.readReceiptStream.listen((data) {
+        add(
+          ReadReceiptReceived(
+            conversationId: data['conversationId'],
+            messageIds: data['messageIds'],
+            readBy: data['readBy'],
+          ),
+        );
+      }),
+      _socketService.messageDeletedStream.listen((data) {
+        add(
+          MessageDeleted(
+            messageId: data['messageId'],
+            conversationId: data['conversationId'],
+            isDeletedForEveryone: data['isDeleted'],
+            deletedForMe: data['deletedForMe'],
+            updatedMessage: data['message'] != null
+                ? MessageModel.fromJson(data['message'])
+                : null,
+          ),
+        );
+      }),
+    ]);
   }
 
   Future<void> _onConnectSocket(
@@ -248,7 +232,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
-      print('💬 ChatBloc: sending message: receiverId=${event.receiverId}, conversationId=${event.conversationId}');
       _socketService.sendMessage(
         receiverId: event.receiverId,
         content: event.content,
@@ -259,7 +242,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
       emit(state.copyWith(clearReplyToMessage: true));
     } catch (e) {
-      print('❌ ChatBloc: send message error: $e');
       emit(state.copyWith(error: e.toString()));
     }
   }
@@ -351,17 +333,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   void _onMessageReceived(MessageReceived event, Emitter<ChatState> emit) {
     final message = event.message;
     final currentUserId = _socketService.currentUserId;
-    print('💬 ChatBloc: message:new received in Bloc: messageId=${message.id}, conversationId=${message.conversationId}, state.currentConversationId=${state.currentConversationId}');
 
     if (state.currentConversationId == message.conversationId) {
       final updatedMessages = List<MessageModel>.from(state.messages);
       if (!updatedMessages.any((m) => m.id == message.id)) {
         updatedMessages.add(message);
         emit(state.copyWith(messages: updatedMessages));
-        print('💬 ChatBloc: message added to active DM messages list. New length: ${updatedMessages.length}');
       }
-    } else {
-      print('💬 ChatBloc: message ignored in DM (not active conversation)');
     }
 
     final updatedConversations = List<ConversationModel>.from(state.conversations);
@@ -381,7 +359,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       updatedConversations.removeAt(convIndex);
       updatedConversations.insert(0, updatedConv);
       emit(state.copyWith(conversations: updatedConversations));
-      print('💬 ChatBloc: conversation list updated. unreadCount=${updatedConv.unreadCount}');
     } else {
       // Conversation not in list (was hidden or new), reload from API
       add(LoadConversations());
@@ -508,6 +485,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
+  Future<void> _onUnhideConversation(
+    UnhideConversation event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatApiService.unhideConversation(event.conversationId);
+      add(LoadConversations());
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
   void _onSetReplyTo(SetReplyTo event, Emitter<ChatState> emit) {
     emit(state.copyWith(replyToMessage: event.message));
   }
@@ -599,17 +588,34 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(blockedUsers: blocked));
   }
 
+  Future<void> _onMuteConversation(
+    MuteConversation event,
+    Emitter<ChatState> emit,
+  ) async {
+    // Optimistic update
+    final updatedConversations = List<ConversationModel>.from(state.conversations);
+    final convIndex = updatedConversations.indexWhere((c) => c.id == event.conversationId);
+    if (convIndex >= 0) {
+      final wasMuted = updatedConversations[convIndex].isMuted;
+      updatedConversations[convIndex] = updatedConversations[convIndex].copyWith(isMuted: !wasMuted);
+      emit(state.copyWith(conversations: updatedConversations));
+    }
+
+    try {
+      await _chatApiService.toggleMute(event.conversationId);
+    } catch (e) {
+      // Revert on failure
+      add(LoadConversations());
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
   @override
   Future<void> close() {
-    _messageSubscription?.cancel();
-    _conversationSubscription?.cancel();
-    _userListSubscription?.cancel();
-    _typingSubscription?.cancel();
-    _connectionSubscription?.cancel();
-    _readReceiptSubscription?.cancel();
-    _messageDeletedSubscription?.cancel();
-    _messageEditedSubscription?.cancel();
-    _messageErrorSubscription?.cancel();
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
     return super.close();
   }
 }

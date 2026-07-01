@@ -14,6 +14,12 @@ class AppStrings {
   static const String continueOnboarding = 'Continue Onboarding?';
   static const String useDifferentAccount = 'Use Different Account';
   static const String dot = '•';
+  static const String neighbor = 'Neighbor';
+  static const String myArea = 'My Area';
+  static const String pinPost = 'Pin Post';
+  static const String unpinPost = 'Unpin Post';
+  static const String markAsResolved = 'Mark as Resolved';
+  static const String markAsUnresolved = 'Mark as Unresolved';
 
   // Get Started Screen Specific
   static const String discoverYourNeighborhoodWith =
@@ -228,6 +234,9 @@ class AppStrings {
   static const String editPost = 'Edit Post';
   static const String copyLink = 'Copy Link';
   static const String reportPost = 'Report Post';
+  static const String reportComment = 'Report Comment';
+  static const String reportMessage = 'Report Message';
+  static const String reportUser = 'Report User';
   static const String deletePost = 'Delete Post';
   static const String postDeletedSuccessfully = 'Post deleted successfully';
   static const String postUpdatedSuccessfully = 'Post updated successfully';
@@ -236,9 +245,36 @@ class AppStrings {
   static const String reportSubmitted = 'Report submitted';
   static const String delete = 'Delete';
   static const String report = 'Report';
+  static const String whyReporting = 'Why are you reporting this?';
   static const String whyReportingPost = 'Why are you reporting this post?';
+  static const String whyReportingComment =
+      'Why are you reporting this comment?';
+  static const String whyReportingMessage =
+      'Why are you reporting this message?';
+  static const String whyReportingUser = 'Why are you reporting this user?';
   static const String postReportedMessage =
       'Post reported. We\'ll review it shortly.';
+  static const String commentReportedMessage =
+      'Comment reported. We\'ll review it shortly.';
+  static const String messageReportedMessage =
+      'Message reported. We\'ll review it shortly.';
+  static const String userReportedMessage =
+      'User reported. We\'ll review it shortly.';
+  static const String reportFailed =
+      'Failed to submit report. Please try again.';
+  static const String alreadyReported =
+      'You have already reported this content.';
+  static const String cannotReportSelf = 'You cannot report your own content.';
+  static const String chatReportAndDelete = 'Report & Delete';
+  static const String chatReportAndBlock = 'Report & Block';
+
+  // Report reasons
+  static const String reportReasonSpam = 'Spam or misleading';
+  static const String reportReasonHarassment = 'Harassment or hate speech';
+  static const String reportReasonViolence = 'Violence or dangerous content';
+  static const String reportReasonFalseInfo = 'False information';
+  static const String reportReasonInappropriate = 'Inappropriate content';
+  static const String reportReasonOther = 'Other';
   static const String deletePostConfirmation =
       'Are you sure you want to delete this post? This action cannot be undone.';
 
@@ -309,6 +345,7 @@ class AppStrings {
   static const String chatCopy = 'Copy';
   static const String chatEdit = 'Edit';
   static const String chatMuteNotifications = 'Mute notifications';
+  static const String chatUnmuteNotifications = 'Unmute notifications';
   static const String chatOpenChat = 'Open chat';
   static const String chatHideChat = 'Hide chat';
   static const String chatUndo = 'Undo';
@@ -322,7 +359,8 @@ class AppStrings {
   static const String chatNoConversationsYet = 'No conversations yet';
   static const String chatStartChatting = 'Start chatting with your neighbors!';
   static const String chatNoMessagesFound = 'No messages found';
-  static const String chatSearchSomethingElse = 'Try searching for something else';
+  static const String chatSearchSomethingElse =
+      'Try searching for something else';
   static const String chatSomethingWentWrong = 'Something went wrong';
   static const String chatNoNeighborsFound = 'No neighbors found';
   static const String chatTryDifferentName = 'Try typing a different name';
@@ -343,14 +381,17 @@ class AppStrings {
   static const String chatDeleteForMe = 'Delete for me';
 
   // Chat - API Error Messages
-  static const String chatFailedToLoadConversations = 'Failed to load conversations';
+  static const String chatFailedToLoadConversations =
+      'Failed to load conversations';
   static const String chatFailedToLoadMessages = 'Failed to load messages';
   static const String chatFailedToLoadUsers = 'Failed to load users';
-  static const String chatFailedToCreateConversation = 'Failed to create conversation';
+  static const String chatFailedToCreateConversation =
+      'Failed to create conversation';
   static const String chatFailedToSendMessage = 'Failed to send message';
   static const String chatFailedToMarkAsRead = 'Failed to mark as read';
   static const String chatFailedToGetUnreadCount = 'Failed to get unread count';
-  static const String chatFailedToHideConversation = 'Failed to hide conversation';
+  static const String chatFailedToHideConversation =
+      'Failed to hide conversation';
 
   // Chat - Block
   static const String chatBlockUser = 'Block user';
@@ -366,11 +407,12 @@ class AppStrings {
       'They will be able to send you messages again.';
   static const String chatFailedToBlockUser = 'Failed to block user';
   static const String chatFailedToUnblockUser = 'Failed to unblock user';
-  static const String chatBlockedByReceiver = 'You have been blocked by this user';
+  static const String chatBlockedByReceiver =
+      'You have been blocked by this user';
 
   // Chat - Blocked Users Screen
   static const String chatBlockedUsers = 'Blocked Users';
   static const String chatNoBlockedUsers = 'No blocked users';
-  static const String chatNoBlockedUsersDesc = 'You haven\'t blocked anyone yet.';
-  static const String chatBlockedUsersMenu = 'Blocked users';
+  static const String chatNoBlockedUsersDesc =
+      'You haven\'t blocked anyone yet.';
 }

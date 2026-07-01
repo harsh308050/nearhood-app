@@ -436,7 +436,7 @@ class AllVotersBottomSheet extends StatelessWidget {
                     // Voters list for this option
                     ...validVoters.map((voter) {
                       final user = voter.user!;
-                      final name = user.fullName ?? 'Neighbor';
+                      final name = user.fullName ?? AppStrings.neighbor;
 
                       final List<String> headlineParts = [];
                       final email = user.email;
@@ -645,7 +645,7 @@ class VotersBottomSheet extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final voter = validVoters[index];
                       final user = voter.user!;
-                      final name = user.fullName ?? 'Neighbor';
+                      final name = user.fullName ?? AppStrings.neighbor;
 
                       final List<String> headlineParts = [];
                       final email = user.email;

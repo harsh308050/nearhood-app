@@ -169,6 +169,18 @@ class ChatApiService {
     }
   }
 
+  Future<void> unhideConversation(String conversationId) async {
+    final httpActions = await _getHttpActions();
+    final response = await httpActions.post(
+      '/chat/conversations/unhide',
+      body: {'conversationId': conversationId},
+    );
+
+    if (response.statusCode != 200 || response.data['success'] != true) {
+      throw Exception(response.data['message'] ?? 'Failed to unhide conversation');
+    }
+  }
+
   Future<String> blockUser(String targetUserId) async {
     final httpActions = await _getHttpActions();
     final response = await httpActions.post(
@@ -192,6 +204,19 @@ class ChatApiService {
     if (response.statusCode != 200 || response.data['success'] != true) {
       throw Exception(response.data['message'] ?? AppStrings.chatFailedToUnblockUser);
     }
+  }
+
+  Future<bool> toggleMute(String conversationId) async {
+    final httpActions = await _getHttpActions();
+    final response = await httpActions.post(
+      '/chat/conversations/mute',
+      body: {'conversationId': conversationId},
+    );
+
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return response.data['data']['isMuted'] ?? false;
+    }
+    throw Exception(response.data['message'] ?? 'Failed to toggle mute');
   }
 
   void dispose() {

@@ -225,6 +225,14 @@ class HideConversation extends ChatEvent {
   List<Object?> get props => [conversationId];
 }
 
+class UnhideConversation extends ChatEvent {
+  final String conversationId;
+  const UnhideConversation(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
 class SetReplyTo extends ChatEvent {
   final MessageModel message;
   const SetReplyTo(this.message);
@@ -287,3 +295,11 @@ class MessageError extends ChatEvent {
 }
 
 class LoadBlockedUsers extends ChatEvent {}
+
+class MuteConversation extends ChatEvent {
+  final String conversationId;
+  const MuteConversation(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}

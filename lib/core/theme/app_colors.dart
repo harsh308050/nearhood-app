@@ -15,6 +15,7 @@ class AppColors {
   static const Color borderLight = Color(0xFFE2E8F0);
   static const Color red = Color(0xFFE53E3E);
   static const Color green = Color(0xFF38A169);
+  static const Color orange = Color(0xFFDD6B20);
   static const Color blue = Color(0xFF3182CE);
   static const Color yellow = Color(0xFFD69E2E);
   static const Color verification = Color(0xFF2B5C7D);

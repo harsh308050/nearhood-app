@@ -35,6 +35,8 @@ class SocketService {
       StreamController<MessageModel>.broadcast();
   final StreamController<String> _messageErrorController =
       StreamController<String>.broadcast();
+  final StreamController<Map<String, dynamic>> _postDeletedController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<MessageModel> get messageStream => _messageController.stream;
   Stream<List<ConversationModel>> get conversationStream =>
@@ -49,6 +51,8 @@ class SocketService {
   Stream<MessageModel> get messageEditedStream =>
       _messageEditedController.stream;
   Stream<String> get messageErrorStream => _messageErrorController.stream;
+  Stream<Map<String, dynamic>> get postDeletedStream =>
+      _postDeletedController.stream;
 
   bool get isConnected => _isConnected;
   String? get currentUserId => _currentUserId;
@@ -80,7 +84,7 @@ class SocketService {
         return;
       }
 
-      final baseUrl = ApiUrls().baseUrl.replaceAll('/api', '');
+      final baseUrl = ApiUrls().baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
 
       print('🔌 Socket: connecting as firebaseUid=${user.uid}, mongoId=$_currentUserId');
 
@@ -209,6 +213,16 @@ class SocketService {
       final errorMsg = data is Map ? (data['error']?.toString() ?? 'Unknown error') : data.toString();
       print('❌ Message error: $errorMsg');
       _messageErrorController.add(errorMsg);
+    });
+
+    _socket!.on('post:deleted', (data) {
+      try {
+        if (data is Map) {
+          _postDeletedController.add(Map<String, dynamic>.from(data));
+        }
+      } catch (e) {
+        print('❌ Parse post:deleted error: $e');
+      }
     });
   }
 

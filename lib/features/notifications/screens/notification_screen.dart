@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:shimmer/shimmer.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/time_ago_formatter.dart';
+import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/features/notifications/data/notification_datasource.dart';
 import 'package:nearhood/features/notifications/data/models/notification_model.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
+import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
+import 'package:nearhood/features/chat/models/chat_user.dart';
 
 /// Notification Screen
 ///
@@ -28,6 +32,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   List<NotificationModel> _notifications = [];
   NotificationPagination? _pagination;
   int _unreadCount = 0;
+  StreamSubscription<dynamic>? _fcmSub;
 
   bool _isLoading = true;
   bool _isLoadingMore = false;
@@ -38,10 +43,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.initState();
     _loadNotifications();
     _scrollController.addListener(_onScroll);
+    _fcmSub = FCMService().onMessage.listen((_) {
+      if (mounted) _loadNotifications(refresh: true);
+    });
   }
 
   @override
   void dispose() {
+    _fcmSub?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -145,8 +154,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
       }
     }
 
-    // Navigate to post detail using cm navigation
-    if (notification.type == 'NEW_POST' && notification.postId != null) {
+    // Navigate based on notification type
+    if (notification.type == 'CHAT_MESSAGE') {
+      final senderId = notification.senderId ?? notification.data['senderId'] as String?;
+      final senderName = notification.data['senderName'] as String? ?? notification.title;
+      if (senderId != null && mounted) {
+        callNextScreen(
+          context,
+          ChatDetailScreen(
+            receiverId: senderId,
+            otherUser: ChatUser(id: senderId, fullName: senderName),
+          ),
+        );
+      }
+    } else if (notification.postId != null) {
       if (!mounted) return;
       callNextScreen(context, PostDetailScreen(postId: notification.postId!));
     }
@@ -392,6 +413,7 @@ class _NotificationTile extends StatelessWidget {
   const _NotificationTile({required this.notification, required this.onTap});
 
   Color _getCategoryColor() {
+    if (notification.type == 'CHAT_MESSAGE') return AppColors.primaryBlue;
     switch (notification.category) {
       case 'Safety Alert':
         return AppColors.red;
@@ -411,6 +433,7 @@ class _NotificationTile extends StatelessWidget {
   }
 
   IconData _getCategoryIcon() {
+    if (notification.type == 'CHAT_MESSAGE') return Icons.chat_bubble_rounded;
     switch (notification.category) {
       case 'Safety Alert':
         return Icons.warning_rounded;
@@ -479,7 +502,9 @@ class _NotificationTile extends StatelessWidget {
                         ),
                         SizedBox(height: 4.h),
                         CustomText(
-                          notification.body,
+                          notification.type == 'CHAT_MESSAGE' && notification.messageCount > 1
+                              ? '${notification.body} (${notification.messageCount} messages)'
+                              : notification.body,
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w400,

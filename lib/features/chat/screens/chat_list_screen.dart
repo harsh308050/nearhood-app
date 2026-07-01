@@ -256,6 +256,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   : FontWeight.normal,
                             ),
                           ),
+                        if (conversation.isMuted) ...[
+                          sw(4),
+                          Icon(
+                            Icons.notifications_off,
+                            color: AppColors.grey,
+                            size: 14.r,
+                          ),
+                        ],
                       ],
                     ),
                     sh(4),
@@ -274,38 +282,38 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 )
                               : conversation.isBlocked
-                                  ? Row(
-                                      children: [
-                                        Icon(
-                                          Icons.block,
-                                          color: AppColors.red,
-                                          size: 14.r,
-                                        ),
-                                        sw(4),
-                                        CustomText(
-                                          AppStrings.chatBlocked,
-                                          style: AppTypography.bodyText.copyWith(
-                                            color: AppColors.red,
-                                            fontSize: 13.sp,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : CustomText(
-                                      lastMessage?.content ??
-                                          AppStrings.chatStartConversation,
-                                      style: AppTypography.bodyText.copyWith(
-                                        color: unreadCount > 0
-                                            ? AppColors.darkGrey
-                                            : AppColors.grey,
-                                        fontSize: 13.sp,
-                                        fontWeight: unreadCount > 0
-                                            ? FontWeight.w500
-                                            : FontWeight.normal,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                              ? Row(
+                                  children: [
+                                    Icon(
+                                      Icons.block,
+                                      color: AppColors.red,
+                                      size: 14.r,
                                     ),
+                                    sw(4),
+                                    CustomText(
+                                      AppStrings.chatBlocked,
+                                      style: AppTypography.bodyText.copyWith(
+                                        color: AppColors.red,
+                                        fontSize: 13.sp,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : CustomText(
+                                  lastMessage?.content ??
+                                      AppStrings.chatStartConversation,
+                                  style: AppTypography.bodyText.copyWith(
+                                    color: unreadCount > 0
+                                        ? AppColors.darkGrey
+                                        : AppColors.grey,
+                                    fontSize: 13.sp,
+                                    fontWeight: unreadCount > 0
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                         ),
                         if (unreadCount > 0) ...[
                           sw(8),
@@ -481,7 +489,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               overflow: TextOverflow.ellipsis,
                             )
                           : CustomText(
-                              lastMessage?.content ?? AppStrings.chatStartConversation,
+                              lastMessage?.content ??
+                                  AppStrings.chatStartConversation,
                               style: AppTypography.bodyText.copyWith(
                                 color: unreadCount > 0
                                     ? AppColors.darkGrey
@@ -538,7 +547,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       buttonText: AppStrings.chatUndo,
       borderColor: AppColors.grey,
       onButtonPressed: () {
-        chatBloc.add(LoadConversations());
+        chatBloc.add(UnhideConversation(conversation.id));
       },
       duration: const Duration(seconds: 4),
     );
@@ -598,7 +607,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return KeyedSubtree(
       key: const ValueKey('empty'),
       child: EmptyStateWidget(
-        title: isSearchEmpty ? AppStrings.chatNoMessagesFound : AppStrings.chatNoConversationsYet,
+        title: isSearchEmpty
+            ? AppStrings.chatNoMessagesFound
+            : AppStrings.chatNoConversationsYet,
         subtitle: isSearchEmpty
             ? AppStrings.chatSearchSomethingElse
             : AppStrings.chatStartChatting,
@@ -657,11 +668,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
     final chatBloc = context.read<ChatBloc>();
     chatBloc.add(JoinConversation(conversation.id));
     chatBloc.add(LoadMessages(conversation.id));
-    chatBloc.add(MarkAsRead(
-      conversationId: conversation.id,
-      messageIds: [],
-      readerId: otherUser.id,
-    ));
+    chatBloc.add(
+      MarkAsRead(
+        conversationId: conversation.id,
+        messageIds: [],
+        readerId: otherUser.id,
+      ),
+    );
 
     callNextScreenBuilderWithResult(
       context,
@@ -682,7 +695,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   void _showMenu() {
     final RenderBox appBar = context.findRenderObject() as RenderBox;
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     final position = RelativeRect.fromRect(
       Rect.fromCenter(
         center: Offset(appBar.size.width - 40.w, kToolbarHeight / 2),
@@ -705,7 +719,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               Icon(Icons.block, color: AppColors.darkGrey, size: 20.r),
               sw(10),
               CustomText(
-                AppStrings.chatBlockedUsersMenu,
+                AppStrings.chatBlockedUsers,
                 style: AppTypography.bodyText.copyWith(
                   color: AppColors.darkGrey,
                   fontSize: 14.sp,

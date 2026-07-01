@@ -22,6 +22,7 @@ import 'package:nearhood/features/post/data/models/post_model.dart';
 import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
 import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
+import 'package:nearhood/common_widget/report_dialog.dart';
 
 class Homepage extends StatefulWidget {
   final VoidCallback? onProfileTap;
@@ -350,7 +351,7 @@ class _HomepageState extends State<Homepage> {
     BuildContext context,
     UserProfile? user,
   ) {
-    final localityName = user?.location?.locality?.name ?? 'My Area';
+    final localityName = user?.location?.locality?.name ?? AppStrings.myArea;
 
     int selectedIndex = 0;
     if (state.mode == 'nearby') selectedIndex = 1;
@@ -514,7 +515,7 @@ class _HomepageState extends State<Homepage> {
   void _startConversation(BuildContext context, dynamic author) {
     final chatUser = ChatUser(
       id: author.id,
-      fullName: author.fullName ?? 'Neighbor',
+      fullName: author.fullName ?? AppStrings.neighbor,
       profilePhotoUrl: author.profilePhotoUrl ?? '',
       isVerified: author.isVerified ?? false,
       locality: author.location?.locality?.name ?? '',
@@ -600,7 +601,7 @@ class _HomepageState extends State<Homepage> {
                     color: AppColors.yellow,
                   ),
                   title: CustomText(
-                    post.isPinned ? 'Unpin Post' : 'Pin Post',
+                    post.isPinned ? AppStrings.unpinPost : AppStrings.pinPost,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -625,7 +626,9 @@ class _HomepageState extends State<Homepage> {
                     color: AppColors.green,
                   ),
                   title: CustomText(
-                    post.isResolved ? 'Mark as Unresolved' : 'Mark as Resolved',
+                    post.isResolved
+                        ? AppStrings.markAsUnresolved
+                        : AppStrings.markAsResolved,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -696,7 +699,11 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    _showReportDialog(context);
+                    ReportDialog.show(
+                      context,
+                      targetType: ReportTargetType.post,
+                      targetId: post.id,
+                    );
                   },
                 ),
               ],
@@ -721,92 +728,6 @@ class _HomepageState extends State<Homepage> {
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showReportDialog(BuildContext context) {
-    final reasons = [
-      'Spam or misleading',
-      'Harassment or hate speech',
-      'Violence or dangerous content',
-      'False information',
-      'Inappropriate content',
-      'Other',
-    ];
-
-    String? selectedReason;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: CustomText(
-            AppStrings.reportPost,
-            style: AppTypography.cardTitle.copyWith(fontSize: 18.sp),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomText(
-                AppStrings.whyReportingPost,
-                style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
-              ),
-              sh(12),
-              ...reasons.map(
-                (reason) => RadioListTile<String>(
-                  title: CustomText(
-                    reason,
-                    style: AppTypography.bodyText.copyWith(fontSize: 14.sp),
-                  ),
-                  value: reason,
-                  groupValue: selectedReason,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedReason = value;
-                    });
-                  },
-                  activeColor: AppColors.primaryBlue,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: CustomText(
-                AppStrings.cancel,
-                style: AppTypography.cardTitle.copyWith(
-                  color: AppColors.grey,
-                  fontSize: 14.sp,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: selectedReason == null
-                  ? null
-                  : () {
-                      Navigator.pop(dialogContext);
-                      AppSnackBar.showMessage(
-                        context,
-                        AppStrings.postReportedMessage,
-                        borderColor: AppColors.green,
-                      );
-                    },
-              child: CustomText(
-                AppStrings.report,
-                style: AppTypography.cardTitle.copyWith(
-                  color: selectedReason == null
-                      ? AppColors.grey
-                      : AppColors.red,
-                  fontSize: 14.sp,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

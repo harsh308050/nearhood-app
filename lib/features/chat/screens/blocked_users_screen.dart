@@ -28,7 +28,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       appBar: CommonAppBar(
         backgroundColor: AppColors.white,
         title: AppStrings.chatBlockedUsers,
-        centerTitle: false,
+        centerTitle: true,
       ),
       body: BlocBuilder<ChatBloc, ChatState>(
         builder: (context, state) {
@@ -196,11 +196,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     final chatBloc = context.read<ChatBloc>();
     chatBloc.add(JoinConversation(conversation.id));
     chatBloc.add(LoadMessages(conversation.id));
-    chatBloc.add(MarkAsRead(
-      conversationId: conversation.id,
-      messageIds: [],
-      readerId: otherUser.id,
-    ));
+    chatBloc.add(
+      MarkAsRead(
+        conversationId: conversation.id,
+        messageIds: [],
+        readerId: otherUser.id,
+      ),
+    );
 
     callNextScreenBuilderWithResult(
       context,

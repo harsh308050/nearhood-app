@@ -31,7 +31,7 @@ class PostCardWidget extends StatelessWidget {
   });
 
   Widget _buildCommentPreview(CommentModel comment) {
-    final commentAuthorName = comment.author?.fullName ?? 'Neighbor';
+    final commentAuthorName = comment.author?.fullName ?? AppStrings.neighbor;
     final commentTimeAgo = formatTimeAgo(comment.createdAt);
 
     return Row(
@@ -119,11 +119,13 @@ class PostCardWidget extends StatelessWidget {
         ? post.getUserReaction(currentUser.id ?? '')
         : null;
     final isLiked = userReaction != null;
-    final authorName = post.author?.fullName ?? 'Neighbor';
+    final authorName = post.author?.fullName ?? AppStrings.neighbor;
     final isVerified = post.author?.isVerified ?? false;
     final isAreaLead = post.author?.role == 'area_lead';
     final locality =
-        post.localityName ?? post.author?.location?.locality?.name ?? 'My Area';
+        post.localityName ??
+        post.author?.location?.locality?.name ??
+        AppStrings.myArea;
     final timeAgo = formatTimeAgo(post.createdAt);
 
     String likeIconPath;

@@ -39,7 +39,11 @@ class CreatePostScreenBody extends StatefulWidget {
   final String category;
   final PostModel? postToEdit;
 
-  const CreatePostScreenBody({super.key, required this.category, this.postToEdit});
+  const CreatePostScreenBody({
+    super.key,
+    required this.category,
+    this.postToEdit,
+  });
 
   @override
   State<CreatePostScreenBody> createState() => _CreatePostScreenBodyState();
@@ -87,7 +91,9 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
       if (widget.postToEdit!.poll != null) {
         _createdPoll = {
           'question': widget.postToEdit!.poll!.question,
-          'options': widget.postToEdit!.poll!.options.map((e) => e.text).toList(),
+          'options': widget.postToEdit!.poll!.options
+              .map((e) => e.text)
+              .toList(),
         };
       }
       _isPostEnabled = widget.postToEdit!.content.trim().isNotEmpty;
@@ -292,7 +298,10 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
         } else if (state.status == ApiCallState.failure) {
           AppSnackBar.showMessage(
             context,
-            state.message ?? (widget.postToEdit != null ? 'Failed to update post' : 'Failed to create post'),
+            state.message ??
+                (widget.postToEdit != null
+                    ? 'Failed to update post'
+                    : 'Failed to create post'),
             borderColor: AppColors.red,
           );
         }
@@ -313,7 +322,9 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
               height: 14.r,
               width: 14.r,
             ),
-            title: widget.postToEdit != null ? AppStrings.editPost : AppStrings.createPost,
+            title: widget.postToEdit != null
+                ? AppStrings.editPost
+                : AppStrings.createPost,
             centerTitle: true,
             actionButton: isBusy
                 ? const Center(
@@ -328,7 +339,9 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                 : CustomButton.filled(
                     height: 32.h,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    text: widget.postToEdit != null ? AppStrings.apply : AppStrings.post,
+                    text: widget.postToEdit != null
+                        ? AppStrings.apply
+                        : AppStrings.post,
                     onPressed: _isPostEnabled
                         ? () => _submitPost(context)
                         : null,
@@ -420,8 +433,12 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
     final isEditMode = widget.postToEdit != null;
 
     if (isEditMode) {
-      final existingMediaUrls = _mediaPaths.where((path) => path.startsWith('http')).toList();
-      final newMediaPaths = _mediaPaths.where((path) => !path.startsWith('http')).toList();
+      final existingMediaUrls = _mediaPaths
+          .where((path) => path.startsWith('http'))
+          .toList();
+      final newMediaPaths = _mediaPaths
+          .where((path) => !path.startsWith('http'))
+          .toList();
 
       context.read<CreatePostBloc>().add(
         EditPostSubmitted(
@@ -459,7 +476,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
 
   Widget _buildAuthorRow() {
     final user = sharedPrefGetUser();
-    final authorName = user?.fullName ?? 'Neighbor';
+    final authorName = user?.fullName ?? AppStrings.neighbor;
     final profilePhoto = user?.profilePhotoUrl ?? '';
 
     return Padding(
