@@ -48,6 +48,8 @@ class SendMessage extends ChatEvent {
   final String messageType;
   final String? mediaUrl;
   final String? replyToMessageId;
+  final Map<String, dynamic>? location;
+  final String? clientMessageId;
 
   const SendMessage({
     required this.receiverId,
@@ -56,11 +58,13 @@ class SendMessage extends ChatEvent {
     this.messageType = 'text',
     this.mediaUrl,
     this.replyToMessageId,
+    this.location,
+    this.clientMessageId,
   });
 
   @override
   List<Object?> get props =>
-      [receiverId, content, conversationId, messageType, mediaUrl, replyToMessageId];
+      [receiverId, content, conversationId, messageType, mediaUrl, replyToMessageId, location, clientMessageId];
 }
 
 class CreateConversation extends ChatEvent {
@@ -302,4 +306,34 @@ class MuteConversation extends ChatEvent {
 
   @override
   List<Object?> get props => [conversationId];
+}
+
+class AddUploadingMessage extends ChatEvent {
+  final MessageModel message;
+  const AddUploadingMessage(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateUploadingMessage extends ChatEvent {
+  final String clientMessageId;
+  final String? mediaUrl;
+  final double? uploadProgress;
+  const UpdateUploadingMessage({
+    required this.clientMessageId,
+    this.mediaUrl,
+    this.uploadProgress,
+  });
+
+  @override
+  List<Object?> get props => [clientMessageId, mediaUrl, uploadProgress];
+}
+
+class RemoveUploadingMessage extends ChatEvent {
+  final String clientMessageId;
+  const RemoveUploadingMessage(this.clientMessageId);
+
+  @override
+  List<Object?> get props => [clientMessageId];
 }

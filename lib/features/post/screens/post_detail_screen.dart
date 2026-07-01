@@ -398,7 +398,8 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
               targetType: ReportTargetType.comment,
               targetId: comment.id,
               parentPostId: _currentPost.id,
-              onReportAndDelete: () => _initiateDelete(comment, parentCommentId),
+              onReportAndDelete: () =>
+                  _initiateDelete(comment, parentCommentId),
             );
           },
         ),
@@ -1797,9 +1798,9 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (dialogContext) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        backgroundColor: Colors.transparent,
+      builder: (dialogContext) => Container(
+        padding: EdgeInsets.all(12.r),
+
         child: DialogWidget(
           title: AppStrings.deletePost,
           subTitle: AppStrings.deletePostConfirmation,

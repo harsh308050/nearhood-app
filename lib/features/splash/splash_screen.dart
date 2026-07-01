@@ -78,9 +78,9 @@ class _SplashScreenState extends State<SplashScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        backgroundColor: Colors.transparent,
+      builder: (dialogContext) => Container(
+        padding: EdgeInsets.all(12.r),
+
         child: DialogWidget(
           title: AppStrings.continueOnboarding,
           subTitle:

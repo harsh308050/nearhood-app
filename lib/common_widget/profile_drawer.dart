@@ -229,9 +229,8 @@ class ProfileDrawer extends StatelessWidget {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        backgroundColor: Colors.transparent,
+      builder: (dialogContext) => Container(
+        padding: EdgeInsets.all(12.r),
         child: DialogWidget(
           title: 'Logout',
           subTitle: 'Are you sure you want to logout from your account?',

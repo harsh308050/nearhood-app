@@ -83,7 +83,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
               }
             });
           },
-          child: const Icon(Icons.add, color: AppColors.white),
+          child: CustomImageView(
+            imagePath: AppAssets.icAdd,
+            color: AppColors.white,
+            height: 16.r,
+            width: 16.r,
+          ),
         ),
       ),
     );
@@ -299,20 +304,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                     ),
                                   ],
                                 )
-                              : CustomText(
-                                  lastMessage?.content ??
-                                      AppStrings.chatStartConversation,
-                                  style: AppTypography.bodyText.copyWith(
-                                    color: unreadCount > 0
-                                        ? AppColors.darkGrey
-                                        : AppColors.grey,
-                                    fontSize: 13.sp,
-                                    fontWeight: unreadCount > 0
-                                        ? FontWeight.w500
-                                        : FontWeight.normal,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                              : _buildLastMessagePreview(
+                                  lastMessage,
+                                  unreadCount > 0
+                                      ? AppColors.darkGrey
+                                      : AppColors.grey,
+                                  unreadCount > 0,
                                 ),
                         ),
                         if (unreadCount > 0) ...[
@@ -345,6 +342,74 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLastMessagePreview(
+    MessagePreview? lastMessage,
+    Color color,
+    bool isBold,
+  ) {
+    if (lastMessage == null) {
+      return CustomText(
+        AppStrings.chatStartConversation,
+        style: AppTypography.bodyText.copyWith(
+          color: color,
+          fontSize: 13.sp,
+          fontWeight: isBold ? FontWeight.w500 : FontWeight.normal,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    final textStyle = AppTypography.bodyText.copyWith(
+      color: color,
+      fontSize: 13.sp,
+      fontWeight: isBold ? FontWeight.w500 : FontWeight.normal,
+    );
+
+    if (lastMessage.isImage) {
+      return Row(
+        children: [
+          Icon(Icons.photo, color: color, size: 16.r),
+          sw(4),
+          Expanded(
+            child: CustomText(
+              'Photo',
+              style: textStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (lastMessage.isLocation) {
+      return Row(
+        children: [
+          Icon(Icons.location_on, color: color, size: 16.r),
+          sw(4),
+          Expanded(
+            child: CustomText(
+              'Location',
+              style: textStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return CustomText(
+      lastMessage.content.isNotEmpty
+          ? lastMessage.content
+          : AppStrings.chatStartConversation,
+      style: textStyle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -488,20 +553,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             )
-                          : CustomText(
-                              lastMessage?.content ??
-                                  AppStrings.chatStartConversation,
-                              style: AppTypography.bodyText.copyWith(
-                                color: unreadCount > 0
-                                    ? AppColors.darkGrey
-                                    : AppColors.grey,
-                                fontSize: 13.sp,
-                                fontWeight: unreadCount > 0
-                                    ? FontWeight.w500
-                                    : FontWeight.normal,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          : _buildLastMessagePreview(
+                              lastMessage,
+                              unreadCount > 0
+                                  ? AppColors.darkGrey
+                                  : AppColors.grey,
+                              unreadCount > 0,
                             ),
                     ),
                     if (unreadCount > 0) ...[

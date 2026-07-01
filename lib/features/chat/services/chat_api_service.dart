@@ -219,6 +219,23 @@ class ChatApiService {
     throw Exception(response.data['message'] ?? 'Failed to toggle mute');
   }
 
+  Future<Map<String, String>> uploadChatMedia(String filePath) async {
+    final httpActions = await _getHttpActions();
+    final file = await http.MultipartFile.fromPath('media', filePath);
+    final response = await httpActions.postMultipart(
+      '/chat/upload-media',
+      files: [file],
+    );
+
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return {
+        'url': response.data['data']['url'] ?? '',
+        'thumbnail': response.data['data']['thumbnail'] ?? '',
+      };
+    }
+    throw Exception(response.data['message'] ?? 'Failed to upload media');
+  }
+
   void dispose() {
     _client.close();
   }

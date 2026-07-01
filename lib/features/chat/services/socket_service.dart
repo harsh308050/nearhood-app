@@ -233,6 +233,7 @@ class SocketService {
     String? mediaUrl,
     String? conversationId,
     String? replyToMessageId,
+    Map<String, dynamic>? location,
   }) {
     if (!_isConnected || _socket == null) {
       print('❌ Socket not connected');
@@ -246,6 +247,7 @@ class SocketService {
       'mediaUrl': mediaUrl,
       'conversationId': conversationId,
       'replyTo': replyToMessageId,
+      if (location != null) 'location': location,
     });
   }
 

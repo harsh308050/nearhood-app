@@ -79,12 +79,25 @@ class MessagePreview {
   final String content;
   final String? sender;
   final DateTime createdAt;
+  final String messageType;
+  final String? mediaUrl;
 
   MessagePreview({
     required this.content,
     this.sender,
     required this.createdAt,
+    this.messageType = 'text',
+    this.mediaUrl,
   });
+
+  bool get isImage => messageType == 'image';
+  bool get isLocation => messageType == 'location';
+  bool get isText => messageType == 'text';
+
+  List<String> get mediaUrls {
+    if (mediaUrl == null || mediaUrl!.isEmpty) return [];
+    return mediaUrl!.split(',').where((u) => u.trim().isNotEmpty).toList();
+  }
 
   factory MessagePreview.fromJson(Map<String, dynamic> json) {
     return MessagePreview(
@@ -92,6 +105,8 @@ class MessagePreview {
       sender: json['sender'],
       createdAt: DateTime.parse(
           json['createdAt'] ?? DateTime.now().toIso8601String()).toLocal(),
+      messageType: json['messageType'] ?? 'text',
+      mediaUrl: json['mediaUrl'],
     );
   }
 
@@ -100,6 +115,8 @@ class MessagePreview {
       'content': content,
       'sender': sender,
       'createdAt': createdAt.toIso8601String(),
+      'messageType': messageType,
+      'mediaUrl': mediaUrl,
     };
   }
 }

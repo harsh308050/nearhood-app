@@ -24,7 +24,7 @@ class UserAvatarWidget extends StatelessWidget {
           height: size.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primaryBlue,
+            color: AppColors.grey,
             border: Border.all(color: AppColors.borderLight, width: 0.5.w),
           ),
           child: ClipOval(

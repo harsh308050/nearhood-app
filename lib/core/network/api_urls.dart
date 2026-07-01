@@ -39,4 +39,6 @@ class ApiUrls {
     final query = Uri(queryParameters: params).query;
     return '$baseUrl/locations/localities?$query';
   }
+
+  String get chatUploadMedia => '$baseUrl/chat/upload-media';
 }

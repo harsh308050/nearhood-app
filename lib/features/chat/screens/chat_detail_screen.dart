@@ -1,20 +1,29 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
 import 'package:nearhood/features/chat/bloc/chat_event.dart';
 import 'package:nearhood/features/chat/bloc/chat_state.dart';
 import 'package:nearhood/features/chat/models/message_model.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
+import 'package:nearhood/features/chat/services/chat_api_service.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/long_press_overlay_menu.dart';
 import 'package:nearhood/common_widget/report_dialog.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String? conversationId;
@@ -300,7 +309,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         children: [
           IconButton(
             icon: Icon(Icons.call, color: AppColors.primaryBlue, size: 22.r),
-            onPressed: () {},
+            onPressed: () {
+              final phone = widget.otherUser.phoneNumber;
+              if (phone == null || phone.isEmpty) return;
+              final countryCode = widget.otherUser.phoneCountryCode ?? '+91';
+              launchUrl(Uri.parse('tel:$countryCode$phone'));
+            },
           ),
           IconButton(
             icon: Icon(Icons.more_vert, color: AppColors.darkGrey, size: 22.r),
@@ -337,14 +351,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           return _buildEmptyMessages();
         }
 
-        final items = _buildMessageItems(state.messages).reversed.toList();
+        final items = _buildMessageItems(state.messages);
+
+        // Append uploading messages at the end (appear at bottom in reverse list)
+        for (final uploading in state.uploadingMessages) {
+          final isMine = uploading.senderId == _currentUserId;
+          items.add(
+            _MessageItem(message: uploading, isMine: isMine, showAvatar: true),
+          );
+        }
+
+        final reversedItems = items.reversed.toList();
 
         return ListView.builder(
           controller: _scrollController,
           reverse: true,
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           itemCount:
-              items.length +
+              reversedItems.length +
               (state.isLoadingMessages ? 1 : 0) +
               (showTyping ? 1 : 0),
           itemBuilder: (context, index) {
@@ -355,11 +379,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
             // Adjust message index if typing indicator is shown (since index 0 is consumed by it)
             final msgIndex = showTyping ? index - 1 : index;
-            final itemCount = items.length;
+            final itemCount = reversedItems.length;
 
             // Case 2: Render message items
             if (msgIndex < itemCount) {
-              final item = items[msgIndex];
+              final item = reversedItems[msgIndex];
               if (item is _DateDividerItem) {
                 return _buildDateDivider(item.date);
               }
@@ -485,6 +509,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     bool showAvatar, {
     bool isHighlighted = false,
   }) {
+    if (!message.isDeleted && message.messageType == 'image') {
+      return _buildImageMessage(
+        bubbleContext,
+        message,
+        isMine,
+        showAvatar,
+        isHighlighted: isHighlighted,
+      );
+    }
+    if (!message.isDeleted && message.messageType == 'location') {
+      return _buildLocationMessage(
+        bubbleContext,
+        message,
+        isMine,
+        showAvatar,
+        isHighlighted: isHighlighted,
+      );
+    }
+
     final isRead = message.isRead;
     final time = DateFormat('h:mm a').format(message.createdAt);
     final showDeletedText = message.isDeleted;
@@ -641,8 +684,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
         decoration: BoxDecoration(
-          color:
-              (isMine ? AppColors.white : AppColors.primaryBlue).withValues(alpha: 0.5),
+          color: (isMine ? AppColors.white : AppColors.primaryBlue).withValues(
+            alpha: 0.5,
+          ),
           borderRadius: BorderRadius.circular(8.r),
           border: Border(
             left: BorderSide(
@@ -704,6 +748,540 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       onReply: () => _setReplyTo(message),
       child: child,
     );
+  }
+
+  Widget _buildImageMessage(
+    BuildContext bubbleContext,
+    MessageModel message,
+    bool isMine,
+    bool showAvatar, {
+    bool isHighlighted = false,
+  }) {
+    final time = DateFormat('h:mm a').format(message.createdAt);
+    final urls = message.mediaUrls;
+    final isUploading = message.isUploading;
+    final singleUrl = urls.isNotEmpty ? urls.first : (message.mediaUrl ?? '');
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: isMine ? 48.w : 0,
+        right: isMine ? 0 : 48.w,
+        top: showAvatar ? 8.h : 2.h,
+      ),
+      child: Align(
+        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+        child: GestureDetector(
+          onLongPress: isHighlighted || isUploading
+              ? null
+              : () =>
+                    _showCopyDeleteOptions(bubbleContext, message, showAvatar),
+          onTap: () {
+            if (isUploading) return;
+            _showFullScreenImages(urls, initialIndex: 0);
+          },
+          child: Container(
+            width: 220.w,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: isMine ? AppColors.primaryBlue : AppColors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(isMine ? 16.r : 4.r),
+                bottomRight: Radius.circular(isMine ? 4.r : 16.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (message.replyTo != null)
+                  Padding(
+                    padding: EdgeInsets.all(8.r),
+                    child: _buildQuotedReply(message, isMine),
+                  ),
+                _buildImageGrid(urls, singleUrl, isUploading, isMine),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isUploading) ...[
+                        SizedBox(
+                          width: 12.r,
+                          height: 12.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: isMine
+                                ? AppColors.white.withValues(alpha: 0.7)
+                                : AppColors.primaryBlue,
+                          ),
+                        ),
+                        sw(4),
+                      ],
+                      CustomText(
+                        time,
+                        style: TextStyle(
+                          color: isMine
+                              ? AppColors.white.withValues(alpha: 0.7)
+                              : AppColors.grey,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                      if (isMine && !isUploading) ...[
+                        sw(4),
+                        Icon(
+                          message.isRead ? Icons.done_all : Icons.done,
+                          size: 16.r,
+                          color: message.isRead
+                              ? Colors.lightBlueAccent
+                              : AppColors.white.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageGrid(
+    List<String> urls,
+    String singleUrl,
+    bool isUploading,
+    bool isMine,
+  ) {
+    if (urls.length <= 1) {
+      return _buildSingleImageThumb(
+        singleUrl,
+        isUploading,
+        isMine,
+        220.w,
+        220.h,
+      );
+    }
+
+    // 2 images: side by side
+    if (urls.length == 2) {
+      return Row(
+        children: [
+          Expanded(
+            child: _buildSingleImageThumb(
+              urls[0],
+              isUploading,
+              isMine,
+              110.w,
+              160.h,
+            ),
+          ),
+          SizedBox(width: 2.r),
+          Expanded(
+            child: _buildSingleImageThumb(
+              urls[1],
+              isUploading,
+              isMine,
+              110.w,
+              160.h,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // 3+ images: grid with +N overlay on last
+    final displayCount = min(urls.length, 4);
+    final overflow = urls.length - 4;
+
+    if (displayCount == 3) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildSingleImageThumb(
+                  urls[0],
+                  isUploading,
+                  isMine,
+                  110.w,
+                  108.h,
+                ),
+              ),
+              SizedBox(width: 2.r),
+              Expanded(
+                child: _buildSingleImageThumb(
+                  urls[1],
+                  isUploading,
+                  isMine,
+                  110.w,
+                  108.h,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 2.r),
+          _buildSingleImageThumb(urls[2], isUploading, isMine, 220.w, 108.h),
+        ],
+      );
+    }
+
+    // 4+ images: 2x2 grid
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildSingleImageThumb(
+                urls[0],
+                isUploading,
+                isMine,
+                110.w,
+                108.h,
+              ),
+            ),
+            SizedBox(width: 2.r),
+            Expanded(
+              child: _buildSingleImageThumb(
+                urls[1],
+                isUploading,
+                isMine,
+                110.w,
+                108.h,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 2.r),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSingleImageThumb(
+                urls[2],
+                isUploading,
+                isMine,
+                110.w,
+                108.h,
+              ),
+            ),
+            SizedBox(width: 2.r),
+            Expanded(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  _buildSingleImageThumb(
+                    urls[3],
+                    isUploading,
+                    isMine,
+                    110.w,
+                    108.h,
+                  ),
+                  if (overflow > 0)
+                    Container(
+                      width: 110.w,
+                      height: 108.h,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      child: Center(
+                        child: CustomText(
+                          '+$overflow',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSingleImageThumb(
+    String url,
+    bool isUploading,
+    bool isMine,
+    double width,
+    double height,
+  ) {
+    final isLocal = !url.startsWith('http');
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (isLocal)
+            Image.file(
+              File(url),
+              fit: BoxFit.cover,
+              width: width,
+              height: height,
+            )
+          else
+            CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              width: width,
+              height: height,
+              placeholder: (_, __) => Container(
+                color: AppColors.background,
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                color: AppColors.background,
+                child: Icon(
+                  Icons.broken_image,
+                  color: AppColors.grey,
+                  size: 30.r,
+                ),
+              ),
+            ),
+          if (isUploading)
+            Container(
+              width: width,
+              height: height,
+              color: Colors.black.withValues(alpha: 0.3),
+              child: Center(
+                child: SizedBox(
+                  width: 24.r,
+                  height: 24.r,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showFullScreenImages(List<String> urls, {int initialIndex = 0}) {
+    if (urls.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            _FullScreenImageViewer(urls: urls, initialIndex: initialIndex),
+      ),
+    );
+  }
+
+  Widget _buildLocationMessage(
+    BuildContext bubbleContext,
+    MessageModel message,
+    bool isMine,
+    bool showAvatar, {
+    bool isHighlighted = false,
+  }) {
+    final time = DateFormat('h:mm a').format(message.createdAt);
+    final loc = message.location;
+    final isUploading = message.isUploading;
+
+    final double lat = loc?.lat ?? 0;
+    final double lng = loc?.lng ?? 0;
+    final latLng = LatLng(lat, lng);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: isMine ? 48.w : 0,
+        right: isMine ? 0 : 48.w,
+        top: showAvatar ? 8.h : 2.h,
+      ),
+      child: Align(
+        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+        child: GestureDetector(
+          onLongPress: isHighlighted || isUploading
+              ? null
+              : () =>
+                    _showCopyDeleteOptions(bubbleContext, message, showAvatar),
+          onTap: isUploading ? null : () => _openInMaps(lat, lng),
+          child: Container(
+            width: 220.w,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: isMine ? AppColors.primaryBlue : AppColors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(isMine ? 16.r : 4.r),
+                bottomRight: Radius.circular(isMine ? 4.r : 16.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (message.replyTo != null)
+                      Padding(
+                        padding: EdgeInsets.all(8.r),
+                        child: _buildQuotedReply(message, isMine),
+                      ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16.r),
+                      ),
+                      child: SizedBox(
+                        height: 150.h,
+                        child: IgnorePointer(
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: latLng,
+                              initialZoom: 15,
+                              interactionOptions: const InteractionOptions(
+                                flags: InteractiveFlag.none,
+                              ),
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.nearhood.app',
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: latLng,
+                                    width: 30.r,
+                                    height: 30.r,
+                                    child: Icon(
+                                      Icons.location_pin,
+                                      color: AppColors.red,
+                                      size: 30.r,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isMine ? AppColors.primaryBlue : AppColors.white,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 14.r,
+                                color: isMine ? AppColors.white : AppColors.red,
+                              ),
+                              sw(4),
+                              Expanded(
+                                child: CustomText(
+                                  loc?.name ?? AppStrings.chatLocation,
+                                  style: TextStyle(
+                                    color: isMine
+                                        ? AppColors.white
+                                        : AppColors.darkGrey,
+                                    fontSize: 13.sp,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          sh(2),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CustomText(
+                                isUploading ? AppStrings.chatSending : time,
+                                style: TextStyle(
+                                  color: isMine
+                                      ? AppColors.white.withValues(alpha: 0.7)
+                                      : AppColors.grey,
+                                  fontSize: 11.sp,
+                                ),
+                              ),
+                              if (isMine && !isUploading) ...[
+                                sw(4),
+                                Icon(
+                                  message.isRead ? Icons.done_all : Icons.done,
+                                  size: 16.r,
+                                  color: message.isRead
+                                      ? Colors.lightBlueAccent
+                                      : AppColors.white.withValues(alpha: 0.7),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (isUploading)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24.r,
+                          height: 24.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openInMaps(double lat, double lng) async {
+    final url = Uri.parse('geo:$lat,$lng?q=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      final fallback = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&center=$lat,$lng&zoom=16',
+      );
+      if (await canLaunchUrl(fallback)) {
+        await launchUrl(fallback, mode: LaunchMode.externalApplication);
+      }
+    }
   }
 
   Widget _buildLoadingMessages() {
@@ -881,29 +1459,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         builder: (context, value, child) {
                           final hasText = value.text.trim().isNotEmpty;
                           return hasText
-                                ? IconButton(
-                                    icon: Container(
-                                      padding: EdgeInsets.all(8.r),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primaryBlue,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.send,
-                                        color: AppColors.white,
-                                        size: 18.r,
-                                      ),
-                                    ),
-                                    onPressed: _sendMessage,
-                                  )
-                                : IconButton(
-                                    icon: Icon(
-                                      Icons.mic,
+                              ? IconButton(
+                                  icon: Container(
+                                    padding: EdgeInsets.all(8.r),
+                                    decoration: BoxDecoration(
                                       color: AppColors.primaryBlue,
-                                      size: 28.r,
+                                      shape: BoxShape.circle,
                                     ),
-                                    onPressed: () {},
-                                  );
+                                    child: Icon(
+                                      Icons.send,
+                                      color: AppColors.white,
+                                      size: 18.r,
+                                    ),
+                                  ),
+                                  onPressed: _sendMessage,
+                                )
+                              : const SizedBox.shrink();
                         },
                       ),
                     ],
@@ -991,19 +1562,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _showBlockDialog() {
     showDialog(
       context: context,
-      builder: (context) => DialogWidget(
-        topWidget: Icon(Icons.block, size: 50.r, color: AppColors.red),
-        title: AppStrings.chatBlockConfirmation,
-        subTitle: AppStrings.chatBlockConfirmationSubtitle,
-        positiveLabel: AppStrings.chatBlockUser,
-        positiveTap: () {
-          Navigator.pop(context);
-          _chatBloc?.add(BlockUser(widget.otherUser.id));
-        },
-        positiveBackgroundColor: AppColors.red,
-        positiveTextColor: AppColors.white,
-        showNegativeButton: true,
-        negativeLabel: AppStrings.cancel,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(12.r),
+        child: DialogWidget(
+          topWidget: Icon(Icons.block, size: 50.r, color: AppColors.red),
+          title: AppStrings.chatBlockConfirmation,
+          subTitle: AppStrings.chatBlockConfirmationSubtitle,
+          positiveLabel: AppStrings.chatBlockUser,
+          positiveTap: () {
+            Navigator.pop(context);
+            _chatBloc?.add(BlockUser(widget.otherUser.id));
+          },
+          positiveBackgroundColor: AppColors.red,
+          positiveTextColor: AppColors.white,
+          showNegativeButton: true,
+          negativeLabel: AppStrings.cancel,
+        ),
       ),
     );
   }
@@ -1189,19 +1763,34 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     icon: Icons.camera_alt,
                     label: AppStrings.chatCamera,
                     color: AppColors.primaryBlue,
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _pickAndSendImage(ImageSource.camera);
+                      });
+                    },
                   ),
                   _buildAttachmentOption(
                     icon: Icons.photo_library,
                     label: AppStrings.chatGallery,
                     color: AppColors.green,
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _pickAndSendImage(ImageSource.gallery);
+                      });
+                    },
                   ),
                   _buildAttachmentOption(
                     icon: Icons.location_on,
                     label: AppStrings.chatLocation,
                     color: AppColors.red,
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _pickAndSendLocation();
+                      });
+                    },
                   ),
                 ],
               ),
@@ -1244,6 +1833,144 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
+  String _generateTempId() =>
+      'temp_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(999999)}';
+
+  Future<void> _pickAndSendImage(ImageSource source) async {
+    if (_conversationId == null) return;
+    final picker = ImagePicker();
+
+    final List<XFile> picked;
+    if (source == ImageSource.gallery) {
+      picked = await picker.pickMultiImage(
+        imageQuality: 70,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        limit: 5,
+      );
+      if (picked.isEmpty) return;
+    } else {
+      final single = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxWidth: 1080,
+        maxHeight: 1080,
+      );
+      if (single == null) return;
+      picked = [single];
+    }
+
+    final tempId = _generateTempId();
+    final localPaths = picked.map((f) => f.path).toList();
+
+    // Show optimistic message immediately
+    final tempMessage = MessageModel(
+      id: tempId,
+      conversationId: _conversationId!,
+      senderId: _currentUserId!,
+      receiverId: widget.otherUser.id,
+      content: '',
+      messageType: 'image',
+      mediaUrl: localPaths.join(','),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isUploading: true,
+      clientMessageId: tempId,
+    );
+
+    _chatBloc?.add(AddUploadingMessage(tempMessage));
+
+    try {
+      final chatApi = ChatApiService();
+      final urls = <String>[];
+      for (final path in localPaths) {
+        final result = await chatApi.uploadChatMedia(path);
+        if (result['url'] != null) urls.add(result['url']!);
+      }
+      chatApi.dispose();
+
+      if (!mounted) return;
+      _chatBloc?.add(RemoveUploadingMessage(tempId));
+      _chatBloc?.add(
+        SendMessage(
+          receiverId: widget.otherUser.id,
+          content: '',
+          conversationId: _conversationId,
+          messageType: 'image',
+          mediaUrl: urls.join(','),
+          clientMessageId: tempId,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _chatBloc?.add(RemoveUploadingMessage(tempId));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to upload image')));
+    }
+  }
+
+  Future<void> _pickAndSendLocation() async {
+    if (_conversationId == null) return;
+
+    final tempId = _generateTempId();
+    final tempMessage = MessageModel(
+      id: tempId,
+      conversationId: _conversationId!,
+      senderId: _currentUserId!,
+      receiverId: widget.otherUser.id,
+      content: '',
+      messageType: 'location',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isUploading: true,
+      clientMessageId: tempId,
+    );
+
+    _chatBloc?.add(AddUploadingMessage(tempMessage));
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _chatBloc?.add(RemoveUploadingMessage(tempId));
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        _chatBloc?.add(RemoveUploadingMessage(tempId));
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      if (!mounted) return;
+      _chatBloc?.add(RemoveUploadingMessage(tempId));
+      _chatBloc?.add(
+        SendMessage(
+          receiverId: widget.otherUser.id,
+          content: '',
+          conversationId: _conversationId,
+          messageType: 'location',
+          location: {'lat': position.latitude, 'lng': position.longitude},
+          clientMessageId: tempId,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _chatBloc?.add(RemoveUploadingMessage(tempId));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
+    }
+  }
+
   void _showChatOptions() {
     final chatBloc = context.read<ChatBloc>();
     showModalBottomSheet(
@@ -1255,9 +1982,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           builder: (context, state) {
             final isBlocked = state.isCurrentConversationBlocked;
 
-            final currentConv = state.conversations.where(
-              (c) => c.id == _conversationId,
-            ).firstOrNull;
+            final currentConv = state.conversations
+                .where((c) => c.id == _conversationId)
+                .firstOrNull;
             final isMuted = currentConv?.isMuted ?? false;
 
             return Container(
@@ -1288,9 +2015,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         color: isMuted ? AppColors.primaryBlue : AppColors.grey,
                       ),
                       title: CustomText(
-                        isMuted ? AppStrings.chatUnmuteNotifications : AppStrings.chatMuteNotifications,
+                        isMuted
+                            ? AppStrings.chatUnmuteNotifications
+                            : AppStrings.chatMuteNotifications,
                         style: AppTypography.cardTitle.copyWith(
-                          color: isMuted ? AppColors.primaryBlue : AppColors.darkGrey,
+                          color: isMuted
+                              ? AppColors.primaryBlue
+                              : AppColors.darkGrey,
                           fontSize: 16.sp,
                         ),
                       ),
@@ -1353,15 +2084,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           );
                         },
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Widget _buildTypingIndicatorBubble() {
     return Padding(
@@ -1491,9 +2222,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       pageBuilder: (context, anim1, anim2) {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: EdgeInsets.symmetric(horizontal: 40.w),
+          child: Container(
+            padding: EdgeInsets.all(12.r),
             child: DialogWidget(
               title: AppStrings.chatDeleteMessage,
               subTitle: isMine
@@ -1531,6 +2261,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 );
               },
               neutralLabel: isMine ? AppStrings.chatDeleteForMe : null,
+
               neutralTap: isMine
                   ? () {
                       Navigator.pop(context);
@@ -1570,6 +2301,115 @@ class _MessageItem {
     required this.isMine,
     required this.showAvatar,
   });
+}
+
+class _FullScreenImageViewer extends StatefulWidget {
+  final List<String> urls;
+  final int initialIndex;
+  const _FullScreenImageViewer({required this.urls, this.initialIndex = 0});
+
+  @override
+  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+  late final PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.urls.length,
+            onPageChanged: (i) => setState(() => _currentIndex = i),
+            itemBuilder: (_, index) {
+              final url = widget.urls[index];
+              final isLocal = !url.startsWith('http');
+              return InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: isLocal
+                      ? Image.file(File(url), fit: BoxFit.contain)
+                      : CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.contain,
+                          placeholder: (_, __) => const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => const Icon(
+                            Icons.broken_image,
+                            color: Colors.white54,
+                            size: 60,
+                          ),
+                        ),
+                ),
+              );
+            },
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 16,
+            child: Center(
+              child: Container(
+                // padding: EdgeInsets.all(2.r),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 24.r),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+          ),
+          if (widget.urls.length > 1)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.urls.length,
+                  (i) => Container(
+                    width: 8.r,
+                    height: 8.r,
+                    margin: EdgeInsets.symmetric(horizontal: 3.r),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i == _currentIndex
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SwipeToReplyWrapper extends StatefulWidget {
@@ -1657,8 +2497,7 @@ class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
     final showReplyIcon =
         (widget.isMine && _dragOffset < -20) ||
         (!widget.isMine && _dragOffset > 20);
-    final replyProgress =
-        (_dragOffset.abs() / _replyThreshold).clamp(0.0, 1.0);
+    final replyProgress = (_dragOffset.abs() / _replyThreshold).clamp(0.0, 1.0);
 
     return GestureDetector(
       onHorizontalDragStart: _onDragStart,

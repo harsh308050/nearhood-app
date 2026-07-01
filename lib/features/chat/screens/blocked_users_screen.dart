@@ -169,9 +169,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
     showDialog(
       context: context,
-      builder: (dialogContext) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        backgroundColor: Colors.transparent,
+      builder: (dialogContext) => Container(
+        padding: EdgeInsets.all(12.r),
+
         child: DialogWidget(
           title: AppStrings.chatUnblockConfirmation,
           subTitle: AppStrings.chatUnblockConfirmationSubtitle,

@@ -354,6 +354,7 @@ class AppStrings {
   static const String chatCamera = 'Camera';
   static const String chatGallery = 'Gallery';
   static const String chatLocation = 'Location';
+  static const String chatSending = 'Sending...';
 
   // Chat - Empty / Error States
   static const String chatNoConversationsYet = 'No conversations yet';

@@ -1,5 +1,23 @@
 import 'package:nearhood/features/chat/models/chat_user.dart';
 
+class MessageLocation {
+  final double lat;
+  final double lng;
+  final String? name;
+
+  MessageLocation({required this.lat, required this.lng, this.name});
+
+  factory MessageLocation.fromJson(Map<String, dynamic> json) {
+    return MessageLocation(
+      lat: (json['lat'] ?? 0).toDouble(),
+      lng: (json['lng'] ?? 0).toDouble(),
+      name: json['name'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'lat': lat, 'lng': lng, if (name != null) 'name': name};
+}
+
 class MessageModel {
   final String id;
   final String conversationId;
@@ -19,6 +37,12 @@ class MessageModel {
   final MessageModel? replyTo;
   final bool isEdited;
   final DateTime? editedAt;
+  final MessageLocation? location;
+
+  // Transient fields — not sent to/from backend
+  final bool isUploading;
+  final String? clientMessageId;
+  final double? uploadProgress;
 
   MessageModel({
     required this.id,
@@ -39,6 +63,10 @@ class MessageModel {
     this.replyTo,
     this.isEdited = false,
     this.editedAt,
+    this.location,
+    this.isUploading = false,
+    this.clientMessageId,
+    this.uploadProgress,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -77,6 +105,9 @@ class MessageModel {
       editedAt: json['editedAt'] != null
           ? DateTime.parse(json['editedAt']).toLocal()
           : null,
+      location: json['location'] != null
+          ? MessageLocation.fromJson(json['location'])
+          : null,
     );
   }
 
@@ -98,10 +129,18 @@ class MessageModel {
       'replyTo': replyTo?.toJson(),
       'isEdited': isEdited,
       'editedAt': editedAt?.toIso8601String(),
+      if (location != null) 'location': location!.toJson(),
     };
   }
 
   bool get isMine => false;
+
+  List<String> get mediaUrls {
+    if (mediaUrl == null || mediaUrl!.isEmpty) return [];
+    return mediaUrl!.split(',').where((u) => u.trim().isNotEmpty).toList();
+  }
+
+  bool get hasMultipleMedia => mediaUrls.length > 1;
 
   MessageModel copyWith({
     String? id,
@@ -123,6 +162,10 @@ class MessageModel {
     bool clearReplyTo = false,
     bool? isEdited,
     DateTime? editedAt,
+    MessageLocation? location,
+    bool? isUploading,
+    String? clientMessageId,
+    double? uploadProgress,
   }) {
     return MessageModel(
       id: id ?? this.id,
@@ -143,6 +186,10 @@ class MessageModel {
       replyTo: clearReplyTo ? null : (replyTo ?? this.replyTo),
       isEdited: isEdited ?? this.isEdited,
       editedAt: editedAt ?? this.editedAt,
+      location: location ?? this.location,
+      isUploading: isUploading ?? this.isUploading,
+      clientMessageId: clientMessageId ?? this.clientMessageId,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
     );
   }
 }

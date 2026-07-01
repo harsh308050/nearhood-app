@@ -14,6 +14,7 @@ class ChatState extends Equatable {
   final List<ChatUser> allUsers;
   final List<ChatUser> filteredUsers;
   final List<MessageModel> messages;
+  final List<MessageModel> uploadingMessages;
   final String? currentConversationId;
   final ChatUser? selectedUser;
   final bool isConnected;
@@ -37,6 +38,7 @@ class ChatState extends Equatable {
     this.allUsers = const [],
     this.filteredUsers = const [],
     this.messages = const [],
+    this.uploadingMessages = const [],
     this.currentConversationId,
     this.selectedUser,
     this.isConnected = false,
@@ -61,6 +63,7 @@ class ChatState extends Equatable {
     List<ChatUser>? allUsers,
     List<ChatUser>? filteredUsers,
     List<MessageModel>? messages,
+    List<MessageModel>? uploadingMessages,
     String? currentConversationId,
     ChatUser? selectedUser,
     bool? isConnected,
@@ -90,6 +93,7 @@ class ChatState extends Equatable {
       allUsers: allUsers ?? this.allUsers,
       filteredUsers: filteredUsers ?? this.filteredUsers,
       messages: messages ?? this.messages,
+      uploadingMessages: uploadingMessages ?? this.uploadingMessages,
       currentConversationId:
           clearCurrentConversationId ? null : (currentConversationId ?? this.currentConversationId),
       selectedUser: clearSelectedUser ? null : (selectedUser ?? this.selectedUser),
@@ -117,6 +121,7 @@ class ChatState extends Equatable {
         allUsers,
         filteredUsers,
         messages,
+        uploadingMessages,
         currentConversationId,
         selectedUser,
         isConnected,

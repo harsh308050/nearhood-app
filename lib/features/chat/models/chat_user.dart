@@ -4,6 +4,8 @@ class ChatUser {
   final String? profilePhotoUrl;
   final bool isVerified;
   final String locality;
+  final String? phoneNumber;
+  final String? phoneCountryCode;
 
   ChatUser({
     required this.id,
@@ -11,6 +13,8 @@ class ChatUser {
     this.profilePhotoUrl,
     this.isVerified = false,
     this.locality = '',
+    this.phoneNumber,
+    this.phoneCountryCode,
   });
 
   factory ChatUser.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,8 @@ class ChatUser {
       profilePhotoUrl: json['profilePhotoUrl'],
       isVerified: json['isVerified'] ?? false,
       locality: json['location']?['locality']?['name'] ?? json['locality'] ?? '',
+      phoneNumber: json['phone']?['number'],
+      phoneCountryCode: json['phone']?['countryCode'],
     );
   }
 
@@ -30,6 +36,8 @@ class ChatUser {
       'profilePhotoUrl': profilePhotoUrl,
       'isVerified': isVerified,
       'locality': locality,
+      'phoneNumber': phoneNumber,
+      'phoneCountryCode': phoneCountryCode,
     };
   }
 

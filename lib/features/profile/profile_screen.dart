@@ -398,9 +398,9 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (dialogContext) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        backgroundColor: Colors.transparent,
+      builder: (dialogContext) => Container(
+        padding: EdgeInsets.all(12.r),
+
         child: DialogWidget(
           title: AppStrings.deletePost,
           subTitle: AppStrings.deletePostConfirmation,

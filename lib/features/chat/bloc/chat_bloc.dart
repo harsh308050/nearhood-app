@@ -52,6 +52,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessageError>(_onMessageError);
     on<LoadBlockedUsers>(_onLoadBlockedUsers);
     on<MuteConversation>(_onMuteConversation);
+    on<AddUploadingMessage>(_onAddUploadingMessage);
+    on<UpdateUploadingMessage>(_onUpdateUploadingMessage);
+    on<RemoveUploadingMessage>(_onRemoveUploadingMessage);
 
     _setupSocketListeners();
   }
@@ -239,6 +242,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         mediaUrl: event.mediaUrl,
         conversationId: event.conversationId,
         replyToMessageId: event.replyToMessageId,
+        location: event.location,
       );
       emit(state.copyWith(clearReplyToMessage: true));
     } catch (e) {
@@ -340,6 +344,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         updatedMessages.add(message);
         emit(state.copyWith(messages: updatedMessages));
       }
+
+      // Remove matching uploading messages (same mediaUrl, sent by me)
+      if (message.senderId == currentUserId && message.mediaUrl != null) {
+        final remaining = state.uploadingMessages.where((t) {
+          if (t.mediaUrl == null) return true;
+          // Match by mediaUrl — temp has local path, real has cloud URL
+          // Remove if temp has same messageType and is uploading
+          return !(t.messageType == message.messageType && t.isUploading);
+        }).toList();
+        if (remaining.length != state.uploadingMessages.length) {
+          emit(state.copyWith(uploadingMessages: remaining));
+        }
+      }
     }
 
     final updatedConversations = List<ConversationModel>.from(state.conversations);
@@ -352,6 +369,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           content: message.content,
           sender: message.senderId,
           createdAt: message.createdAt,
+          messageType: message.messageType,
+          mediaUrl: message.mediaUrl,
         ),
         unreadCount: isFromMe ? conv.unreadCount : conv.unreadCount + 1,
         updatedAt: message.createdAt,
@@ -608,6 +627,30 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       add(LoadConversations());
       emit(state.copyWith(error: e.toString()));
     }
+  }
+
+  void _onAddUploadingMessage(AddUploadingMessage event, Emitter<ChatState> emit) {
+    final updated = List<MessageModel>.from(state.uploadingMessages)
+      ..add(event.message);
+    emit(state.copyWith(uploadingMessages: updated));
+  }
+
+  void _onUpdateUploadingMessage(UpdateUploadingMessage event, Emitter<ChatState> emit) {
+    final updated = state.uploadingMessages.map((m) {
+      if (m.clientMessageId != event.clientMessageId) return m;
+      return m.copyWith(
+        mediaUrl: event.mediaUrl ?? m.mediaUrl,
+        uploadProgress: event.uploadProgress ?? m.uploadProgress,
+      );
+    }).toList();
+    emit(state.copyWith(uploadingMessages: updated));
+  }
+
+  void _onRemoveUploadingMessage(RemoveUploadingMessage event, Emitter<ChatState> emit) {
+    final updated = state.uploadingMessages
+        .where((m) => m.clientMessageId != event.clientMessageId)
+        .toList();
+    emit(state.copyWith(uploadingMessages: updated));
   }
 
   @override
