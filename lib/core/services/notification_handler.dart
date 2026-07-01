@@ -1,10 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/core/services/deeplink_service.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
+import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
+import 'package:nearhood/features/chat/bloc/chat_event.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
 
 /// Wraps the app to:
@@ -37,9 +40,12 @@ class _NotificationHandlerState extends State<NotificationHandler> {
       if (senderId != null) {
         navigator.push(
           MaterialPageRoute(
-            builder: (context) => ChatDetailScreen(
-              receiverId: senderId,
-              otherUser: ChatUser(id: senderId, fullName: senderName ?? ''),
+            builder: (context) => BlocProvider(
+              create: (_) => ChatBloc()..add(ConnectSocket()),
+              child: ChatDetailScreen(
+                receiverId: senderId,
+                otherUser: ChatUser(id: senderId, fullName: senderName ?? ''),
+              ),
             ),
           ),
         );

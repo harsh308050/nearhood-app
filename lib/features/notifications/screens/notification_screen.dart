@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/time_ago_formatter.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
@@ -7,6 +8,8 @@ import 'package:nearhood/features/notifications/data/notification_datasource.dar
 import 'package:nearhood/features/notifications/data/models/notification_model.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
+import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
+import 'package:nearhood/features/chat/bloc/chat_event.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
 
 /// Notification Screen
@@ -161,9 +164,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       if (senderId != null && mounted) {
         callNextScreen(
           context,
-          ChatDetailScreen(
-            receiverId: senderId,
-            otherUser: ChatUser(id: senderId, fullName: senderName),
+          BlocProvider(
+            create: (_) => ChatBloc()..add(ConnectSocket()),
+            child: ChatDetailScreen(
+              receiverId: senderId,
+              otherUser: ChatUser(id: senderId, fullName: senderName),
+            ),
           ),
         );
       }
