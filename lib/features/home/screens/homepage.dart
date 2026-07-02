@@ -9,6 +9,7 @@ import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/common_widget/post_card_widget.dart';
 import 'package:nearhood/common_widget/shimmer_post_card.dart';
+import 'package:nearhood/features/chat/models/message_model.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
 import 'package:nearhood/features/post/screens/create_post_screen.dart';
 import 'package:nearhood/features/post/widgets/category_picker_sheet.dart';
@@ -512,7 +513,11 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
-  void _startConversation(BuildContext context, dynamic author) {
+  void _startConversation(
+    BuildContext context,
+    dynamic author,
+    PostModel post,
+  ) {
     final chatUser = ChatUser(
       id: author.id,
       fullName: author.fullName ?? AppStrings.neighbor,
@@ -520,11 +525,42 @@ class _HomepageState extends State<Homepage> {
       isVerified: author.isVerified ?? false,
       locality: author.location?.locality?.name ?? '',
     );
+    final categoryColors = {
+      'General': '#718096',
+      'Question': '#E8A838',
+      'Safety Alert': '#E53E3E',
+      'Lost & Found': '#FF9800',
+      'For Sale': '#4CAF50',
+      'Event': '#9C27B0',
+      'Recommendation': '#00BCD4',
+    };
+    final snapshot = PostSnapshot(
+      type: post.category,
+      accentColor: categoryColors[post.category] ?? '#718096',
+      title: post.content.substring(
+        0,
+        post.content.length > 100 ? 100 : post.content.length,
+      ),
+      contentPreview: post.content.substring(
+        0,
+        post.content.length > 150 ? 150 : post.content.length,
+      ),
+      mediaUrl: post.mediaUrls.isNotEmpty ? post.mediaUrls[0] : null,
+      authorName: post.author?.fullName ?? 'Unknown',
+      authorLocality: post.author?.location?.locality?.name ?? '',
+      metadata: post.metadata,
+      sharedAt: DateTime.now(),
+    );
     callNextScreenBuilder(
       context,
       (ctx) => BlocProvider(
         create: (_) => ChatBloc(),
-        child: ChatDetailScreen(receiverId: author.id, otherUser: chatUser),
+        child: ChatDetailScreen(
+          receiverId: author.id,
+          otherUser: chatUser,
+          sharedPostId: post.id,
+          sharedPostSnapshot: snapshot,
+        ),
       ),
     );
   }
@@ -674,7 +710,7 @@ class _HomepageState extends State<Homepage> {
                     color: AppColors.primaryBlue,
                   ),
                   title: CustomText(
-                    AppStrings.startConversation,
+                    AppStrings.chatMenuReplyToPost,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -682,7 +718,7 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    _startConversation(context, post.author!);
+                    _startConversation(context, post.author!, post);
                   },
                 ),
                 ListTile(

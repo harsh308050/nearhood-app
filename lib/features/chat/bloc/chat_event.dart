@@ -50,6 +50,9 @@ class SendMessage extends ChatEvent {
   final String? replyToMessageId;
   final Map<String, dynamic>? location;
   final String? clientMessageId;
+  final int? duration;
+  final String? postId;
+  final PostSnapshot? postSnapshot;
 
   const SendMessage({
     required this.receiverId,
@@ -60,11 +63,14 @@ class SendMessage extends ChatEvent {
     this.replyToMessageId,
     this.location,
     this.clientMessageId,
+    this.duration,
+    this.postId,
+    this.postSnapshot,
   });
 
   @override
   List<Object?> get props =>
-      [receiverId, content, conversationId, messageType, mediaUrl, replyToMessageId, location, clientMessageId];
+      [receiverId, content, conversationId, messageType, mediaUrl, replyToMessageId, location, clientMessageId, duration, postId, postSnapshot];
 }
 
 class CreateConversation extends ChatEvent {
@@ -246,6 +252,16 @@ class SetReplyTo extends ChatEvent {
 }
 
 class ClearReplyTo extends ChatEvent {}
+
+class SetSharedPost extends ChatEvent {
+  final String postId;
+  const SetSharedPost(this.postId);
+
+  @override
+  List<Object?> get props => [postId];
+}
+
+class ClearSharedPost extends ChatEvent {}
 
 class EditMessage extends ChatEvent {
   final String messageId;

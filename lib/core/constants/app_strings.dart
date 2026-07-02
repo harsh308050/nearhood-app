@@ -325,6 +325,7 @@ class AppStrings {
 
   // Chat - General
   static const String chatOnline = 'Online';
+  static const String chatMenuReplyToPost = 'Reply privately';
   static const String chatNewMessage = 'New Message';
   static const String chatStartConversation = 'Start a conversation';
   static const String chatSendAMessageTo = 'Send a message to';
@@ -355,6 +356,9 @@ class AppStrings {
   static const String chatGallery = 'Gallery';
   static const String chatLocation = 'Location';
   static const String chatSending = 'Sending...';
+  static const String chatVoiceMessage = 'Voice message';
+  static const String chatSlideToCancel = 'Slide to cancel ↑';
+  static const String chatMic = 'Mic';
 
   // Chat - Empty / Error States
   static const String chatNoConversationsYet = 'No conversations yet';

@@ -28,6 +28,7 @@ class ChatState extends Equatable {
   final bool isCurrentConversationBlocked;
   final bool isBlockedByOther;
   final List<ConversationModel> blockedUsers;
+  final String? sharedPostId;
 
   const ChatState({
     this.status = ChatStatus.initial,
@@ -52,6 +53,7 @@ class ChatState extends Equatable {
     this.isCurrentConversationBlocked = false,
     this.isBlockedByOther = false,
     this.blockedUsers = const [],
+    this.sharedPostId,
   });
 
   ChatState copyWith({
@@ -83,6 +85,8 @@ class ChatState extends Equatable {
     bool clearReplyToMessage = false,
     bool clearEditingMessage = false,
     List<ConversationModel>? blockedUsers,
+    String? sharedPostId,
+    bool clearSharedPostId = false,
   }) {
     return ChatState(
       status: status ?? this.status,
@@ -108,6 +112,7 @@ class ChatState extends Equatable {
       isCurrentConversationBlocked: isCurrentConversationBlocked ?? this.isCurrentConversationBlocked,
       isBlockedByOther: isBlockedByOther ?? this.isBlockedByOther,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      sharedPostId: clearSharedPostId ? null : (sharedPostId ?? this.sharedPostId),
     );
   }
 
@@ -135,5 +140,6 @@ class ChatState extends Equatable {
         isCurrentConversationBlocked,
         isBlockedByOther,
         blockedUsers,
+        sharedPostId,
       ];
 }

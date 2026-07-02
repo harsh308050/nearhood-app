@@ -55,6 +55,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<AddUploadingMessage>(_onAddUploadingMessage);
     on<UpdateUploadingMessage>(_onUpdateUploadingMessage);
     on<RemoveUploadingMessage>(_onRemoveUploadingMessage);
+    on<SetSharedPost>(_onSetSharedPost);
+    on<ClearSharedPost>(_onClearSharedPost);
 
     _setupSocketListeners();
   }
@@ -243,6 +245,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         conversationId: event.conversationId,
         replyToMessageId: event.replyToMessageId,
         location: event.location,
+        duration: event.duration,
+        postId: event.postId,
       );
       emit(state.copyWith(clearReplyToMessage: true));
     } catch (e) {
@@ -651,6 +655,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         .where((m) => m.clientMessageId != event.clientMessageId)
         .toList();
     emit(state.copyWith(uploadingMessages: updated));
+  }
+
+  void _onSetSharedPost(SetSharedPost event, Emitter<ChatState> emit) {
+    emit(state.copyWith(sharedPostId: event.postId));
+  }
+
+  void _onClearSharedPost(ClearSharedPost event, Emitter<ChatState> emit) {
+    emit(state.copyWith(clearSharedPostId: true));
   }
 
   @override

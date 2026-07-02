@@ -18,6 +18,58 @@ class MessageLocation {
   Map<String, dynamic> toJson() => {'lat': lat, 'lng': lng, if (name != null) 'name': name};
 }
 
+class PostSnapshot {
+  final String type;
+  final String accentColor;
+  final String title;
+  final String contentPreview;
+  final String? mediaUrl;
+  final String authorName;
+  final String authorLocality;
+  final Map<String, dynamic>? metadata;
+  final DateTime? sharedAt;
+
+  PostSnapshot({
+    required this.type,
+    required this.accentColor,
+    required this.title,
+    required this.contentPreview,
+    this.mediaUrl,
+    required this.authorName,
+    required this.authorLocality,
+    this.metadata,
+    this.sharedAt,
+  });
+
+  factory PostSnapshot.fromJson(Map<String, dynamic> json) {
+    return PostSnapshot(
+      type: json['type'] ?? 'General',
+      accentColor: json['accentColor'] ?? '#718096',
+      title: json['title'] ?? '',
+      contentPreview: json['contentPreview'] ?? '',
+      mediaUrl: json['mediaUrl'],
+      authorName: json['authorName'] ?? '',
+      authorLocality: json['authorLocality'] ?? '',
+      metadata: json['metadata'],
+      sharedAt: json['sharedAt'] != null
+          ? DateTime.parse(json['sharedAt']).toLocal()
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'type': type,
+    'accentColor': accentColor,
+    'title': title,
+    'contentPreview': contentPreview,
+    'mediaUrl': mediaUrl,
+    'authorName': authorName,
+    'authorLocality': authorLocality,
+    'metadata': metadata,
+    'sharedAt': sharedAt?.toIso8601String(),
+  };
+}
+
 class MessageModel {
   final String id;
   final String conversationId;
@@ -38,6 +90,9 @@ class MessageModel {
   final bool isEdited;
   final DateTime? editedAt;
   final MessageLocation? location;
+  final int? duration;
+  final String? postId;
+  final PostSnapshot? postSnapshot;
 
   // Transient fields — not sent to/from backend
   final bool isUploading;
@@ -64,6 +119,9 @@ class MessageModel {
     this.isEdited = false,
     this.editedAt,
     this.location,
+    this.duration,
+    this.postId,
+    this.postSnapshot,
     this.isUploading = false,
     this.clientMessageId,
     this.uploadProgress,
@@ -108,6 +166,11 @@ class MessageModel {
       location: json['location'] != null
           ? MessageLocation.fromJson(json['location'])
           : null,
+      duration: json['duration'],
+      postId: json['postId'],
+      postSnapshot: json['postSnapshot'] != null
+          ? PostSnapshot.fromJson(json['postSnapshot'])
+          : null,
     );
   }
 
@@ -130,6 +193,9 @@ class MessageModel {
       'isEdited': isEdited,
       'editedAt': editedAt?.toIso8601String(),
       if (location != null) 'location': location!.toJson(),
+      if (duration != null) 'duration': duration,
+      if (postId != null) 'postId': postId,
+      if (postSnapshot != null) 'postSnapshot': postSnapshot!.toJson(),
     };
   }
 
@@ -163,6 +229,9 @@ class MessageModel {
     bool? isEdited,
     DateTime? editedAt,
     MessageLocation? location,
+    int? duration,
+    String? postId,
+    PostSnapshot? postSnapshot,
     bool? isUploading,
     String? clientMessageId,
     double? uploadProgress,
@@ -187,6 +256,9 @@ class MessageModel {
       isEdited: isEdited ?? this.isEdited,
       editedAt: editedAt ?? this.editedAt,
       location: location ?? this.location,
+      duration: duration ?? this.duration,
+      postId: postId ?? this.postId,
+      postSnapshot: postSnapshot ?? this.postSnapshot,
       isUploading: isUploading ?? this.isUploading,
       clientMessageId: clientMessageId ?? this.clientMessageId,
       uploadProgress: uploadProgress ?? this.uploadProgress,

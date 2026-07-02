@@ -17,6 +17,12 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to automatically find your neighborhood.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Nearhood needs microphone access to send voice messages.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Nearhood needs camera access to take photos for chat.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Nearhood needs photo library access to share images in chat.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

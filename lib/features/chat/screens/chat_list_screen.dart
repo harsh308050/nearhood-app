@@ -369,6 +369,23 @@ class _ChatListScreenState extends State<ChatListScreen> {
       fontWeight: isBold ? FontWeight.w500 : FontWeight.normal,
     );
 
+    if (lastMessage.isDeleted) {
+      return Row(
+        children: [
+          Icon(Icons.block, color: color, size: 16.r),
+          sw(4),
+          Expanded(
+            child: CustomText(
+              'Message',
+              style: textStyle.copyWith(fontStyle: FontStyle.italic),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
     if (lastMessage.isImage) {
       return Row(
         children: [
@@ -394,6 +411,23 @@ class _ChatListScreenState extends State<ChatListScreen> {
           Expanded(
             child: CustomText(
               'Location',
+              style: textStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (lastMessage.messageType == 'voice') {
+      return Row(
+        children: [
+          Icon(Icons.mic, color: color, size: 16.r),
+          sw(4),
+          Expanded(
+            child: CustomText(
+              'Voice message',
               style: textStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

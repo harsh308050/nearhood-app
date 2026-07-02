@@ -10,6 +10,12 @@
     <!-- Required to open URLs from notification tap -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Required for voice messaging -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Required for camera access in chat -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:label="Nearhood"
         android:name="${applicationName}"

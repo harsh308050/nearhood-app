@@ -81,6 +81,7 @@ class MessagePreview {
   final DateTime createdAt;
   final String messageType;
   final String? mediaUrl;
+  final bool isDeleted;
 
   MessagePreview({
     required this.content,
@@ -88,11 +89,13 @@ class MessagePreview {
     required this.createdAt,
     this.messageType = 'text',
     this.mediaUrl,
+    this.isDeleted = false,
   });
 
   bool get isImage => messageType == 'image';
   bool get isLocation => messageType == 'location';
   bool get isText => messageType == 'text';
+  bool get isVoice => messageType == 'voice';
 
   List<String> get mediaUrls {
     if (mediaUrl == null || mediaUrl!.isEmpty) return [];
@@ -107,6 +110,7 @@ class MessagePreview {
           json['createdAt'] ?? DateTime.now().toIso8601String()).toLocal(),
       messageType: json['messageType'] ?? 'text',
       mediaUrl: json['mediaUrl'],
+      isDeleted: json['isDeleted'] ?? false,
     );
   }
 
@@ -117,6 +121,7 @@ class MessagePreview {
       'createdAt': createdAt.toIso8601String(),
       'messageType': messageType,
       'mediaUrl': mediaUrl,
+      'isDeleted': isDeleted,
     };
   }
 }

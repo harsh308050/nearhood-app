@@ -234,6 +234,8 @@ class SocketService {
     String? conversationId,
     String? replyToMessageId,
     Map<String, dynamic>? location,
+    int? duration,
+    String? postId,
   }) {
     if (!_isConnected || _socket == null) {
       print('❌ Socket not connected');
@@ -248,6 +250,8 @@ class SocketService {
       'conversationId': conversationId,
       'replyTo': replyToMessageId,
       if (location != null) 'location': location,
+      if (duration != null) 'duration': duration,
+      if (postId != null) 'postId': postId,
     });
   }
 

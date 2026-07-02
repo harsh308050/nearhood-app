@@ -28,6 +28,7 @@ import 'package:nearhood/features/post/bloc/post_action_state.dart';
 import 'package:nearhood/features/chat/bloc/chat_bloc.dart';
 import 'package:nearhood/features/chat/screens/chat_detail_screen.dart';
 import 'package:nearhood/features/chat/models/chat_user.dart';
+import 'package:nearhood/features/chat/models/message_model.dart';
 
 class PostDetailScreen extends StatelessWidget {
   final PostModel? post;
@@ -1707,7 +1708,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                 },
               ),
 
-              // Start Conversation (only for other people's posts)
+              // Message about this post (only for other people's posts)
               if (!isOwnPost)
                 ListTile(
                   leading: const Icon(
@@ -1715,7 +1716,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                     color: AppColors.primaryBlue,
                   ),
                   title: CustomText(
-                    AppStrings.startConversation,
+                    AppStrings.chatMenuReplyToPost,
                     style: AppTypography.cardTitle.copyWith(
                       color: AppColors.darkGrey,
                       fontSize: 16.sp,
@@ -1723,7 +1724,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    _startConversation(context, _currentPost.author!);
+                    _startConversation(
+                      context,
+                      _currentPost.author!,
+                      _currentPost,
+                    );
                   },
                 ),
 
@@ -1777,7 +1782,38 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
     );
   }
 
-  void _startConversation(BuildContext context, dynamic author) {
+  PostSnapshot _buildPostSnapshot(dynamic post) {
+    final categoryColors = {
+      'General': '#718096',
+      'Question': '#E8A838',
+      'Safety Alert': '#E53E3E',
+      'Lost & Found': '#FF9800',
+      'For Sale': '#4CAF50',
+      'Event': '#9C27B0',
+      'Recommendation': '#00BCD4',
+    };
+    return PostSnapshot(
+      type: post.category,
+      accentColor: categoryColors[post.category] ?? '#718096',
+      title: post.content.substring(
+        0,
+        post.content.length > 100 ? 100 : post.content.length,
+      ),
+      contentPreview: post.content.substring(
+        0,
+        post.content.length > 150 ? 150 : post.content.length,
+      ),
+      mediaUrl: post.mediaUrls != null && post.mediaUrls.isNotEmpty
+          ? post.mediaUrls[0]
+          : null,
+      authorName: post.author?.fullName ?? 'Unknown',
+      authorLocality: post.author?.location?.locality?.name ?? '',
+      metadata: post.metadata,
+      sharedAt: DateTime.now(),
+    );
+  }
+
+  void _startConversation(BuildContext context, dynamic author, dynamic post) {
     final chatUser = ChatUser(
       id: author.id,
       fullName: author.fullName ?? AppStrings.neighbor,
@@ -1789,7 +1825,12 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
       context,
       (ctx) => BlocProvider(
         create: (_) => ChatBloc(),
-        child: ChatDetailScreen(receiverId: author.id, otherUser: chatUser),
+        child: ChatDetailScreen(
+          receiverId: author.id,
+          otherUser: chatUser,
+          sharedPostId: post.id,
+          sharedPostSnapshot: _buildPostSnapshot(post),
+        ),
       ),
     );
   }
