@@ -1,10 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
-import 'package:nearhood/core/utils/cm.dart';
-import 'package:nearhood/core/theme/app_colors.dart';
-import 'package:nearhood/core/theme/app_typography.dart';
-import 'package:nearhood/common_widget/custom_text.dart';
-import 'package:nearhood/common_widget/common_appbar.dart';
+import 'package:nearhood/core/utils/custom_import.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -49,8 +44,10 @@ class _NotificationSettingsScreenState
     } catch (e) {
       debugPrint('Error loading preferences: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load preferences')),
+        AppSnackBar.showMessage(
+          context,
+          'Failed to load preferences',
+          borderColor: AppColors.red,
         );
       }
     } finally {
@@ -67,25 +64,21 @@ class _NotificationSettingsScreenState
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? 'Preferences saved successfully'
-                  : 'Failed to save preferences',
-            ),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
+        AppSnackBar.showMessage(
+          context,
+          success
+              ? 'Preferences saved successfully'
+              : 'Failed to save preferences',
+          borderColor: success ? AppColors.green : AppColors.red,
         );
       }
     } catch (e) {
       debugPrint('Error updating preferences: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update preferences'),
-            backgroundColor: Colors.red,
-          ),
+        AppSnackBar.showMessage(
+          context,
+          "Failed to update preferences",
+          borderColor: AppColors.red,
         );
       }
     }
@@ -94,15 +87,12 @@ class _NotificationSettingsScreenState
   Future<void> _sendTestNotification() async {
     final success = await _fcmService.sendTestNotification();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? 'Test notification sent! Check your notification panel'
-                : 'Failed to send test notification',
-          ),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
+      AppSnackBar.showMessage(
+        context,
+        success
+            ? 'Test notification sent! Check your notification panel'
+            : 'Failed to send test notification',
+        borderColor: success ? AppColors.green : AppColors.red,
       );
     }
   }

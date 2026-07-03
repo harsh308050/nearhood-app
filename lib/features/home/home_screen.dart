@@ -192,7 +192,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
           borderRadius: BorderRadius.circular(30.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: AppColors.black.withValues(alpha: 0.06),
               blurRadius: 15.r,
               spreadRadius: 1.r,
               offset: const Offset(0, 5),
@@ -206,15 +206,15 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
             child: Container(
               height: 64.h,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
+                color: AppColors.white.withValues(
                   alpha: 0.2,
                 ), // Ultra-transparent glass
                 borderRadius: BorderRadius.circular(30.r),
                 border: Border.all(
-                  color: Colors.white.withValues(
-                    alpha: 0.25,
+                  color: AppColors.primaryBlue.withValues(
+                    alpha: 0.15,
                   ), // Thin soft glass border
-                  width: 1.2.w,
+                  width: 0.5.w,
                 ),
               ),
               child: LayoutBuilder(

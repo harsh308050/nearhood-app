@@ -11,7 +11,7 @@ class ReactionsBottomSheet extends StatelessWidget {
     if (reactions.isEmpty) return Future.value();
     return showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (context) => ReactionsBottomSheet(reactions: reactions),
     );

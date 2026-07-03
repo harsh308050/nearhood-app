@@ -184,14 +184,14 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                   if ((d.primaryVelocity ?? 0) < -300) _handleDismiss();
                 },
                 child: Material(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: AppColors.black.withOpacity(0.15),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                           spreadRadius: 2,

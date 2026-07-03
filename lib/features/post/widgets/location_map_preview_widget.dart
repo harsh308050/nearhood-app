@@ -48,9 +48,11 @@ class LocationMapPreviewWidget extends StatelessWidget {
     } catch (e) {
       debugPrint('Error launching map URL: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(
+        AppSnackBar.showMessage(
           context,
-        ).showSnackBar(SnackBar(content: Text('Could not open map: $e')));
+          'Could not open map: $e',
+          borderColor: AppColors.red,
+        );
       }
     }
   }

@@ -1033,7 +1033,7 @@ class LocationPermissionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Container(
         decoration: BoxDecoration(
@@ -1161,7 +1161,7 @@ class LocationMismatchDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Container(
         decoration: BoxDecoration(

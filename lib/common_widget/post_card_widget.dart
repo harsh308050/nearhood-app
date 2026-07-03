@@ -316,7 +316,7 @@ class PostCardWidget extends StatelessWidget {
                     return const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black, Colors.transparent],
+                      colors: [AppColors.black, AppColors.transparent],
                       stops: [0.3, 1.0],
                     ).createShader(rect);
                   },

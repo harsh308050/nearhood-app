@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nearhood/core/theme/app_colors.dart';
 import 'package:nearhood/features/location_selection/bloc/location_bloc.dart';
 import 'package:nearhood/features/location_selection/model/location_models.dart';
 import 'package:nearhood/features/location_selection/helper/location_search_bottom_sheet.dart';
@@ -17,7 +18,7 @@ Future<LocationModel?> showLocationSearchBottomSheet(
   return showModalBottomSheet<LocationModel?>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     builder: (ctx) => BlocProvider.value(
       value: bloc,
       child: LocationSearchBottomSheet(

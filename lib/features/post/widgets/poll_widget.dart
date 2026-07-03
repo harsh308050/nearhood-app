@@ -309,7 +309,7 @@ class PollWidget extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (context) =>
           AllVotersBottomSheet(poll: poll, votersByOption: votersByOption),
@@ -556,7 +556,7 @@ class VotersBottomSheet extends StatelessWidget {
     if (voters.isEmpty) return Future.value();
     return showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (context) =>
           VotersBottomSheet(optionText: optionText, voters: voters),

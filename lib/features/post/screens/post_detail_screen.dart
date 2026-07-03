@@ -1569,7 +1569,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (sheetContext) => Container(
         decoration: BoxDecoration(
           color: AppColors.white,

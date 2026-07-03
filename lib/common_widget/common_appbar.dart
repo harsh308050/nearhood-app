@@ -575,7 +575,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
           false, // We handle leading ourselves via prefix
       titleSpacing: 0,
       scrolledUnderElevation: 0.0,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: AppColors.transparent,
       iconTheme: widget.iconTheme,
       leadingWidth: 0,
       title: Padding(

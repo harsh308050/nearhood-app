@@ -42,6 +42,7 @@ class UserProfile {
   final bool? isVerified;
   final String? status;
   final String? createdAt;
+  final String? businessProfileId;
 
   const UserProfile({
     this.id,
@@ -57,6 +58,7 @@ class UserProfile {
     this.isVerified,
     this.status,
     this.createdAt,
+    this.businessProfileId,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -82,6 +84,7 @@ class UserProfile {
       isVerified: json['isVerified'] is bool ? json['isVerified'] as bool : null,
       status: json['status']?.toString(),
       createdAt: json['createdAt']?.toString(),
+      businessProfileId: json['businessProfileId']?.toString(),
     );
   }
 
@@ -100,6 +103,7 @@ class UserProfile {
       if (isVerified != null) 'isVerified': isVerified,
       if (status != null) 'status': status,
       if (createdAt != null) 'createdAt': createdAt,
+      if (businessProfileId != null) 'businessProfileId': businessProfileId,
     };
   }
 }

@@ -41,4 +41,10 @@ class ApiUrls {
   }
 
   String get chatUploadMedia => '$baseUrl/chat/upload-media';
+
+  // Business
+  String get businessRegister => '$baseUrl/business/register';
+  String get businessMyProfile => '$baseUrl/business/my/profile';
+  String get businessUploadMedia => '$baseUrl/business/upload-media';
+  String businessPublicProfile(String id) => '$baseUrl/business/$id';
 }

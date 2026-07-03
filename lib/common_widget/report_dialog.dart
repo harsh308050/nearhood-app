@@ -113,7 +113,7 @@ class _ReportDialogState extends State<ReportDialog> {
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
@@ -169,7 +169,9 @@ class _ReportDialogState extends State<ReportDialog> {
                       : _submitReportAndDelete,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.red,
-                    disabledBackgroundColor: AppColors.red.withValues(alpha: 0.3),
+                    disabledBackgroundColor: AppColors.red.withValues(
+                      alpha: 0.3,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),
@@ -219,7 +221,9 @@ class _ReportDialogState extends State<ReportDialog> {
                       ? SizedBox(
                           width: 16.r,
                           height: 16.r,
-                          child: const CircularProgressIndicator(strokeWidth: 2),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
                         )
                       : CustomText(
                           AppStrings.report,

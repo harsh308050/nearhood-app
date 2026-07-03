@@ -102,7 +102,7 @@ class AppSnackBar {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: AppColors.black.withValues(alpha: 0.08),
                 blurRadius: 12.r,
                 offset: const Offset(0, 4),
               ),
@@ -116,10 +116,7 @@ class AppSnackBar {
                 padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
                 child: Row(
                   children: [
-                    if (showIcon && iconWidget != null) ...[
-                      iconWidget,
-                      sw(12),
-                    ],
+                    if (showIcon && iconWidget != null) ...[iconWidget, sw(12)],
                     Expanded(
                       child: CustomText(
                         message,
@@ -166,7 +163,7 @@ class AppSnackBar {
           left: 0,
           right: 0,
           child: Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: AnimatedBuilder(
               animation: animationController,
               builder: (context, child) {
@@ -257,7 +254,7 @@ class _SnackBarTimerBarState extends State<_SnackBarTimerBar>
           height: 1,
           child: LinearProgressIndicator(
             value: _controller.value,
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.transparent,
             valueColor: AlwaysStoppedAnimation<Color>(widget.color),
           ),
         );

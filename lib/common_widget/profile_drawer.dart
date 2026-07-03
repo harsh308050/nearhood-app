@@ -1,33 +1,70 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nearhood/core/network/api_call_state.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
 import 'package:nearhood/features/getstarted/getstarted_screen.dart';
 import 'package:nearhood/features/profile/profile_screen.dart';
 import 'package:nearhood/features/chat/services/socket_service.dart';
+import 'package:nearhood/features/business/screens/create_business_screen.dart';
+import 'package:nearhood/features/business/screens/business_profile_screen.dart';
+import 'package:nearhood/features/business/bloc/business_bloc.dart';
+import 'package:nearhood/features/business/bloc/business_event.dart';
 
-class ProfileDrawer extends StatelessWidget {
+class ProfileDrawer extends StatefulWidget {
   const ProfileDrawer({super.key});
+
+  @override
+  State<ProfileDrawer> createState() => _ProfileDrawerState();
+}
+
+class _ProfileDrawerState extends State<ProfileDrawer> {
+  late final BusinessBloc _businessBloc;
+  bool _hasBusiness = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _businessBloc = BusinessBloc();
+    _checkBusinessProfile();
+  }
+
+  Future<void> _checkBusinessProfile() async {
+    _businessBloc.add(CheckBusinessProfile());
+    await _businessBloc.stream.firstWhere(
+      (s) => s.checkStatus != ApiCallState.busy,
+    );
+    if (mounted) {
+      setState(() {
+        _hasBusiness = _businessBloc.state.hasBusinessProfile;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _businessBloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = sharedPrefGetUser();
     final userName = user?.fullName ?? AppStrings.neighbor;
     final userEmail = user?.email ?? '';
-    final locality = user?.location?.locality?.name ?? AppStrings.myArea;
     return Drawer(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       backgroundColor: AppColors.white,
       child: SafeArea(
         child: Column(
           children: [
-            // Profile Header Section - Horizontal Layout
+            // Profile Header Section
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(24.r),
               child: Row(
                 children: [
-                  // Avatar
                   UserAvatarWidget(
                     size: 60.r,
                     imageUrl: user?.profilePhotoUrl,
@@ -35,13 +72,11 @@ class ProfileDrawer extends StatelessWidget {
                     isAreaLead: user?.role == 'area_lead',
                   ),
                   sw(16),
-                  // User Info Column
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // User Name with verified badge
                         Row(
                           children: [
                             Flexible(
@@ -68,7 +103,6 @@ class ProfileDrawer extends StatelessWidget {
                           ],
                         ),
                         sh(2),
-                        // Email
                         if (userEmail.isNotEmpty)
                           CustomText(
                             userEmail,
@@ -87,7 +121,6 @@ class ProfileDrawer extends StatelessWidget {
               ),
             ),
 
-            // Divider below profile
             Divider(height: 1.h, thickness: 1.h, color: AppColors.borderLight),
 
             sh(8),
@@ -112,7 +145,6 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'Local News',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to local news screen
                     },
                   ),
                   _buildMenuItem(
@@ -121,16 +153,31 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'Events',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to events screen
                     },
                   ),
                   _buildMenuItem(
                     context,
                     icon: AppAssets.icMarket,
-                    label: 'Add Business',
+                    label: _hasBusiness
+                        ? AppStrings.myBusiness
+                        : AppStrings.createBusinessPage,
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to add business screen
+                      if (_hasBusiness) {
+                        callNextScreen(
+                          context,
+                          BlocProvider(
+                            create: (_) => BusinessBloc()
+                              ..add(FetchBusinessProfile()),
+                            child: const BusinessProfileScreen(),
+                          ),
+                        );
+                      } else {
+                        callNextScreen(
+                          context,
+                          const CreateBusinessScreen(),
+                        );
+                      }
                     },
                   ),
                   _buildDivider(),
@@ -140,7 +187,6 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'Settings',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to settings screen
                     },
                   ),
                   _buildMenuItem(
@@ -149,7 +195,6 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'Help & Support',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to help screen
                     },
                   ),
                   _buildMenuItem(
@@ -158,7 +203,6 @@ class ProfileDrawer extends StatelessWidget {
                     label: 'About Nearhood',
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navigate to about screen
                     },
                   ),
                 ],
@@ -240,7 +284,7 @@ class ProfileDrawer extends StatelessWidget {
           isRowButtons: true,
           positiveBackgroundColor: AppColors.red,
           positiveTap: () async {
-            Navigator.pop(dialogContext); // Close dialog
+            Navigator.pop(dialogContext);
             await _performLogout(context);
           },
         ),
@@ -251,7 +295,6 @@ class ProfileDrawer extends StatelessWidget {
   Future<void> _performLogout(BuildContext context) async {
     final navigator = Navigator.of(context);
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -260,19 +303,12 @@ class ProfileDrawer extends StatelessWidget {
         ),
       );
 
-      // Reset socket to clear session info and avoid lingering listeners
       SocketService().reset();
-
-      // Clear shared preferences
       await sharedPrefClearAllData();
-
-      // Sign out from Firebase
       await FirebaseAuth.instance.signOut();
 
-      // Close loading dialog
       navigator.pop();
 
-      // Navigate to GetStarted screen and clear stack
       navigator.pushAndRemoveUntil(
         CustomPageRoute(
           page: const GetstartedScreen(),
@@ -281,12 +317,10 @@ class ProfileDrawer extends StatelessWidget {
         (_) => false,
       );
     } catch (e) {
-      // Close loading dialog if still open
       try {
         navigator.pop();
       } catch (_) {}
 
-      // Show error message
       if (context.mounted) {
         AppSnackBar.showMessage(
           context,

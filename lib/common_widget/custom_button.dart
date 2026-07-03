@@ -94,7 +94,7 @@ class CustomButton extends StatelessWidget {
   final bool animateStateChanges;
 
   /// Splash color when button is tapped.
-  /// Defaults to [Colors.transparent] (no splash effect).
+  /// Defaults to [AppColors.transparent] (no splash effect).
   final Color? splashColor;
 
   /// Whether to add a glowing effect to the button.
@@ -287,14 +287,14 @@ class CustomButton extends StatelessWidget {
         effectiveLoadingColor = loadingIndicatorColor ?? AppColors.white;
         break;
       case CustomButtonVariant.outlined:
-        effectiveBackgroundColor = backgroundColor ?? Colors.transparent;
+        effectiveBackgroundColor = backgroundColor ?? AppColors.transparent;
         effectiveTextColor = _isDisabled
             ? (disabledTextColor ?? AppColors.grey)
             : (textColor ?? AppColors.darkGrey);
         effectiveLoadingColor = loadingIndicatorColor ?? AppColors.primaryBlue;
         break;
       case CustomButtonVariant.text:
-        effectiveBackgroundColor = Colors.transparent;
+        effectiveBackgroundColor = AppColors.transparent;
         effectiveTextColor = _isDisabled
             ? (disabledTextColor ?? AppColors.grey)
             : (textColor ?? AppColors.primaryBlue);
@@ -330,7 +330,7 @@ class CustomButton extends StatelessWidget {
             borderColor ??
             (variant == CustomButtonVariant.outlined
                 ? AppColors.primaryBlue
-                : Colors.transparent),
+                : AppColors.transparent),
         width: borderWidth ?? 1.5,
       );
     } else if (variant == CustomButtonVariant.outlined) {
@@ -355,7 +355,7 @@ class CustomButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(effectiveBorderRadius),
         splashColor: splashColor ?? Colors.grey.withValues(alpha: 0.1),
         highlightColor:
-            splashColor?.withValues(alpha: 0.05) ?? Colors.transparent,
+            splashColor?.withValues(alpha: 0.05) ?? AppColors.transparent,
         child: Container(
           height: effectiveHeight,
           padding: effectivePadding,

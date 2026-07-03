@@ -217,7 +217,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
     showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => VisibilityPickerSheet(
         selectedValue: _selectedVisibility,
         selectedRadius: _selectedRadius,
@@ -851,7 +851,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                             await showModalBottomSheet<Map<String, dynamic>>(
                               context: context,
                               isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
+                              backgroundColor: AppColors.transparent,
                               builder: (context) => const CreatePollSheet(),
                             );
                         if (poll != null) {

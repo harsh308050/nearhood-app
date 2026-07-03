@@ -495,7 +495,7 @@ class _HomepageState extends State<Homepage> {
     final selectedCategory = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (_) => BlocProvider.value(
         value: feedBloc,
         child: const CategoryPickerSheet(),
@@ -572,7 +572,7 @@ class _HomepageState extends State<Homepage> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (sheetContext) => Container(
         decoration: BoxDecoration(
           color: AppColors.white,

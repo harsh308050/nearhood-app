@@ -662,7 +662,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     width: 52.r,
                     height: 52.r,
                     decoration: const BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.white,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -674,13 +674,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         Container(
                           height: 14.h,
                           width: 120.w,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                         sh(6),
                         Container(
                           height: 12.h,
                           width: 180.w,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ],
                     ),

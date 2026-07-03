@@ -169,7 +169,7 @@ class _LongPressOverlayContent extends StatelessWidget {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         body: Stack(
           children: [
             GestureDetector(
@@ -184,7 +184,7 @@ class _LongPressOverlayContent extends StatelessWidget {
               height: size.height,
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: Material(color: Colors.transparent, child: child),
+                child: Material(color: AppColors.transparent, child: child),
               ),
             ),
             Positioned(
@@ -203,7 +203,7 @@ class _LongPressOverlayContent extends StatelessWidget {
   Widget _buildMenu(BuildContext context) {
     final defaultShadow = [
       BoxShadow(
-        color: Colors.black.withValues(alpha: 0.15),
+        color: AppColors.black.withValues(alpha: 0.15),
         blurRadius: 10,
         offset: const Offset(0, 4),
       ),
@@ -222,7 +222,7 @@ class _LongPressOverlayContent extends StatelessWidget {
         .toList();
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: Container(
         decoration: decoration,
         child: ClipRRect(

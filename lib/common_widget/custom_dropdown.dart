@@ -273,7 +273,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
                   borderRadius: BorderRadius.circular(
                     (widget.borderRadius ?? 15.0).r,
                   ),
-                  shadowColor: Colors.black.withValues(alpha: 0.1),
+                  shadowColor: AppColors.black.withValues(alpha: 0.1),
                   child: Container(
                     constraints: BoxConstraints(maxHeight: widget.maxHeight.h),
                     decoration: BoxDecoration(
@@ -404,7 +404,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primaryBlue.withValues(alpha: 0.08)
-              : Colors.transparent,
+              : AppColors.transparent,
           border: Border(
             bottom: BorderSide(
               color: AppColors.borderLight.withValues(alpha: 0.5),
@@ -421,7 +421,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.primaryBlue
-                      : Colors.transparent,
+                      : AppColors.transparent,
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primaryBlue

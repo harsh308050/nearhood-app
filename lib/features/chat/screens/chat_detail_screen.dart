@@ -534,7 +534,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             borderRadius: BorderRadius.circular(8.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: AppColors.black.withValues(alpha: 0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -645,7 +645,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     )
                   else
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: AppColors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -861,7 +861,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: AppColors.black.withValues(alpha: 0.08),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -1057,12 +1057,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     Container(
                       width: 110.w,
                       height: 108.h,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: AppColors.black.withValues(alpha: 0.5),
                       child: Center(
                         child: CustomText(
                           '+$overflow',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1123,14 +1123,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             Container(
               width: width,
               height: height,
-              color: Colors.black.withValues(alpha: 0.3),
+              color: AppColors.black.withValues(alpha: 0.3),
               child: Center(
                 child: SizedBox(
                   width: 24.r,
                   height: 24.r,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -1192,7 +1192,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: AppColors.black.withValues(alpha: 0.08),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -1316,7 +1316,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: AppColors.black.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Center(
@@ -1325,7 +1325,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                           height: 24.r,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         ),
                       ),
@@ -1374,7 +1374,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 height: 40.h,
                 width: 150.w,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(16.r),
                 ),
               ),
@@ -1436,7 +1436,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               color: AppColors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: AppColors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -1468,7 +1468,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             color: AppColors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: AppColors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -1753,7 +1753,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -2058,7 +2058,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         ? (_bubblePlayer?.position ?? Duration.zero)
         : Duration.zero;
     final progress = totalDuration.inMilliseconds > 0
-        ? (position.inMilliseconds / totalDuration.inMilliseconds).clamp(0.0, 1.0)
+        ? (position.inMilliseconds / totalDuration.inMilliseconds).clamp(
+            0.0,
+            1.0,
+          )
         : 0.0;
 
     return Padding(
@@ -2087,7 +2090,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: AppColors.black.withValues(alpha: 0.08),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -2438,8 +2441,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     final postId = message.postId;
     if (postId == null || postId.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('This post is no longer available')),
+        AppSnackBar.showMessage(
+          context,
+          "This post is no longer available",
+          borderColor: AppColors.red,
         );
       }
       return;
@@ -2496,7 +2501,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   void _showAttachmentOptions() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -2625,15 +2630,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            source == ImageSource.camera
-                ? 'Camera permission is required'
-                : 'Photo library permission is required',
-          ),
-          duration: const Duration(seconds: 2),
-        ),
+      AppSnackBar.showMessage(
+        context,
+        source == ImageSource.camera
+            ? 'Camera permission is required'
+            : 'Photo library permission is required',
+        borderColor: AppColors.primaryBlue,
       );
       return;
     }
@@ -2682,9 +2684,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     } catch (e) {
       if (!mounted) return;
       _chatBloc?.add(RemoveUploadingMessage(tempId));
-      ScaffoldMessenger.of(
+
+      AppSnackBar.showMessage(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to upload image')));
+        'Failed to upload image',
+        borderColor: AppColors.red,
+      );
     }
   }
 
@@ -2743,9 +2748,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     } catch (e) {
       if (!mounted) return;
       _chatBloc?.add(RemoveUploadingMessage(tempId));
-      ScaffoldMessenger.of(
+
+      AppSnackBar.showMessage(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
+        'Failed to get location: $e',
+        borderColor: AppColors.red,
+      );
     }
   }
 
@@ -2937,8 +2945,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     } catch (e) {
       if (!mounted) return;
       _chatBloc?.add(RemoveUploadingMessage(tempId));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send voice message')),
+      AppSnackBar.showMessage(
+        context,
+        'Failed to send voice message',
+        borderColor: AppColors.red,
       );
     }
   }
@@ -3005,7 +3015,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     final chatBloc = context.read<ChatBloc>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (_) => BlocProvider.value(
         value: chatBloc,
         child: BlocBuilder<ChatBloc, ChatState>(
@@ -3150,7 +3160,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: AppColors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -3247,7 +3257,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       context: context,
       barrierDismissible: true,
       barrierLabel: 'dismiss',
-      barrierColor: Colors.black.withValues(alpha: 0.5),
+      barrierColor: AppColors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, anim1, anim2) {
         return BackdropFilter(
@@ -3362,7 +3372,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.black,
       body: Stack(
         children: [
           PageView.builder(
@@ -3383,7 +3393,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                           fit: BoxFit.contain,
                           placeholder: (_, __) => const Center(
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                           errorWidget: (_, __, ___) => const Icon(
@@ -3403,11 +3413,11 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
               child: Container(
                 // padding: EdgeInsets.all(2.r),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: AppColors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white, size: 24.r),
+                  icon: Icon(Icons.close, color: AppColors.white, size: 24.r),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -3429,8 +3439,8 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: i == _currentIndex
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.4),
+                          ? AppColors.white
+                          : AppColors.white.withValues(alpha: 0.4),
                     ),
                   ),
                 ),

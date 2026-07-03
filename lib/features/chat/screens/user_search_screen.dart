@@ -75,10 +75,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
         borderRadius: 12.0,
         backgroundColor: AppColors.background,
         borderColor: AppColors.borderLight,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 10.h,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       ),
     );
   }
@@ -115,16 +112,12 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
       onTap: () {
         // Clear search state before navigating away
         chatBloc.add(const SearchUsers(''));
-        
-        Navigator.pushReplacement(
+        callNextScreenAndClearStack(
           context,
           CustomPageRoute(
             page: BlocProvider.value(
               value: chatBloc,
-              child: ChatDetailScreen(
-                receiverId: user.id,
-                otherUser: user,
-              ),
+              child: ChatDetailScreen(receiverId: user.id, otherUser: user),
             ),
           ),
         );
@@ -213,7 +206,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
                   width: 52.r,
                   height: 52.r,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -225,13 +218,13 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
                       Container(
                         height: 14.h,
                         width: 120.w,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                       sh(6),
                       Container(
                         height: 12.h,
                         width: 180.w,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ],
                   ),

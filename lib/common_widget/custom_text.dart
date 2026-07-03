@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nearhood/core/theme/app_typography.dart';
+import 'package:nearhood/core/utils/custom_import.dart';
 
 /// A fully customizable, generic Text widget that supports pre-defined
-/// typography styles as well as inheriting styles from parent widgets 
+/// typography styles as well as inheriting styles from parent widgets
 /// (such as AnimatedDefaultTextStyle used in TextField labels).
 class CustomText extends StatelessWidget {
   final String text;
@@ -62,58 +63,148 @@ class CustomText extends StatelessWidget {
   });
 
   /// Factory constructors for standard typography variants.
-  factory CustomText.heroTitle(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.heroTitle, color: color, textAlign: textAlign, maxLines: maxLines);
+  factory CustomText.heroTitle(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.heroTitle,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
   }
 
-  factory CustomText.screenTitle(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.screenTitle, color: color, textAlign: textAlign, maxLines: maxLines);
+  factory CustomText.screenTitle(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.screenTitle,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
   }
 
-  factory CustomText.sectionHeader(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.sectionHeader, color: color, textAlign: textAlign, maxLines: maxLines);
-  }
-  
-  factory CustomText.cardTitle(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.cardTitle, color: color, textAlign: textAlign, maxLines: maxLines);
-  }
-
-  factory CustomText.bodyText(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.bodyText, color: color, textAlign: textAlign, maxLines: maxLines);
-  }
-
-  factory CustomText.caption(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.caption, color: color, textAlign: textAlign, maxLines: maxLines);
-  }
-
-  factory CustomText.buttonLabel(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.buttonLabel, color: color, textAlign: textAlign, maxLines: maxLines);
+  factory CustomText.sectionHeader(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.sectionHeader,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
   }
 
-  factory CustomText.overline(String text, {Color? color, TextAlign? textAlign, int? maxLines}) {
-    return CustomText(text, style: AppTypography.overline, color: color, textAlign: textAlign, maxLines: maxLines);
+  factory CustomText.cardTitle(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.cardTitle,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
+  }
+
+  factory CustomText.bodyText(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.bodyText,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
+  }
+
+  factory CustomText.caption(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.caption,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
+  }
+
+  factory CustomText.buttonLabel(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.buttonLabel,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
+  }
+
+  factory CustomText.overline(
+    String text, {
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) {
+    return CustomText(
+      text,
+      style: AppTypography.overline,
+      color: color,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     // Merge provided overrides with the base style if present.
-    // If style is null, we apply overrides to a bare TextStyle so it 
+    // If style is null, we apply overrides to a bare TextStyle so it
     // can inherit properties from DefaultTextStyle without forcing an override.
-    final finalStyle = style?.copyWith(
-      color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      decoration: decoration,
-      height: height,
-      letterSpacing: letterSpacing,
-    ) ?? TextStyle(
-      color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      decoration: decoration,
-      height: height,
-      letterSpacing: letterSpacing,
-    );
+    final finalStyle =
+        style?.copyWith(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          decoration: decoration,
+          height: height,
+          letterSpacing: letterSpacing,
+        ) ??
+        TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          decoration: decoration,
+          height: height,
+          letterSpacing: letterSpacing,
+        );
 
     if (enableScroll) {
       return TextScroll(
@@ -275,22 +366,22 @@ class _TextScrollState extends State<TextScroll> {
       final List<Color> colors = List.generate(
         1 ~/ widget.fadedBorderWidth! - 1,
         (index) {
-          return Colors.transparent;
+          return AppColors.transparent;
         },
         growable: true,
       );
 
       if (widget.fadeBorderSide == FadeBorderSide.both ||
           widget.fadeBorderSide == FadeBorderSide.left) {
-        colors.insert(0, Colors.black);
+        colors.insert(0, AppColors.black);
       } else {
-        colors.add(Colors.transparent);
+        colors.add(AppColors.transparent);
       }
       if (widget.fadeBorderSide == FadeBorderSide.both ||
           widget.fadeBorderSide == FadeBorderSide.right) {
-        colors.add(Colors.black);
+        colors.add(AppColors.black);
       } else {
-        colors.add(Colors.transparent);
+        colors.add(AppColors.transparent);
       }
 
       final List<double> stops = List.generate(1 ~/ widget.fadedBorderWidth!, (
@@ -495,5 +586,7 @@ class _TextScrollState extends State<TextScroll> {
 }
 
 enum TextScrollMode { bouncing, endless }
+
 enum FadeBorderSide { left, right, both }
+
 enum FadeBorderVisibility { always, auto }

@@ -285,7 +285,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (sheetContext) => Container(
         decoration: BoxDecoration(
           color: AppColors.white,

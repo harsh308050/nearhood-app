@@ -70,7 +70,7 @@ class _PostMediaCarouselWidgetState extends State<PostMediaCarouselWidget> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
+                  color: AppColors.black.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(100.r),
                 ),
                 child: Row(
