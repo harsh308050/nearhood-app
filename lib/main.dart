@@ -9,7 +9,6 @@ import 'package:nearhood/core/services/deeplink_service.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/core/services/notification_handler.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
-import 'package:nearhood/common_widget/connectivity_wrapper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearhood/features/auth/bloc/auth_bloc.dart';
 import 'package:nearhood/features/auth/data/auth_datasource.dart';
@@ -53,7 +52,7 @@ class NearhoodApp extends StatelessWidget {
         navigatorKey: navigatorKey,
         theme: AppTheme.lightTheme,
         builder: (context, child) {
-          return ConnectivityWrapper(child: NotificationHandler(child: child!));
+          return NotificationHandler(child: child!);
         },
         home: const SplashScreen(),
       ),

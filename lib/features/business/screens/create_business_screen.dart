@@ -10,25 +10,40 @@ import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/features/auth/model/auth_response_models.dart';
 import 'package:nearhood/features/business/bloc/business_bloc.dart';
 import 'package:nearhood/features/business/bloc/business_event.dart';
+import 'package:nearhood/features/business/models/business_models.dart';
 import 'package:nearhood/features/business/screens/business_registration_success_screen.dart';
-import 'package:nearhood/features/business/constants/business_categories.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
+import 'package:nearhood/features/location_selection/bloc/location_bloc.dart';
+import 'package:nearhood/features/location_selection/data/location_datasource.dart';
+import 'package:nearhood/features/location_selection/model/location_models.dart';
+import 'package:nearhood/features/location_selection/helper/location_search_bottom_sheet_helper.dart';
 
 class CreateBusinessScreen extends StatelessWidget {
-  const CreateBusinessScreen({super.key});
+  final BusinessProfile? profile;
+  const CreateBusinessScreen({super.key, this.profile});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => BusinessBloc(),
-      child: const CreateBusinessScreenBody(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => BusinessBloc()
+            ..add(FetchBusinessProfile())
+            ..add(FetchBusinessCategories()),
+        ),
+        BlocProvider(
+          create: (_) => LocationBloc(dataSource: LocationRemoteDataSource()),
+        ),
+      ],
+      child: CreateBusinessScreenBody(profile: profile),
     );
   }
 }
 
 class CreateBusinessScreenBody extends StatefulWidget {
-  const CreateBusinessScreenBody({super.key});
+  final BusinessProfile? profile;
+  const CreateBusinessScreenBody({super.key, this.profile});
 
   @override
   State<CreateBusinessScreenBody> createState() => _CreateBusinessScreenState();
@@ -58,23 +73,90 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
   String? _selectedBusinessType;
   String? _selectedCategory;
   String? _selectedSubCategory;
+  final _customSubCategoryController = TextEditingController();
+  LocationModel? _selectedLocality;
   String? _logoLocalPath;
   String? _coverLocalPath;
   final Map<String, bool> _workingHoursOpen = {
-    'monday': false,
-    'tuesday': false,
-    'wednesday': false,
-    'thursday': false,
-    'friday': false,
+    'monday': true,
+    'tuesday': true,
+    'wednesday': true,
+    'thursday': true,
+    'friday': true,
     'saturday': false,
     'sunday': false,
   };
-  final Map<String, TimeOfDay?> _workingHoursOpenTime = {};
-  final Map<String, TimeOfDay?> _workingHoursCloseTime = {};
+  final Map<String, TimeOfDay?> _workingHoursOpenTime = {
+    'monday': const TimeOfDay(hour: 9, minute: 0),
+    'tuesday': const TimeOfDay(hour: 9, minute: 0),
+    'wednesday': const TimeOfDay(hour: 9, minute: 0),
+    'thursday': const TimeOfDay(hour: 9, minute: 0),
+    'friday': const TimeOfDay(hour: 9, minute: 0),
+  };
+  final Map<String, TimeOfDay?> _workingHoursCloseTime = {
+    'monday': const TimeOfDay(hour: 18, minute: 0),
+    'tuesday': const TimeOfDay(hour: 18, minute: 0),
+    'wednesday': const TimeOfDay(hour: 18, minute: 0),
+    'thursday': const TimeOfDay(hour: 18, minute: 0),
+    'friday': const TimeOfDay(hour: 18, minute: 0),
+  };
 
   bool _isSubmitting = false;
 
   UserProfile? get _user => sharedPrefGetUser();
+  bool get _isEditing => widget.profile != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.profile;
+    if (p == null) return;
+
+    _selectedBusinessType = p.businessType;
+    _selectedCategory = p.category;
+    _nameController.text = p.businessName;
+    _descController.text = p.description;
+    _addressController.text = p.address;
+    _phoneController.text = p.phone ?? '';
+    _websiteController.text = p.website ?? '';
+    _gstController.text = p.gstNumber ?? '';
+
+    // Handle category/subcategory prefill
+    if (p.category == 'Other') {
+      _customSubCategoryController.text = p.subCategory ?? '';
+    } else {
+      _selectedSubCategory = p.subCategory;
+    }
+
+    // Pre-fill working hours
+    if (p.workingHours != null) {
+      for (final entry in p.workingHours!.entries) {
+        _workingHoursOpen[entry.key] = entry.value.isOpen;
+        if (entry.value.isOpen) {
+          _workingHoursOpenTime[entry.key] = _parseTime(entry.value.open);
+          _workingHoursCloseTime[entry.key] = _parseTime(entry.value.close);
+        }
+      }
+    }
+
+    // Pre-fill business locality (may differ from the user's home locality)
+    if (p.localityId.isNotEmpty) {
+      _selectedLocality = LocationModel(
+        placeId: p.localityId,
+        name: p.localityName,
+      );
+    }
+  }
+
+  TimeOfDay? _parseTime(String? time) {
+    if (time == null || time.isEmpty) return null;
+    final parts = time.split(':');
+    if (parts.length != 2) return null;
+    return TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 9,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
+  }
 
   @override
   void dispose() {
@@ -85,6 +167,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     _phoneController.dispose();
     _websiteController.dispose();
     _gstController.dispose();
+    _customSubCategoryController.dispose();
     super.dispose();
   }
 
@@ -125,7 +208,16 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           _showError('Please select a category');
           return false;
         }
-        if (_logoLocalPath == null) {
+        if (_selectedCategory == 'Other' &&
+            _customSubCategoryController.text.trim().isEmpty) {
+          _showError('Please enter a category');
+          return false;
+        }
+        if (_selectedCategory != 'Other' && _selectedSubCategory == null) {
+          _showError('Please select a subcategory');
+          return false;
+        }
+        if (_logoLocalPath == null && widget.profile?.logoUrl == null) {
           _showError('Please upload a logo');
           return false;
         }
@@ -148,6 +240,22 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           if (!valid) {
             _showError('Website URL is not reachable. Please check the URL.');
             return false;
+          }
+        }
+        // Validate working hours: close must be after open
+        for (final day in _workingHoursOpen.keys) {
+          if (_workingHoursOpen[day] == true) {
+            final open = _workingHoursOpenTime[day];
+            final close = _workingHoursCloseTime[day];
+            if (open != null && close != null) {
+              final openMinutes = open.hour * 60 + open.minute;
+              final closeMinutes = close.hour * 60 + close.minute;
+              if (closeMinutes <= openMinutes) {
+                final dayLabel = day[0].toUpperCase() + day.substring(1);
+                _showError('$dayLabel: close time must be after open time');
+                return false;
+              }
+            }
           }
         }
         return true;
@@ -239,6 +347,22 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
       }
     } catch (e) {
       _showError('Failed to get location: $e');
+    }
+  }
+
+  Future<void> _pickBusinessLocality() async {
+    final result = await showLocationSearchBottomSheet(
+      context,
+      bloc: context.read<LocationBloc>(),
+      title: AppStrings.businessLocality,
+      hint: AppStrings.businessLocalityPlaceholder,
+      isLocality: true,
+      city: _user?.location?.city?.name,
+      stateName: _user?.location?.state?.name,
+      countryCode: _user?.location?.country?.isoCode,
+    );
+    if (result != null && mounted) {
+      setState(() => _selectedLocality = result);
     }
   }
 
@@ -350,8 +474,8 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     // Reset register status to avoid stale state
     bloc.add(ResetRegisterStatus());
 
-    // Upload logo first
-    if (_logoLocalPath != null && bloc.state.logoUrl == null) {
+    // Upload logo if local file picked
+    if (_logoLocalPath != null) {
       bloc.add(UploadBusinessLogo(_logoLocalPath!));
       await bloc.stream.firstWhere(
         (s) =>
@@ -365,8 +489,8 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
       }
     }
 
-    // Upload cover if present
-    if (_coverLocalPath != null && bloc.state.coverUrl == null) {
+    // Upload cover if local file picked
+    if (_coverLocalPath != null) {
       bloc.add(UploadBusinessCover(_coverLocalPath!));
       await bloc.stream.firstWhere(
         (s) =>
@@ -395,22 +519,62 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
       }
     }
 
-    bloc.add(
-      RegisterBusiness(
-        businessType: _selectedBusinessType!,
-        businessName: _nameController.text.trim(),
-        category: _selectedCategory!,
-        subCategory: _selectedSubCategory,
-        description: _descController.text.trim(),
-        address: _addressController.text.trim(),
-        logoUrl: bloc.state.logoUrl ?? '',
-        coverUrl: bloc.state.coverUrl,
-        phone: _phoneController.text.trim(),
-        website: _websiteController.text.trim(),
-        workingHours: hours,
-        gstNumber: _gstController.text.trim(),
-      ),
-    );
+    final logoUrl = bloc.state.logoUrl ?? widget.profile?.logoUrl ?? '';
+    final coverUrl = bloc.state.coverUrl ?? widget.profile?.coverUrl;
+
+    if (_isEditing) {
+      bloc.add(
+        UpdateBusinessProfile(
+          businessType: _selectedBusinessType,
+          businessName: _nameController.text.trim(),
+          category: _selectedCategory,
+          subCategory: _selectedCategory == 'Other'
+              ? _customSubCategoryController.text.trim().isEmpty
+                    ? null
+                    : _customSubCategoryController.text.trim()
+              : _selectedSubCategory,
+          description: _descController.text.trim(),
+          address: _addressController.text.trim(),
+          logoUrl: logoUrl,
+          coverUrl: coverUrl,
+          phone: _phoneController.text.trim(),
+          website: _websiteController.text.trim(),
+          workingHours: hours,
+          gstNumber: _gstController.text.trim(),
+          localityId: _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
+          localityName: _selectedLocality?.name ?? _user?.location?.locality?.name,
+          city: _user?.location?.city?.name,
+          latitude: _user?.location?.coordinates?.lat,
+          longitude: _user?.location?.coordinates?.lng,
+        ),
+      );
+    } else {
+      bloc.add(
+        RegisterBusiness(
+          businessType: _selectedBusinessType!,
+          businessName: _nameController.text.trim(),
+          category: _selectedCategory!,
+          subCategory: _selectedCategory == 'Other'
+              ? _customSubCategoryController.text.trim().isEmpty
+                    ? null
+                    : _customSubCategoryController.text.trim()
+              : _selectedSubCategory,
+          description: _descController.text.trim(),
+          address: _addressController.text.trim(),
+          logoUrl: logoUrl,
+          coverUrl: coverUrl,
+          phone: _phoneController.text.trim(),
+          website: _websiteController.text.trim(),
+          workingHours: hours,
+          gstNumber: _gstController.text.trim(),
+          localityId: _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
+          localityName: _selectedLocality?.name ?? _user?.location?.locality?.name,
+          city: _user?.location?.city?.name,
+          latitude: _user?.location?.coordinates?.lat,
+          longitude: _user?.location?.coordinates?.lng,
+        ),
+      );
+    }
 
     await bloc.stream.firstWhere(
       (s) =>
@@ -421,15 +585,22 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     setState(() => _isSubmitting = false);
 
     if (bloc.state.registerStatus == ApiCallState.success) {
+      await sharedPrefSetHasBusinessProfile(true);
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const BusinessRegistrationSuccessScreen(),
-          ),
-        );
+        if (_isEditing) {
+          Navigator.of(context).pop();
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const BusinessRegistrationSuccessScreen(),
+            ),
+          );
+        }
       }
     } else {
-      _showError(AppStrings.businessRegisterFailed);
+      _showError(
+        _isEditing ? 'Update failed' : AppStrings.businessRegisterFailed,
+      );
     }
   }
 
@@ -438,9 +609,11 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CommonAppBar(
-        title: AppStrings.businessRegistration,
+        backgroundColor: AppColors.white,
+        title: _isEditing ? 'Edit Business' : AppStrings.businessRegistration,
         showBackButton: true,
         onBackPressed: () => Navigator.pop(context),
+        actionButton: _isEditing && _currentStep < 3 ? _buildDonePill() : null,
       ),
       body: Listener(
         onPointerDown: (_) {
@@ -449,6 +622,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
         child: Column(
           children: [
             _buildStepIndicator(),
+
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -550,6 +724,30 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
 
   // ─── Step 1: Type & Name + Logo/Cover ────────────────────────────────
   Widget _buildStep1() {
+    final bloc = context.watch<BusinessBloc>();
+    final isServiceOnly = _selectedBusinessType == 'neighbor_for_hire';
+    final isLoading = bloc.state.businessCategoriesStatus == ApiCallState.busy;
+
+    List<BusinessCategory> availableCategories = [];
+    if (isServiceOnly) {
+      availableCategories = bloc.state.serviceProvidingBusinessCategories;
+    } else {
+      availableCategories = [
+        ...bloc.state.productBusinessCategories,
+        ...bloc.state.serviceProvidingBusinessCategories,
+      ];
+    }
+
+    final categoryItems = [
+      ...availableCategories.map((c) => DropdownItem(value: c.name, label: c.name)),
+      DropdownItem(value: 'Other', label: 'Other'),
+    ];
+
+    final selectedCatObj = availableCategories.where((c) => c.name == _selectedCategory).firstOrNull;
+    final subcategoryItems = selectedCatObj != null
+        ? selectedCatObj.subcategories.map((sub) => DropdownItem(value: sub.name, label: sub.name)).toList()
+        : <DropdownItem<String>>[];
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
@@ -589,41 +787,53 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               isRequired: true,
               maxLength: 80,
               textInputAction: TextInputAction.next,
-              emptyErrorMessage: AppStrings.businessRequiredField,
+              emptyErrorMessage: AppStrings.fieldRequired,
             ),
             SizedBox(height: 16.h),
 
             // Category
             CustomDropdown<String>(
               label: AppStrings.businessCategory,
-              hint: AppStrings.selectCategory,
+              hint: isLoading ? 'Loading categories...' : AppStrings.selectCategory,
               isRequired: true,
               isSearchable: true,
               value: _selectedCategory,
-              items: BusinessCategories.allMainCategories
-                  .map((c) => DropdownItem(value: c, label: c))
-                  .toList(),
+              items: categoryItems,
               onChanged: (val) {
                 setState(() {
                   _selectedCategory = val;
                   _selectedSubCategory = null;
+                  if (val != 'Other') {
+                    _customSubCategoryController.clear();
+                  }
                 });
               },
             ),
 
+            if (_selectedCategory == 'Other') ...[
+              SizedBox(height: 12.h),
+              CustomTextField(
+                controller: _customSubCategoryController,
+                label: AppStrings.businessSubCategory,
+                hint: 'Enter your business category',
+                isRequired: true,
+                maxLength: 50,
+                textInputAction: TextInputAction.next,
+                emptyErrorMessage: AppStrings.fieldRequired,
+              ),
+            ],
+
             if (_selectedCategory != null &&
-                BusinessCategories.subCategoriesOf(
-                  _selectedCategory!,
-                ).isNotEmpty) ...[
+                _selectedCategory != 'Other' &&
+                subcategoryItems.isNotEmpty) ...[
               SizedBox(height: 12.h),
               CustomDropdown<String>(
                 label: AppStrings.businessSubCategory,
                 hint: AppStrings.selectSubCategory,
+                isRequired: true,
                 isSearchable: true,
                 value: _selectedSubCategory,
-                items: BusinessCategories.subCategoriesOf(
-                  _selectedCategory!,
-                ).map((c) => DropdownItem(value: c, label: c)).toList(),
+                items: subcategoryItems,
                 onChanged: (val) => setState(() => _selectedSubCategory = val),
               ),
             ],
@@ -646,6 +856,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               localPath: _logoLocalPath,
               onTap: () => _pickImage(isLogo: true),
               label: AppStrings.businessUploadLogo,
+              networkUrl: widget.profile?.logoUrl,
             ),
             SizedBox(height: 16.h),
 
@@ -667,6 +878,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               onTap: () => _pickImage(isLogo: false),
               label: AppStrings.businessUploadCover,
               aspectRatio: 2 / 1,
+              networkUrl: widget.profile?.coverUrl,
             ),
           ],
         ),
@@ -682,7 +894,16 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
   }) {
     final isSelected = _selectedBusinessType == type;
     return GestureDetector(
-      onTap: () => setState(() => _selectedBusinessType = type),
+      onTap: () {
+        if (_selectedBusinessType != type) {
+          setState(() {
+            _selectedBusinessType = type;
+            _selectedCategory = null;
+            _selectedSubCategory = null;
+            _customSubCategoryController.clear();
+          });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.all(14.w),
@@ -756,8 +977,12 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     required String? localPath,
     required VoidCallback onTap,
     required String label,
+    String? networkUrl,
     double aspectRatio = 1,
   }) {
+    final hasLocal = localPath != null;
+    final hasNetwork = networkUrl != null && networkUrl.isNotEmpty;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -767,31 +992,35 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: AppColors.borderLight),
-          image: localPath != null
-              ? DecorationImage(
-                  image: FileImage(File(localPath)),
-                  fit: aspectRatio > 1.5 ? BoxFit.cover : BoxFit.cover,
-                )
-              : null,
         ),
-        child: localPath == null
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_a_photo_outlined,
-                    color: AppColors.grey,
-                    size: 32.r,
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 13.sp, color: AppColors.grey),
-                  ),
-                ],
+        clipBehavior: Clip.antiAlias,
+        child: hasLocal
+            ? Image.file(File(localPath), fit: BoxFit.cover)
+            : hasNetwork
+            ? CachedNetworkImage(
+                imageUrl: networkUrl,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                errorWidget: (_, __, ___) => _buildImagePlaceholder(label),
               )
-            : null,
+            : _buildImagePlaceholder(label),
       ),
+    );
+  }
+
+  Widget _buildImagePlaceholder(String label) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_a_photo_outlined, color: AppColors.grey, size: 32.r),
+        SizedBox(height: 6.h),
+        Text(
+          label,
+          style: TextStyle(fontSize: 13.sp, color: AppColors.grey),
+        ),
+      ],
     );
   }
 
@@ -813,7 +1042,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               maxLines: 4,
               maxLength: 300,
               textInputAction: TextInputAction.newline,
-              emptyErrorMessage: AppStrings.businessRequiredField,
+              emptyErrorMessage: AppStrings.fieldRequired,
             ),
             SizedBox(height: 16.h),
 
@@ -829,7 +1058,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                     hint: AppStrings.businessAddressHint,
                     isRequired: true,
                     textInputAction: TextInputAction.next,
-                    emptyErrorMessage: AppStrings.businessRequiredField,
+                    emptyErrorMessage: AppStrings.fieldRequired,
                   ),
                 ),
                 SizedBox(width: 8.w),
@@ -859,7 +1088,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
             ),
             SizedBox(height: 16.h),
 
-            // Locality (locked)
+            // Business Area (selectable locality, same city as home)
             Text(
               AppStrings.businessLocality,
               style: AppTypography.sectionHeader.copyWith(
@@ -867,29 +1096,37 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               ),
             ),
             SizedBox(height: 6.h),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.borderLight),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.location_on, color: AppColors.grey, size: 18.r),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      _user?.location?.locality?.name ?? '',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppColors.darkGrey,
+            GestureDetector(
+              onTap: _pickBusinessLocality,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AppColors.borderLight),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on, color: AppColors.grey, size: 18.r),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        _selectedLocality?.name ??
+                            _user?.location?.locality?.name ??
+                            '',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: _selectedLocality?.name != null ||
+                                  _user?.location?.locality?.name != null
+                              ? AppColors.darkGrey
+                              : AppColors.grey,
+                        ),
                       ),
                     ),
-                  ),
-                  Icon(Icons.lock, color: AppColors.grey, size: 14.r),
-                ],
+                    Icon(Icons.chevron_right, color: AppColors.grey, size: 18.r),
+                  ],
+                ),
               ),
             ),
             SizedBox(height: 4.h),
@@ -898,14 +1135,14 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                 Icon(Icons.info_outline, color: AppColors.grey, size: 14.r),
                 SizedBox(width: 4.w),
                 Text(
-                  AppStrings.businessLocalityLocked,
+                  AppStrings.businessLocalityHint,
                   style: TextStyle(fontSize: 11.sp, color: AppColors.grey),
                 ),
               ],
             ),
             SizedBox(height: 16.h),
 
-            // City (locked)
+            // City (locked to home city)
             Text(
               AppStrings.businessCity,
               style: AppTypography.sectionHeader.copyWith(
@@ -974,11 +1211,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                       color: AppColors.darkGrey,
                     ),
                   ),
-                  SizedBox(width: 4.w),
-                  CustomImageView(
-                    imagePath: AppAssets.icDownarrow,
-                    color: AppColors.grey,
-                  ),
+
                   SizedBox(width: 12.w),
                   Container(
                     width: 1.r,
@@ -1169,10 +1402,16 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
   // ─── Step 4: Review ──────────────────────────────────────────────────
   Widget _buildStep4() {
     final bloc = context.watch<BusinessBloc>();
-    final locality = _user?.location?.locality?.name ?? '';
+    final locality =
+        _selectedLocality?.name ?? _user?.location?.locality?.name ?? '';
     final city = _user?.location?.city?.name ?? '';
-    final logoUrl = bloc.state.logoUrl;
-    final coverUrl = bloc.state.coverUrl;
+    // Priority: local file > newly uploaded URL > existing profile URL
+    final logoUrl = _logoLocalPath == null
+        ? (bloc.state.logoUrl ?? widget.profile?.logoUrl)
+        : null;
+    final coverUrl = _coverLocalPath == null
+        ? (bloc.state.coverUrl ?? widget.profile?.coverUrl)
+        : null;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
@@ -1270,10 +1509,17 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                                       ),
                                     ),
                                   ),
-                                  if (_selectedSubCategory != null) ...[
+                                  if (_selectedCategory == 'Other'
+                                      ? _customSubCategoryController.text
+                                            .trim()
+                                            .isNotEmpty
+                                      : _selectedSubCategory != null) ...[
                                     SizedBox(width: 6.w),
                                     Text(
-                                      _selectedSubCategory!,
+                                      _selectedCategory == 'Other'
+                                          ? _customSubCategoryController.text
+                                                .trim()
+                                          : _selectedSubCategory!,
                                       style: TextStyle(
                                         fontSize: 12.sp,
                                         color: AppColors.grey,
@@ -1530,6 +1776,24 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     );
   }
 
+  Widget _buildDonePill() {
+    return CustomButton(
+      onPressed: _isSubmitting ? null : _submit,
+      text: "Done",
+      width: 60.w,
+      height: 30.h,
+      borderRadius: 100.r,
+      padding: EdgeInsets.zero,
+      isLoading: _isSubmitting,
+      backgroundColor: AppColors.borderLight,
+      textStyle: AppTypography.cardTitle.copyWith(
+        color: AppColors.primaryBlue,
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+
   Widget _buildBottomBar() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -1561,7 +1825,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               flex: 2,
               child: CustomButton(
                 text: _currentStep == 3
-                    ? AppStrings.businessSubmit
+                    ? (_isEditing ? 'Save Changes' : AppStrings.businessSubmit)
                     : AppStrings.businessNext,
                 isLoading: _isSubmitting,
                 onPressed: _currentStep == 3 ? _submit : _nextStep,

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/core/network/api_call_state.dart';
@@ -161,6 +163,15 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
     });
   }
 
+  bool _isVideo(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.avi') ||
+        lower.endsWith('.mkv') ||
+        lower.contains('video');
+  }
+
   Future<void> _pickImages(ImageSource source) async {
     if (_mediaPaths.length >= 4) {
       AppSnackBar.showMessage(context, AppStrings.maxImagesReached);
@@ -170,7 +181,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
     try {
       final ImagePicker picker = ImagePicker();
       if (source == ImageSource.gallery) {
-        final List<XFile> pickedFiles = await picker.pickMultiImage();
+        final List<XFile> pickedFiles = await picker.pickMultipleMedia();
         if (pickedFiles.isNotEmpty) {
           setState(() {
             final availableSlots = 4 - _mediaPaths.length;
@@ -182,20 +193,89 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
           _validatePostEnabled();
         }
       } else {
-        final XFile? pickedFile = await picker.pickImage(
-          source: ImageSource.camera,
-        );
-        if (pickedFile != null) {
-          setState(() {
-            _mediaPaths.add(pickedFile.path);
-          });
-          _validatePostEnabled();
-        }
+        _showCameraOptions();
       }
     } catch (e) {
       AppSnackBar.showMessage(
         context,
-        "Failed to pick image: $e",
+        "Failed to pick media: $e",
+        borderColor: AppColors.red,
+      );
+    }
+  }
+
+  void _showCameraOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: AppColors.borderLight,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt,
+                  color: AppColors.primaryBlue,
+                ),
+                title: const Text('Take Photo'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  _captureMedia(isVideo: false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.videocam,
+                  color: AppColors.primaryBlue,
+                ),
+                title: const Text('Record Video'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  _captureMedia(isVideo: true);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureMedia({required bool isVideo}) async {
+    if (_mediaPaths.length >= 4) {
+      AppSnackBar.showMessage(context, AppStrings.maxImagesReached);
+      return;
+    }
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = isVideo
+          ? await picker.pickVideo(source: ImageSource.camera)
+          : await picker.pickImage(source: ImageSource.camera);
+      if (file != null) {
+        setState(() {
+          _mediaPaths.add(file.path);
+        });
+        _validatePostEnabled();
+      }
+    } catch (e) {
+      AppSnackBar.showMessage(
+        context,
+        "Failed to capture media: $e",
         borderColor: AppColors.red,
       );
     }
@@ -727,6 +807,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
         itemBuilder: (context, index) {
           final path = _mediaPaths[index];
           final isNetwork = path.startsWith('http');
+          final isVid = _isVideo(path);
           return Stack(
             children: [
               Container(
@@ -734,14 +815,23 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                 width: 80.w,
                 height: 80.h,
                 decoration: BoxDecoration(
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(10.r),
                   border: Border.all(color: AppColors.borderLight),
-                  image: DecorationImage(
-                    image: isNetwork
-                        ? NetworkImage(path) as ImageProvider
-                        : FileImage(File(path)),
-                    fit: BoxFit.cover,
-                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.r),
+                  child: isVid
+                      ? _VideoPreviewItem(path: path)
+                      : (isNetwork
+                          ? CachedNetworkImage(
+                              imageUrl: path,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.file(
+                              File(path),
+                              fit: BoxFit.cover,
+                            )),
                 ),
               ),
               Positioned(
@@ -865,6 +955,76 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _VideoPreviewItem extends StatefulWidget {
+  final String path;
+  const _VideoPreviewItem({required this.path});
+
+  @override
+  State<_VideoPreviewItem> createState() => _VideoPreviewItemState();
+}
+
+class _VideoPreviewItemState extends State<_VideoPreviewItem> {
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final isNetwork = widget.path.startsWith('http');
+    _controller = isNetwork
+        ? VideoPlayerController.networkUrl(Uri.parse(widget.path))
+        : VideoPlayerController.file(File(widget.path));
+
+    _controller!.initialize().then((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }).catchError((_) {});
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized || _controller == null) {
+      return Container(
+        color: AppColors.background,
+        child: const Center(
+          child: CircularProgressIndicator.adaptive(),
+        ),
+      );
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox.expand(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox(
+              width: _controller!.value.size.width,
+              height: _controller!.value.size.height,
+              child: VideoPlayer(_controller!),
+            ),
+          ),
+        ),
+        Icon(
+          Icons.play_circle_fill,
+          color: AppColors.white.withValues(alpha: 0.8),
+          size: 28.r,
+        ),
+      ],
     );
   }
 }

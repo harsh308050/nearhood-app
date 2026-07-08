@@ -52,7 +52,6 @@ class AppStrings {
   static const String resendIn = 'Resend in ';
   static const String didntReceiveIt = "Didn't receive it?";
   static const String getViaCallInstead = 'Get via call instead';
-  static const String mobileNumberLabel = 'Mobile number';
   static const String sendOtp = 'Send OTP';
   static const String resendOtp = 'Resend OTP';
 
@@ -179,9 +178,6 @@ class AppStrings {
 
   //Messages
   static const String noResultFound = "No results found";
-  static const String noInternet = "No Internet Connection";
-  static const String noInternetDesc =
-      "Please check your connection and try again.";
   static const String noAreasFound = "No areas found";
   static const String tryDiffSearch = "Try a different search term";
   static const String useCurrentLocation = "Use your current location";
@@ -443,34 +439,28 @@ class AppStrings {
       'Tell neighbors what you offer (max 300 characters)';
   static const String businessAddress = 'Address';
   static const String businessAddressHint = 'Shop number, street, landmark';
-  static const String businessLocality = 'Locality';
+  static const String businessLocality = 'Business Area';
   static const String businessCity = 'City';
-  static const String businessLocalityLocked =
-      'Locked to your verified locality';
+  static const String businessLocalityHint =
+      'Pick the area where your business operates (same city as your home)';
+  static const String businessLocalityPlaceholder = 'Search for your business area';
   static const String businessLogo = 'Logo / Profile Photo';
   static const String businessLogoHint = 'Required';
   static const String businessCover = 'Cover Photo';
   static const String businessCoverHint = 'Optional';
   static const String businessPhone = 'Business Phone';
-  static const String businessPhoneHint = '+91 98765 43210';
+  static const String businessPhoneHint = '98765 43210';
   static const String businessWebsite = 'Website URL';
-  static const String businessWebsiteHint = 'https://';
+  static const String businessWebsiteHint = 'https://www.example.com';
   static const String businessWorkingHours = 'Working Hours';
   static const String businessGstNumber = 'GST Number';
-  static const String businessGstHint = 'Optional — adds GST Verified badge';
+  static const String businessGstHint = 'GSTIN (e.g. 27ABCDE1234F1Z5)';
   static const String businessReview = 'Review & Submit';
   static const String businessReviewSubtitle =
       'Please review your details before submitting.';
-  static const String businessSubmit = 'Submit for Review';
-  static const String businessSubmitting = 'Submitting...';
-  static const String businessRegistered =
-      'Business profile created! It will be visible after review.';
+  static const String businessSubmit = 'Submit';
   static const String businessRegisterFailed =
       'Registration failed. Please try again.';
-  static const String businessStep1 = 'Type';
-  static const String businessStep2 = 'Details';
-  static const String businessStep3 = 'Contact & Extras';
-  static const String businessStep4 = 'Review';
   static const String businessNext = 'Next';
   static const String businessBack = 'Back';
   static const String businessUploadLogo = 'Upload Logo';
@@ -478,12 +468,16 @@ class AppStrings {
   static const String businessChooseFromGallery = 'Choose from Gallery';
   static const String businessTakePhoto = 'Take Photo';
   static const String businessRemovePhoto = 'Remove Photo';
-  static const String businessOpen = 'Open';
-  static const String businessClosed = 'Closed';
-  static const String businessRequiredField = 'This field is required';
-  static const String businessInvalidUrl = 'Please enter a valid URL';
-  static const String businessDescMax =
-      'Description must be under 300 characters';
-  static const String businessNameMax =
-      'Business name must be under 80 characters';
+
+  // ─── Business Listings ──────────────────────────────────────────────────────
+  static const String productAdded = 'Product added successfully';
+  static const String serviceAdded = 'Service added successfully';
+  static const String listingUpdated = 'Listing updated successfully';
+
+  // ─── Business Categories ───────────────────────────────────────────────────
+  static const String loadingCategories = 'Loading categories...';
+  static const String loadingCategoriesFromServer = 'Loading categories from server...';
+  static const String fetchingCategoriesRetry = 'Fetching categories, please try again.';
+  static const String searchCategoriesPlaceholder = 'Search categories or services...';
+  static const String noCategoriesFound = 'No categories found';
 }

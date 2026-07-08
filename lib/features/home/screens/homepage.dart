@@ -382,7 +382,7 @@ class _HomepageState extends State<Homepage> {
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOutCubic,
                   left: (selectedIndex * cellWidth) + 2.r,
-                  top: 2.r - 1.w,
+                  top: 2.r,
                   width: capsuleWidth,
                   height: capsuleHeight,
                   child: Container(

@@ -43,7 +43,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
       appBar: CommonAppBar(
         backgroundColor: AppColors.white,
         title: AppStrings.chatNewMessage,
-        centerTitle: false,
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -87,8 +87,17 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
           return _buildLoadingShimmer();
         }
 
+        final existingChatUserIds = state.conversations
+            .map((conv) => conv.otherUser?.id)
+            .whereType<String>()
+            .toSet();
+
         final users = state.filteredUsers
-            .where((user) => user.id != _currentUserId)
+            .where(
+              (user) =>
+                  user.id != _currentUserId &&
+                  !existingChatUserIds.contains(user.id),
+            )
             .toList();
 
         if (users.isEmpty) {
@@ -112,13 +121,11 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
       onTap: () {
         // Clear search state before navigating away
         chatBloc.add(const SearchUsers(''));
-        callNextScreenAndClearStack(
+        callNextScreenBuilder(
           context,
-          CustomPageRoute(
-            page: BlocProvider.value(
-              value: chatBloc,
-              child: ChatDetailScreen(receiverId: user.id, otherUser: user),
-            ),
+          (ctx) => BlocProvider.value(
+            value: chatBloc,
+            child: ChatDetailScreen(receiverId: user.id, otherUser: user),
           ),
         );
       },
@@ -241,12 +248,6 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
     return EmptyStateWidget(
       title: AppStrings.chatNoNeighborsFound,
       subtitle: AppStrings.chatTryDifferentName,
-      illustration: CustomImageView(
-        imagePath: AppAssets.icUser,
-        color: AppColors.grey.withValues(alpha: 0.5),
-        height: 64.r,
-        width: 64.r,
-      ),
       showButton: false,
     );
   }

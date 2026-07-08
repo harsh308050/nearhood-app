@@ -25,6 +25,7 @@ import 'package:nearhood/common_widget/long_press_overlay_menu.dart';
 import 'package:nearhood/common_widget/report_dialog.dart';
 import 'package:nearhood/features/chat/widgets/post_preview_bar.dart';
 import 'package:nearhood/features/post/screens/post_detail_screen.dart';
+import 'package:nearhood/common_widget/full_screen_media_viewer.dart';
 import 'package:nearhood/core/services/fcm_service.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:shimmer/shimmer.dart';
@@ -1142,12 +1143,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   void _showFullScreenImages(List<String> urls, {int initialIndex = 0}) {
     if (urls.isEmpty) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) =>
-            _FullScreenImageViewer(urls: urls, initialIndex: initialIndex),
-      ),
-    );
+    FullScreenMediaViewer.show(context, urls, initialIndex: initialIndex);
   }
 
   Widget _buildLocationMessage(
@@ -2273,164 +2269,172 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
     return Padding(
       padding: EdgeInsets.only(
+        left: isMine ? 48.w : 0,
+        right: isMine ? 0 : 48.w,
+        top: showAvatar ? 8.h : 2.h,
         bottom: 4.h,
-        left: isMine ? 64.w : 0,
-        right: isMine ? 0 : 64.w,
       ),
-      child: GestureDetector(
-        onTap: () => _onPostPreviewTap(message),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isMine ? AppColors.primaryBlue : AppColors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16.r),
-              topRight: Radius.circular(16.r),
-              bottomLeft: Radius.circular(isMine ? 16.r : 4.r),
-              bottomRight: Radius.circular(isMine ? 4.r : 16.r),
+      child: Align(
+        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: () => _onPostPreviewTap(message),
+          child: Container(
+            width: 250.w,
+            decoration: BoxDecoration(
+              color: isMine ? AppColors.primaryBlue : AppColors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(isMine ? 16.r : 4.r),
+                bottomRight: Radius.circular(isMine ? 4.r : 16.r),
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Post preview card
-              Container(
-                constraints: BoxConstraints(maxHeight: 130.h),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16.r),
-                    topRight: Radius.circular(16.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Post preview card
+                Container(
+                  constraints: BoxConstraints(maxHeight: 130.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16.r),
+                      topRight: Radius.circular(16.r),
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 4.w,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16.r),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4.w,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          color: accentColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16.r),
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 8.h,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              snapshot.type,
-                              style: TextStyle(
-                                color: accentColor,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 8.h,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                snapshot.type,
+                                style: TextStyle(
+                                  color: accentColor,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.3,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              snapshot.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: AppColors.darkGrey,
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w500,
-                                height: 1.3,
+                              SizedBox(height: 2.h),
+                              Text(
+                                snapshot.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: AppColors.darkGrey,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.3,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              '${snapshot.authorName}${snapshot.authorLocality.isNotEmpty ? ' · ${snapshot.authorLocality}' : ''}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: AppColors.grey,
-                                fontSize: 10.sp,
+                              SizedBox(height: 4.h),
+                              Text(
+                                '${snapshot.authorName}${snapshot.authorLocality.isNotEmpty ? ' · ${snapshot.authorLocality}' : ''}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: AppColors.grey,
+                                  fontSize: 10.sp,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    if (snapshot.mediaUrl != null &&
-                        snapshot.mediaUrl!.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: CachedNetworkImage(
-                            imageUrl: snapshot.mediaUrl!,
-                            width: 56.r,
-                            height: 56.r,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Container(
+                      if (snapshot.mediaUrl != null &&
+                          snapshot.mediaUrl!.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.w),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.r),
+                            child: CachedNetworkImage(
+                              imageUrl: snapshot.mediaUrl!,
                               width: 56.r,
                               height: 56.r,
-                              color: AppColors.background,
-                              child: Icon(
-                                Icons.image_outlined,
-                                color: AppColors.grey,
-                                size: 20.r,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => Container(
+                                width: 56.r,
+                                height: 56.r,
+                                color: AppColors.background,
+                                child: Icon(
+                                  Icons.image_outlined,
+                                  color: AppColors.grey,
+                                  size: 20.r,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              ),
-              // Optional text message below
-              if (message.content.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 6.h,
-                  ),
-                  child: Text(
-                    message.content,
-                    style: TextStyle(
-                      color: isMine ? AppColors.white : AppColors.darkGrey,
-                      fontSize: 15.sp,
-                    ),
-                  ),
-                ),
-              // Time + read receipts
-              Padding(
-                padding: EdgeInsets.only(right: 10.w, bottom: 4.h),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      time,
-                      style: TextStyle(
-                        color: isMine
-                            ? AppColors.white.withValues(alpha: 0.7)
-                            : AppColors.grey,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                    if (isMine) ...[
-                      sw(4),
-                      Icon(
-                        message.isRead ? Icons.done_all : Icons.done,
-                        size: 14.r,
-                        color: message.isRead
-                            ? AppColors.white.withValues(alpha: 0.9)
-                            : AppColors.white.withValues(alpha: 0.5),
-                      ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                // Optional text message below
+                if (message.content.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
+                    child: Text(
+                      message.content,
+                      style: TextStyle(
+                        color: isMine ? AppColors.white : AppColors.darkGrey,
+                        fontSize: 15.sp,
+                      ),
+                    ),
+                  ),
+                // Time + read receipts
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 10.w, bottom: 4.h),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          time,
+                          style: TextStyle(
+                            color: isMine
+                                ? AppColors.white.withValues(alpha: 0.7)
+                                : AppColors.grey,
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                        if (isMine) ...[
+                          sw(4),
+                          Icon(
+                            message.isRead ? Icons.done_all : Icons.done,
+                            size: 14.r,
+                            color: message.isRead
+                                ? AppColors.white.withValues(alpha: 0.9)
+                                : AppColors.white.withValues(alpha: 0.5),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -3211,21 +3215,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         isHighlighted: true,
       ),
       menuItems: [
-        OverlayMenuItem(
-          icon: Icons.copy,
-          label: AppStrings.chatCopy,
-          color: AppColors.darkGrey,
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: message.content));
-            AppSnackBar.showMessage(
-              context,
-              AppStrings.chatMessageCopied,
-              backgroundColor: AppColors.white,
-              borderColor: AppColors.primaryBlue,
-            );
-          },
-        ),
-        if (isMine)
+        if (message.messageType == 'text')
+          OverlayMenuItem(
+            icon: Icons.copy,
+            label: AppStrings.chatCopy,
+            color: AppColors.darkGrey,
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: message.content));
+              AppSnackBar.showMessage(
+                context,
+                AppStrings.chatMessageCopied,
+                backgroundColor: AppColors.white,
+                borderColor: AppColors.primaryBlue,
+              );
+            },
+          ),
+        if (isMine && message.messageType == 'text')
           OverlayMenuItem(
             icon: Icons.edit_outlined,
             label: AppStrings.chatEdit,
@@ -3343,114 +3348,7 @@ class _MessageItem {
   });
 }
 
-class _FullScreenImageViewer extends StatefulWidget {
-  final List<String> urls;
-  final int initialIndex;
-  const _FullScreenImageViewer({required this.urls, this.initialIndex = 0});
 
-  @override
-  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
-}
-
-class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
-  late final PageController _pageController;
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex;
-    _pageController = PageController(initialPage: widget.initialIndex);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.black,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: widget.urls.length,
-            onPageChanged: (i) => setState(() => _currentIndex = i),
-            itemBuilder: (_, index) {
-              final url = widget.urls[index];
-              final isLocal = !url.startsWith('http');
-              return InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Center(
-                  child: isLocal
-                      ? Image.file(File(url), fit: BoxFit.contain)
-                      : CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.contain,
-                          placeholder: (_, __) => const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.white,
-                            ),
-                          ),
-                          errorWidget: (_, __, ___) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
-                            size: 60,
-                          ),
-                        ),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            child: Center(
-              child: Container(
-                // padding: EdgeInsets.all(2.r),
-                decoration: BoxDecoration(
-                  color: AppColors.black.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.close, color: AppColors.white, size: 24.r),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ),
-          ),
-          if (widget.urls.length > 1)
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 24,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  widget.urls.length,
-                  (i) => Container(
-                    width: 8.r,
-                    height: 8.r,
-                    margin: EdgeInsets.symmetric(horizontal: 3.r),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: i == _currentIndex
-                          ? AppColors.white
-                          : AppColors.white.withValues(alpha: 0.4),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SwipeToReplyWrapper extends StatefulWidget {
   final Widget child;

@@ -1,6 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nearhood/core/network/api_call_state.dart';
 import 'package:nearhood/core/utils/custom_import.dart';
 import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/common_widget/user_avatar_widget.dart';
@@ -8,9 +6,7 @@ import 'package:nearhood/features/getstarted/getstarted_screen.dart';
 import 'package:nearhood/features/profile/profile_screen.dart';
 import 'package:nearhood/features/chat/services/socket_service.dart';
 import 'package:nearhood/features/business/screens/create_business_screen.dart';
-import 'package:nearhood/features/business/screens/business_profile_screen.dart';
-import 'package:nearhood/features/business/bloc/business_bloc.dart';
-import 'package:nearhood/features/business/bloc/business_event.dart';
+import 'package:nearhood/features/business/screens/my_business_dashboard_screen.dart';
 
 class ProfileDrawer extends StatefulWidget {
   const ProfileDrawer({super.key});
@@ -20,32 +16,12 @@ class ProfileDrawer extends StatefulWidget {
 }
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
-  late final BusinessBloc _businessBloc;
   bool _hasBusiness = false;
 
   @override
   void initState() {
     super.initState();
-    _businessBloc = BusinessBloc();
-    _checkBusinessProfile();
-  }
-
-  Future<void> _checkBusinessProfile() async {
-    _businessBloc.add(CheckBusinessProfile());
-    await _businessBloc.stream.firstWhere(
-      (s) => s.checkStatus != ApiCallState.busy,
-    );
-    if (mounted) {
-      setState(() {
-        _hasBusiness = _businessBloc.state.hasBusinessProfile;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _businessBloc.close();
-    super.dispose();
+    _hasBusiness = sharedPrefGetHasBusinessProfile() ?? false;
   }
 
   @override
@@ -166,11 +142,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                       if (_hasBusiness) {
                         callNextScreen(
                           context,
-                          BlocProvider(
-                            create: (_) => BusinessBloc()
-                              ..add(FetchBusinessProfile()),
-                            child: const BusinessProfileScreen(),
-                          ),
+                          const MyBusinessDashboardScreen(),
                         );
                       } else {
                         callNextScreen(

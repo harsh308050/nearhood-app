@@ -8,6 +8,7 @@ import 'package:nearhood/core/utils/shared_pref_helper.dart';
 import 'package:nearhood/features/auth/bloc/auth_event.dart';
 import 'package:nearhood/features/auth/bloc/auth_state.dart';
 import 'package:nearhood/features/auth/data/auth_repository.dart';
+import 'package:nearhood/features/business/data/business_datasource.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
@@ -204,6 +205,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         SharedPrefKeys.userDataKey,
         jsonEncode(newState.userProfile!.toJson()),
       );
+      // Backend may not return businessProfileId — check once at sign-in
+      if (newState.userProfile!.businessProfileId != null &&
+          newState.userProfile!.businessProfileId!.isNotEmpty) {
+        sharedPrefSetHasBusinessProfile(true);
+      } else {
+        _checkBusinessProfile();
+      }
     }
+  }
+
+  Future<void> _checkBusinessProfile() async {
+    try {
+      final ds = BusinessDataSource();
+      final response = await ds.checkBusinessProfile();
+      ds.dispose();
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final has = response.data['data']?['hasBusinessProfile'] == true;
+        await sharedPrefSetHasBusinessProfile(has);
+      }
+    } catch (_) {}
   }
 }

@@ -348,7 +348,7 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
               )
             : null,
         onChanged: _onSearchChanged,
-        autofocus: true,
+        autofocus: false,
         borderRadius: 10.r,
         borderColor: AppColors.borderLight,
         focusedBorderColor: AppColors.primaryBlue,

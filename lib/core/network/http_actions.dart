@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 
 import 'http_response.dart';
 import 'network_logger.dart';
-import 'network_utils.dart';
 
 class HttpActions {
   final http.Client client;
@@ -12,7 +11,6 @@ class HttpActions {
   final Duration timeout;
   final Future<String?> Function()? tokenProvider;
   final bool enableLogging;
-  final bool enableConnectivityCheck;
   final NetworkLogger logger;
 
   HttpActions({
@@ -21,7 +19,6 @@ class HttpActions {
     this.timeout = const Duration(seconds: 60),
     this.tokenProvider,
     this.enableLogging = true,
-    this.enableConnectivityCheck = true,
     NetworkLogger? logger,
   }) : logger = logger ?? const NetworkLogger();
 
@@ -142,13 +139,6 @@ class HttpActions {
     Object? body,
     bool includeAuth = true,
   }) async {
-    if (enableConnectivityCheck && !await hasConnectivity()) {
-      return const HttpResponse(
-        statusCode: -1,
-        data: {'message': 'No internet connection'},
-      );
-    }
-
     final requestUrl = _buildUrl(url, queryParameters);
     final requestHeaders = await _buildHeaders(
       headers,
@@ -233,13 +223,6 @@ class HttpActions {
     Map<String, String>? headers,
     bool includeAuth = true,
   }) async {
-    if (enableConnectivityCheck && !await hasConnectivity()) {
-      return const HttpResponse(
-        statusCode: -1,
-        data: {'message': 'No internet connection'},
-      );
-    }
-
     final requestUrl = _buildUrl(url, null);
     final requestHeaders = await _buildHeaders(
       headers,

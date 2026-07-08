@@ -55,3 +55,11 @@ UserProfile? sharedPrefGetUser() {
 bool sharedPrefIsLoggedIn() {
   return sharedPrefGetUser() != null;
 }
+
+bool? sharedPrefGetHasBusinessProfile() {
+  return sharedPrefGetData(SharedPrefKeys.hasBusinessProfileKey) as bool?;
+}
+
+Future<void> sharedPrefSetHasBusinessProfile(bool value) async {
+  await sharedPrefsaveData(SharedPrefKeys.hasBusinessProfileKey, value);
+}

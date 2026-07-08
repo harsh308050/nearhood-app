@@ -47,4 +47,22 @@ class ApiUrls {
   String get businessMyProfile => '$baseUrl/business/my/profile';
   String get businessUploadMedia => '$baseUrl/business/upload-media';
   String businessPublicProfile(String id) => '$baseUrl/business/$id';
+  String businessUpdate(String id) => '$baseUrl/business/$id';
+
+  // Business Listings
+  String businessListings(String id) => '$baseUrl/business/$id/listings';
+  String businessListingUpdate(String businessId, String listingId) =>
+      '$baseUrl/business/$businessId/listings/$listingId';
+  String businessListingAvailability(String businessId, String listingId) =>
+      '$baseUrl/business/$businessId/listings/$listingId/availability';
+
+  // Boost
+  String businessBoost(String id) => '$baseUrl/business/$id/boost';
+  String businessBoosts(String id) => '$baseUrl/business/$id/boosts';
+
+  // Phone Plan
+  String get businessPhonePlan => '$baseUrl/business/plans/phone';
+
+  // Analytics
+  String businessAnalytics(String id) => '$baseUrl/business/$id/analytics';
 }

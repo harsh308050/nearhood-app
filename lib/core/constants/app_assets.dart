@@ -11,7 +11,6 @@ class AppAssets {
 
   static const String getStarted = '$_imagesPath/getstarted.png';
   static const String emptyState = '$_imagesPath/emptystate.svg';
-  static const String noInternet = '$_imagesPath/no_internet.svg';
   static const String mapPlaceholder = '$_imagesPath/maps_placeholder.png';
   static const String profilePlaceholder =
       '$_imagesPath/profile_placeholder.png';

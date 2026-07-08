@@ -17,6 +17,7 @@ class _BusinessRegistrationSuccessScreenState
   late final AnimationController _pulseController;
   late final AnimationController _particleController;
   late final AnimationController _contentController;
+  late final AnimationController _confettiController;
 
   @override
   void initState() {
@@ -38,9 +39,14 @@ class _BusinessRegistrationSuccessScreenState
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+    _confettiController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    );
 
     _checkController.forward().then((_) {
       _particleController.forward();
+      _confettiController.forward();
       _contentController.forward();
     });
   }
@@ -51,6 +57,7 @@ class _BusinessRegistrationSuccessScreenState
     _pulseController.dispose();
     _particleController.dispose();
     _contentController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -59,15 +66,28 @@ class _BusinessRegistrationSuccessScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            const Spacer(flex: 2),
-            _buildAnimation(),
-            SizedBox(height: 32.h),
-            _buildContent(),
-            const Spacer(flex: 2),
-            _buildHomeButton(),
-            SizedBox(height: 40.h),
+            // Confetti layer
+            AnimatedBuilder(
+              animation: _confettiController,
+              builder: (context, _) => CustomPaint(
+                size: Size(MediaQuery.of(context).size.width,
+                    MediaQuery.of(context).size.height),
+                painter: _ConfettiPainter(progress: _confettiController.value),
+              ),
+            ),
+            Column(
+              children: [
+                const Spacer(flex: 2),
+                _buildAnimation(),
+                SizedBox(height: 32.h),
+                _buildContent(),
+                const Spacer(flex: 2),
+                _buildHomeButton(),
+                SizedBox(height: 40.h),
+              ],
+            ),
           ],
         ),
       ),
@@ -188,7 +208,7 @@ class _BusinessRegistrationSuccessScreenState
           child: Column(
             children: [
               Text(
-                AppStrings.businessRegistered,
+                'Business Created Successfully!',
                 textAlign: TextAlign.center,
                 style: AppTypography.screenTitle.copyWith(
                   color: AppColors.darkGrey,
@@ -197,8 +217,7 @@ class _BusinessRegistrationSuccessScreenState
               ),
               SizedBox(height: 12.h),
               Text(
-                'Your business profile is now under review. '
-                'You\'ll see it live once approved by our team.',
+                'Your business profile is now live. Neighbors can discover you in the marketplace.',
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyText.copyWith(
                   color: AppColors.grey,
@@ -247,6 +266,65 @@ class _BusinessRegistrationSuccessScreenState
       ),
     );
   }
+}
+
+class _ConfettiPainter extends CustomPainter {
+  final double progress;
+
+  _ConfettiPainter({required this.progress});
+
+  static const _colors = [
+    Color(0xFFFF6B6B),
+    Color(0xFF4ECDC4),
+    Color(0xFFFFE66D),
+    Color(0xFF95E1D3),
+    Color(0xFFF38181),
+    Color(0xFFAA96DA),
+    Color(0xFFFCBD6E),
+    Color(0xFF6BCB77),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = Random(42);
+    final confettiCount = 60;
+
+    for (var i = 0; i < confettiCount; i++) {
+      final color = _colors[i % _colors.length];
+      final paint = Paint()..color = color;
+
+      final startX = random.nextDouble() * size.width;
+      final startY = -20.0 + (random.nextDouble() * size.height * 0.3);
+
+      final fallDistance = progress * size.height * 1.2;
+      final drift = sin(progress * pi * 2 + i) * 40;
+      final x = startX + drift;
+      final y = startY + fallDistance * (0.5 + random.nextDouble() * 0.5);
+
+      if (y < 0 || y > size.height) continue;
+
+      final rotation = progress * pi * (2 + random.nextDouble() * 4);
+      final w = 4.0 + random.nextDouble() * 4;
+      final h = 2.0 + random.nextDouble() * 3;
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(rotation);
+
+      final opacity = (1 - (y / size.height)).clamp(0.0, 1.0);
+      paint.color = color.withValues(alpha: opacity * 0.8);
+
+      canvas.drawRect(
+        Rect.fromCenter(center: Offset.zero, width: w, height: h),
+        paint,
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _CheckmarkPainter extends CustomPainter {

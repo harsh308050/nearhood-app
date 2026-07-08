@@ -1,21 +1,7 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-
-import 'api_result.dart';
-import 'base_response.dart';
-import 'error_model.dart';
-import 'http_response.dart';
-
-Future<bool> hasConnectivity() async {
-  if (kIsWeb) return true;
-  try {
-    final result = await InternetAddress.lookup('example.com');
-    return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
-  } catch (_) {
-    return false;
-  }
-}
+import 'package:nearhood/core/network/api_result.dart';
+import 'package:nearhood/core/network/base_response.dart';
+import 'package:nearhood/core/network/error_model.dart';
+import 'package:nearhood/core/network/http_response.dart';
 
 ApiResult<T> checkResponseStatusCode<T>({
   required HttpResponse response,
