@@ -46,7 +46,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         width: 40.r,
                         height: 40.r,
                         decoration: const BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -62,7 +62,7 @@ class ShimmerPostDetail extends StatelessWidget {
                                   height: 14.h,
                                   width: 120.w,
                                   decoration: BoxDecoration(
-                                    color: Colors.grey,
+                                    color: AppColors.grey,
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),
                                 ),
@@ -71,7 +71,7 @@ class ShimmerPostDetail extends StatelessWidget {
                                   width: 16.r,
                                   height: 16.r,
                                   decoration: const BoxDecoration(
-                                    color: Colors.grey,
+                                    color: AppColors.grey,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -83,7 +83,7 @@ class ShimmerPostDetail extends StatelessWidget {
                               height: 10.h,
                               width: 100.w,
                               decoration: BoxDecoration(
-                                color: Colors.grey,
+                                color: AppColors.grey,
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                             ),
@@ -101,7 +101,7 @@ class ShimmerPostDetail extends StatelessWidget {
                     height: 18.h,
                     width: MediaQuery.of(context).size.width * 0.6,
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: AppColors.grey,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
@@ -117,7 +117,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 14.h,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -126,7 +126,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 14.h,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -135,7 +135,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 14.h,
                         width: MediaQuery.of(context).size.width * 0.7,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -153,7 +153,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 12.h,
                         width: 140.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -162,7 +162,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 12.h,
                         width: 160.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -177,7 +177,7 @@ class ShimmerPostDetail extends StatelessWidget {
                     height: 220.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: AppColors.grey,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
@@ -206,7 +206,7 @@ class ShimmerPostDetail extends StatelessWidget {
                                     width: 16.r,
                                     height: 16.r,
                                     decoration: const BoxDecoration(
-                                      color: Colors.grey,
+                                      color: AppColors.grey,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -217,7 +217,7 @@ class ShimmerPostDetail extends StatelessWidget {
                                     width: 16.r,
                                     height: 16.r,
                                     decoration: const BoxDecoration(
-                                      color: Colors.grey,
+                                      color: AppColors.grey,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -230,7 +230,7 @@ class ShimmerPostDetail extends StatelessWidget {
                             height: 12.h,
                             width: 24.w,
                             decoration: BoxDecoration(
-                              color: Colors.grey,
+                              color: AppColors.grey,
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                           ),
@@ -241,7 +241,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 12.h,
                         width: 80.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -254,7 +254,7 @@ class ShimmerPostDetail extends StatelessWidget {
                     horizontal: 20.w,
                     vertical: 8.h,
                   ),
-                  child: Container(height: 1.h, color: Colors.grey),
+                  child: Container(height: 1.h, color: AppColors.grey),
                 ),
                 // Bottom action row (Like + Comment pills)
                 Padding(
@@ -266,7 +266,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 34.h,
                         width: 70.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(100.r),
                         ),
                       ),
@@ -276,7 +276,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 34.h,
                         width: 70.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(100.r),
                         ),
                       ),
@@ -305,7 +305,7 @@ class ShimmerPostDetail extends StatelessWidget {
               height: 16.h,
               width: 100.w,
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -331,7 +331,7 @@ class ShimmerPostDetail extends StatelessWidget {
             width: 32.r,
             height: 32.r,
             decoration: const BoxDecoration(
-              color: Colors.grey,
+              color: AppColors.grey,
               shape: BoxShape.circle,
             ),
           ),
@@ -354,7 +354,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 12.h,
                         width: 90.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -362,7 +362,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 10.h,
                         width: 36.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -374,7 +374,7 @@ class ShimmerPostDetail extends StatelessWidget {
                     height: 12.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: AppColors.grey,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
@@ -384,7 +384,7 @@ class ShimmerPostDetail extends StatelessWidget {
                     height: 12.h,
                     width: 120.w,
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: AppColors.grey,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
@@ -396,7 +396,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 10.h,
                         width: 28.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -405,7 +405,7 @@ class ShimmerPostDetail extends StatelessWidget {
                         height: 10.h,
                         width: 36.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -437,7 +437,7 @@ class ShimmerPostDetail extends StatelessWidget {
               width: 36.r,
               height: 36.r,
               decoration: const BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 shape: BoxShape.circle,
               ),
             ),
@@ -447,7 +447,7 @@ class ShimmerPostDetail extends StatelessWidget {
               child: Container(
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey,
+                  color: AppColors.grey,
                   borderRadius: BorderRadius.circular(20.r),
                 ),
               ),
@@ -458,7 +458,7 @@ class ShimmerPostDetail extends StatelessWidget {
               width: 40.r,
               height: 40.r,
               decoration: const BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 shape: BoxShape.circle,
               ),
             ),

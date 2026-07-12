@@ -58,7 +58,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
               ),
             ),
           ),
-          SizedBox(height: 12.h),
+          sh(12),
           shimmer(
             child: Container(
               height: 260.h,
@@ -81,15 +81,15 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.storefront_outlined, size: 64.r, color: AppColors.grey),
-            SizedBox(height: 16.h),
-            Text(
+            CustomImageView(imagePath: AppAssets.icMarket, color: AppColors.grey, height: 64.r, width: 64.r),
+            sh(16),
+            CustomText(
               'No business profile found',
               style: AppTypography.sectionHeader
                   .copyWith(color: AppColors.darkGrey),
             ),
-            SizedBox(height: 8.h),
-            Text(
+            sh(8),
+            CustomText(
               'Create a business page to get started.',
               style: AppTypography.bodyText.copyWith(color: AppColors.grey),
             ),
@@ -161,7 +161,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
                               Row(
                                 children: [
                                   Flexible(
-                                    child: Text(
+                                    child: CustomText(
                                       profile.businessName,
                                       style: TextStyle(
                                         fontSize: 18.sp,
@@ -173,16 +173,17 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
                                     ),
                                   ),
                                   if (profile.isVerified) ...[
-                                    SizedBox(width: 4.w),
-                                    Icon(
-                                      Icons.verified,
+                                    sw(4),
+                                    CustomImageView(
+                                      imagePath: AppAssets.icVerified,
                                       color: AppColors.primaryBlue,
-                                      size: 16.r,
+                                      height: 16.r,
+                                      width: 16.r,
                                     ),
                                   ],
                                 ],
                               ),
-                              SizedBox(height: 4.h),
+                              sh(4),
                               // Category + Subcategory
                               Row(
                                 children: [
@@ -197,7 +198,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
                                       ),
                                       borderRadius: BorderRadius.circular(6.r),
                                     ),
-                                    child: Text(
+                                    child: CustomText(
                                       profile.category,
                                       style: TextStyle(
                                         fontSize: 11.sp,
@@ -207,37 +208,32 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
                                     ),
                                   ),
                                   if (profile.subCategory != null) ...[
-                                    SizedBox(width: 6.w),
-                                    Text(
+                                    sw(6),
+                                    CustomText(
                                       profile.subCategory!,
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        color: AppColors.grey,
-                                      ),
+                                      style: AppTypography.bodyText.copyWith(fontSize: 12.sp, color: AppColors.grey),
                                     ),
                                   ],
                                 ],
                               ),
-                              SizedBox(height: 4.h),
+                              sh(4),
                               // Business type
                               Row(
                                 children: [
-                                  Icon(
-                                    profile.businessType == 'neighbor_for_hire'
-                                        ? Icons.person_outline
-                                        : Icons.storefront_outlined,
-                                    size: 14.r,
+                                  CustomImageView(
+                                    imagePath: profile.businessType == 'neighbor_for_hire'
+                                        ? AppAssets.icProfile
+                                        : AppAssets.icMarket,
                                     color: AppColors.grey,
+                                    height: 14.r,
+                                    width: 14.r,
                                   ),
-                                  SizedBox(width: 4.w),
-                                  Text(
+                                  sw(4),
+                                  CustomText(
                                     profile.businessType == 'neighbor_for_hire'
                                         ? AppStrings.neighborForHire
                                         : AppStrings.professionalBusiness,
-                                    style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: AppColors.grey,
-                                    ),
+                                    style: AppTypography.bodyText.copyWith(fontSize: 12.sp, color: AppColors.grey),
                                   ),
                                 ],
                               ),
@@ -251,39 +247,39 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
               ],
             ),
           ),
-          SizedBox(height: 16.h),
+          sh(16),
 
           // ── Details Section ───────────────────────────────────────
           _buildDetailRow(
-            Icons.description_outlined,
+            CustomImageView(imagePath: AppAssets.icDocument, color: AppColors.grey, height: 18.r, width: 18.r),
             'Description',
             profile.description,
           ),
           _buildDetailRow(
-            Icons.location_on_outlined,
+            CustomImageView(imagePath: AppAssets.icLocation, color: AppColors.grey, height: 18.r, width: 18.r),
             'Address',
             profile.address,
           ),
           _buildDetailRow(
-            Icons.pin_drop_outlined,
+            CustomImageView(imagePath: AppAssets.icLocation, color: AppColors.grey, height: 18.r, width: 18.r),
             'Locality',
             '${profile.localityName}, ${profile.city}',
           ),
           if (profile.phone != null && profile.phone!.isNotEmpty)
             _buildDetailRow(
-              Icons.phone_outlined,
+              CustomImageView(imagePath: AppAssets.icCall, color: AppColors.grey, height: 18.r, width: 18.r),
               'Phone',
               '+91 ${profile.phone}',
             ),
           if (profile.website != null && profile.website!.isNotEmpty)
             _buildDetailRow(
-              Icons.language,
+              CustomImageView(imagePath: AppAssets.icWorld, color: AppColors.grey, height: 18.r, width: 18.r),
               'Website',
               profile.website!,
             ),
           if (profile.gstNumber != null && profile.gstNumber!.isNotEmpty)
             _buildDetailRow(
-              Icons.verified_outlined,
+              CustomImageView(imagePath: AppAssets.icVerified, color: AppColors.grey, height: 18.r, width: 18.r),
               'GST Number',
               profile.gstNumber!,
             ),
@@ -291,7 +287,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
           // Working hours summary
           if (profile.workingHours != null &&
               profile.workingHours!.values.any((h) => h.isOpen)) ...[
-            SizedBox(height: 12.h),
+            sh(12),
             _buildWorkingHoursSummary(profile.workingHours!),
           ],
         ],
@@ -327,10 +323,11 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
         ),
       ),
       child: Center(
-        child: Icon(
-          Icons.storefront,
+        child: CustomImageView(
+          imagePath: AppAssets.icMarket,
           color: AppColors.primaryBlue.withValues(alpha: 0.3),
-          size: 48.r,
+          height: 48.r,
+          width: 48.r,
         ),
       ),
     );
@@ -367,37 +364,30 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
         color: AppColors.background,
         shape: BoxShape.circle,
       ),
-      child: Icon(Icons.store, color: AppColors.grey, size: 28.r),
+      child: CustomImageView(imagePath: AppAssets.icMarket, color: AppColors.grey, height: 28.r, width: 28.r),
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildDetailRow(Widget iconWidget, String label, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 14.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18.r, color: AppColors.grey),
-          SizedBox(width: 10.w),
+          iconWidget,
+          sw(10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                CustomText(
                   label,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: AppColors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTypography.caption.copyWith(fontSize: 11.sp, color: AppColors.grey, fontWeight: FontWeight.w500),
                 ),
-                SizedBox(height: 2.h),
-                Text(
+                sh(2),
+                CustomText(
                   value,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.darkGrey,
-                  ),
+                  style: AppTypography.bodyText.copyWith(color: AppColors.darkGrey),
                 ),
               ],
             ),
@@ -428,27 +418,20 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.access_time, size: 18.r, color: AppColors.grey),
-        SizedBox(width: 10.w),
+        CustomImageView(imagePath: AppAssets.icTime, color: AppColors.grey, height: 18.r, width: 18.r),
+        sw(10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              CustomText(
                 'Working Hours',
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: AppColors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTypography.caption.copyWith(fontSize: 11.sp, color: AppColors.grey, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 2.h),
-              Text(
+              sh(2),
+              CustomText(
                 openDays.join(', '),
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: AppColors.darkGrey,
-                ),
+                style: AppTypography.bodyText.copyWith(color: AppColors.darkGrey),
               ),
             ],
           ),

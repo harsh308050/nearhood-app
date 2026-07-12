@@ -254,7 +254,7 @@ class _LongPressOverlayContent extends StatelessWidget {
         child: Row(
           children: [
             Icon(item.icon, color: item.color, size: 22.r),
-            SizedBox(width: 12.w),
+            sw(12.w),
             Expanded(
               child: CustomText(
                 item.label,

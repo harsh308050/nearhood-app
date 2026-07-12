@@ -218,8 +218,8 @@ class _NotificationSettingsScreenState
                       'Verify that notifications are working',
                       style: AppTypography.caption.copyWith(fontSize: 13.sp),
                     ),
-                    trailing: Icon(
-                      Icons.chevron_right_rounded,
+                    trailing: CustomImageView(
+                      imagePath: AppAssets.icRightarrowWithoutbar,
                       color: AppColors.grey,
                     ),
                     onTap: _sendTestNotification,
@@ -241,10 +241,11 @@ class _NotificationSettingsScreenState
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline_rounded,
+                      CustomImageView(
+                        imagePath: AppAssets.icInfo,
+                        height: 18.r,
+                        width: 18.r,
                         color: AppColors.primaryBlue,
-                        size: 20.r,
                       ),
                       sw(12),
                       Expanded(

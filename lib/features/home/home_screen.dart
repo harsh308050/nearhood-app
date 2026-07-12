@@ -138,7 +138,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
         // Show a gentle nudge banner so the user knows they missed it.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
+            content: const CustomText(
               'Enable notifications to get alerts from your neighborhood.',
             ),
             action: SnackBarAction(

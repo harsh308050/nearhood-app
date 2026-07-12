@@ -6,6 +6,9 @@ class ListingCardWidget extends StatelessWidget {
   final bool isFree;
   final String title;
   final String? distance;
+  final String? category;
+  final String? condition;
+  final String? serviceArea;
   final bool isMyBusiness;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
@@ -19,12 +22,31 @@ class ListingCardWidget extends StatelessWidget {
     this.isFree = false,
     required this.title,
     this.distance,
+    this.category,
+    this.condition,
+    this.serviceArea,
     this.isMyBusiness = false,
     this.isFavorite = false,
     this.onFavoriteTap,
     this.onEditTap,
     this.onTap,
   });
+
+  Widget _buildBadge(String text, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: CustomText(
+        text.toUpperCase(),
+        fontSize: 9.sp,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,43 +131,62 @@ class ListingCardWidget extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: 12.h),
+            sh(8.h),
 
             // Price
             CustomText(
               price,
-              fontSize: 16.sp,
+              fontSize: 14.sp,
               fontWeight: FontWeight.bold,
               color: AppColors.green,
             ),
 
-            SizedBox(height: 4.h),
+            sh(2.h),
 
             // Title
             CustomText(
               title,
-              fontSize: 14.sp,
+              fontSize: 13.sp,
               fontWeight: FontWeight.bold,
               color: AppColors.darkGrey,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
 
-            if (distance != null) ...[
-              SizedBox(height: 4.h),
+            // Badges Row
+            if (category != null || condition != null || serviceArea != null) ...[
+              sh(4.h),
+              Wrap(
+                spacing: 4.w,
+                runSpacing: 4.h,
+                children: [
+                  if (category != null) _buildBadge(category!, AppColors.primaryBlue),
+                  if (condition != null)
+                    _buildBadge(condition!.replaceAll('_', ' '), AppColors.orange),
+                  if (serviceArea != null)
+                    _buildBadge(
+                      serviceArea == 'home_visit' ? 'Home visit' : 'At location',
+                      AppColors.blue,
+                    ),
+                ],
+              ),
+            ],
+
+            if (distance != null && distance!.isNotEmpty) ...[
+              sh(4.h),
               // Distance
               Row(
                 children: [
                   Icon(
                     Icons.location_on_outlined,
-                    size: 14.r,
+                    size: 12.r,
                     color: AppColors.grey,
                   ),
-                  SizedBox(width: 4.w),
+                  sw(2.w),
                   Expanded(
                     child: CustomText(
                       distance!,
-                      fontSize: 12.sp,
+                      fontSize: 11.sp,
                       color: AppColors.grey,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -154,7 +195,7 @@ class ListingCardWidget extends StatelessWidget {
                 ],
               ),
             ],
-            SizedBox(height: 4.h),
+            sh(2.h),
           ],
         ),
       ),

@@ -99,7 +99,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                         borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
-                    SizedBox(height: 16.h),
+                    sh(16),
                     _buildMenuItem(
                       ctx,
                       icon: Icons.edit_outlined,
@@ -199,7 +199,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                         child: Container(
                           alignment: Alignment.center,
                           margin: EdgeInsets.all(2.r),
-                          child: Text(
+                          child: CustomText(
                             _tabs[i],
                             style: AppTypography.cardTitle.copyWith(
                               color: isSelected
@@ -255,15 +255,15 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
 
   Widget _buildShimmer() {
     final grey = BoxDecoration(
-      color: Colors.grey.withValues(alpha: 0.3),
+      color: AppColors.grey.withValues(alpha: 0.3),
       borderRadius: BorderRadius.circular(4.r),
     );
     final greyCard = BoxDecoration(
-      color: Colors.grey.withValues(alpha: 0.3),
+      color: AppColors.grey.withValues(alpha: 0.3),
       borderRadius: BorderRadius.circular(8.r),
     );
     final greyChip = BoxDecoration(
-      color: Colors.grey.withValues(alpha: 0.3),
+      color: AppColors.grey.withValues(alpha: 0.3),
       borderRadius: BorderRadius.circular(10.r),
     );
 
@@ -276,7 +276,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
               height: 140.h,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
+                color: AppColors.grey.withValues(alpha: 0.3),
               ),
             ),
           ),
@@ -292,7 +292,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                     decoration: grey,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                sh(6),
                 shimmer(
                   child: Container(
                     height: 14.h,
@@ -300,7 +300,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                     decoration: grey,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                sh(4),
                 shimmer(
                   child: Container(
                     height: 12.h,
@@ -335,39 +335,39 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(height: 14.h, width: 100.w, decoration: grey),
-                    SizedBox(height: 10.h),
+                    sh(10),
                     Row(
                       children: [
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
-                        SizedBox(width: 6.w),
+                        sw(6),
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
-                        SizedBox(width: 6.w),
+                        sw(6),
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
                       ],
                     ),
-                    SizedBox(height: 6.h),
+                    sh(6),
                     Row(
                       children: [
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
-                        SizedBox(width: 6.w),
+                        sw(6),
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
-                        SizedBox(width: 6.w),
+                        sw(6),
                         Expanded(
                           child: Container(height: 52.h, decoration: greyCard),
                         ),
                       ],
                     ),
-                    SizedBox(height: 6.h),
+                    sh(6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -397,33 +397,33 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(height: 14.h, width: 60.w, decoration: grey),
-                    SizedBox(height: 10.h),
+                    sh(10),
                     Row(
                       children: [
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
-                        SizedBox(width: 8.w),
+                        sw(8),
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
-                        SizedBox(width: 8.w),
+                        sw(8),
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
                       ],
                     ),
-                    SizedBox(height: 8.h),
+                    sh(8),
                     Row(
                       children: [
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
-                        SizedBox(width: 8.w),
+                        sw(8),
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
-                        SizedBox(width: 8.w),
+                        sw(8),
                         Expanded(
                           child: Container(height: 60.h, decoration: greyChip),
                         ),
@@ -444,7 +444,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
                     child: Container(height: 40.h, decoration: greyChip),
                   ),
                 ),
-                SizedBox(width: 8.w),
+                sw(8),
                 Expanded(
                   child: shimmer(
                     child: Container(height: 40.h, decoration: greyChip),
@@ -453,7 +453,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
               ],
             ),
           ),
-          SizedBox(height: 32.h),
+          sh(32),
         ],
       ),
     );
@@ -466,9 +466,14 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48.r, color: AppColors.grey),
-            SizedBox(height: 12.h),
-            Text(
+            CustomImageView(
+              imagePath: AppAssets.icWarning,
+              color: AppColors.grey,
+              height: 48.r,
+              width: 48.r,
+            ),
+            sh(12),
+            CustomText(
               AppStrings.defaultError,
               style: AppTypography.bodyText.copyWith(color: AppColors.grey),
               textAlign: TextAlign.center,
@@ -487,7 +492,7 @@ class _MyBusinessDashboardBodyState extends State<_MyBusinessDashboardBody> {
   }) {
     return ListTile(
       leading: Icon(icon, color: AppColors.darkGrey, size: 22.r),
-      title: Text(
+      title: CustomText(
         label,
         style: AppTypography.bodyText.copyWith(
           fontSize: 15.sp,
@@ -523,7 +528,7 @@ class _OverviewTab extends StatelessWidget {
           if (p.workingHours != null) _buildWorkingHours(p.workingHours!),
           _buildStatsSection(d, state),
           _buildQuickActions(context),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 32.h),
+          sh(MediaQuery.of(context).padding.bottom + 32.h),
         ],
       ),
     );
@@ -535,7 +540,12 @@ class _OverviewTab extends StatelessWidget {
       width: 60.r,
       height: 60.r,
       color: AppColors.background,
-      child: Icon(Icons.store, color: AppColors.grey, size: 28.r),
+      child: CustomImageView(
+        imagePath: AppAssets.icMarket,
+        color: AppColors.grey,
+        height: 28.r,
+        width: 28.r,
+      ),
     );
 
     return Stack(
@@ -559,10 +569,11 @@ class _OverviewTab extends StatelessWidget {
                   height: 140.h,
                   width: double.infinity,
                   color: AppColors.bgBlue,
-                  child: Icon(
-                    Icons.store,
+                  child: CustomImageView(
+                    imagePath: AppAssets.icMarket,
                     color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                    size: 48.r,
+                    height: 48.r,
+                    width: 48.r,
                   ),
                 ),
         ),
@@ -584,8 +595,8 @@ class _OverviewTab extends StatelessWidget {
             child: ClipOval(
               child: CachedNetworkImage(
                 imageUrl: p.logoUrl,
-                width: 60.r,
-                height: 60.r,
+                width: 100.r,
+                height: 100.r,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => logoPlaceholder,
                 errorWidget: (_, __, ___) => logoPlaceholder,
@@ -606,7 +617,7 @@ class _OverviewTab extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
+                child: CustomText(
                   p.businessName,
                   style: AppTypography.screenTitle.copyWith(fontSize: 20.sp),
                 ),
@@ -619,14 +630,14 @@ class _OverviewTab extends StatelessWidget {
                   color: AppColors.primaryBlue,
                 ),
               if (p.gstNumber != null && p.gstNumber!.isNotEmpty) ...[
-                SizedBox(width: 6.w),
+                sw(6),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: AppColors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
-                  child: Text(
+                  child: CustomText(
                     'GST',
                     style: AppTypography.caption.copyWith(
                       fontSize: 10.sp,
@@ -638,10 +649,10 @@ class _OverviewTab extends StatelessWidget {
               ],
             ],
           ),
-          SizedBox(height: 4.h),
+          sh(4),
           Row(
             children: [
-              Text(
+              CustomText(
                 p.category,
                 style: AppTypography.bodyText.copyWith(
                   fontSize: 14.sp,
@@ -649,7 +660,7 @@ class _OverviewTab extends StatelessWidget {
                 ),
               ),
               if (p.subCategory != null)
-                Text(
+                CustomText(
                   ' \u2022 ${p.subCategory}',
                   style: AppTypography.bodyText.copyWith(
                     fontSize: 14.sp,
@@ -658,8 +669,8 @@ class _OverviewTab extends StatelessWidget {
                 ),
             ],
           ),
-          SizedBox(height: 2.h),
-          Text(
+          sh(2),
+          CustomText(
             p.businessType == 'neighbor_for_hire'
                 ? 'Neighbor for Hire'
                 : 'Professional Business',
@@ -684,16 +695,15 @@ class _OverviewTab extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            isHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+          CustomImageView(
+            imagePath: isHidden ? AppAssets.icEyeoff : AppAssets.icEyeon,
             color: color,
-            size: 18.r,
+            height: 18.r,
+            width: 18.r,
           ),
-          SizedBox(width: 8.w),
+          sw(8),
           Expanded(
-            child: Text(
+            child: CustomText(
               isHidden
                   ? 'Profile hidden - Get a recommendation or boost to go live'
                   : 'Profile visible in directory and marketplace',
@@ -716,46 +726,67 @@ class _OverviewTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          CustomText(
             'About',
             style: AppTypography.cardTitle.copyWith(fontSize: 15.sp),
           ),
-          SizedBox(height: 8.h),
-          Text(
+          sh(8),
+          CustomText(
             p.description,
             style: AppTypography.bodyText.copyWith(
               fontSize: 13.sp,
               height: 1.5,
             ),
           ),
-          SizedBox(height: 12.h),
+          sh(12),
           _buildDetailRow(
-            Icons.location_on_outlined,
+            CustomImageView(
+              imagePath: AppAssets.icLocation,
+              color: AppColors.primaryBlue,
+              height: 18.r,
+              width: 18.r,
+            ),
             '${p.address}, ${p.localityName}, ${p.city}',
           ),
           if (p.phone != null && p.phone!.isNotEmpty)
-            _buildDetailRow(Icons.phone_outlined, p.phone!),
+            _buildDetailRow(
+              CustomImageView(
+                imagePath: AppAssets.icCall,
+                color: AppColors.primaryBlue,
+                height: 18.r,
+                width: 18.r,
+              ),
+              p.phone!,
+            ),
           if (p.website != null && p.website!.isNotEmpty)
-            _buildDetailRow(Icons.language_outlined, p.website!),
+            _buildDetailRow(
+              CustomImageView(
+                imagePath: AppAssets.icWorld,
+                color: AppColors.primaryBlue,
+                height: 18.r,
+                width: 18.r,
+              ),
+              p.website!,
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String text) {
+  Widget _buildDetailRow(Widget iconWidget, String text) {
     return Padding(
       padding: EdgeInsets.only(bottom: 6.h),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 16.r, color: AppColors.grey),
-          SizedBox(width: 8.w),
+          iconWidget,
+          sw(8),
           Expanded(
-            child: Text(
+            child: CustomText(
               text,
-              style: AppTypography.bodyText.copyWith(
-                fontSize: 13.sp,
-                color: AppColors.darkGrey,
+              style: AppTypography.cardTitle.copyWith(
+                fontSize: 12.sp,
+                color: AppColors.primaryBlue,
               ),
             ),
           ),
@@ -784,13 +815,13 @@ class _OverviewTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          CustomText(
             'Working Hours',
             style: AppTypography.cardTitle.copyWith(fontSize: 15.sp),
           ),
-          SizedBox(height: 10.h),
+          sh(10),
           if (!hasOpen)
-            Text(
+            CustomText(
               'Not set',
               style: AppTypography.caption.copyWith(fontSize: 12.sp),
             )
@@ -801,24 +832,24 @@ class _OverviewTab extends StatelessWidget {
                 Row(
                   children: [
                     _buildDayChip(hours[days[0]], shortDays[0]),
-                    SizedBox(width: 6.w),
+                    sw(6),
                     _buildDayChip(hours[days[1]], shortDays[1]),
-                    SizedBox(width: 6.w),
+                    sw(6),
                     _buildDayChip(hours[days[2]], shortDays[2]),
                   ],
                 ),
-                SizedBox(height: 6.h),
+                sh(6),
                 // Row 2: Thu, Fri, Sat
                 Row(
                   children: [
                     _buildDayChip(hours[days[3]], shortDays[3]),
-                    SizedBox(width: 6.w),
+                    sw(6),
                     _buildDayChip(hours[days[4]], shortDays[4]),
-                    SizedBox(width: 6.w),
+                    sw(6),
                     _buildDayChip(hours[days[5]], shortDays[5]),
                   ],
                 ),
-                SizedBox(height: 6.h),
+                sh(6),
                 // Row 3: Sun centered
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -851,7 +882,7 @@ class _OverviewTab extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(
+            CustomText(
               label,
               style: AppTypography.caption.copyWith(
                 fontSize: 12.sp,
@@ -859,8 +890,8 @@ class _OverviewTab extends StatelessWidget {
                 color: isOpen ? AppColors.green : AppColors.grey,
               ),
             ),
-            SizedBox(height: 2.h),
-            Text(
+            sh(2),
+            CustomText(
               hasTime ? '${h!.open}\n${h.close}' : 'Closed',
               style: AppTypography.caption.copyWith(
                 fontSize: 10.sp,
@@ -884,54 +915,81 @@ class _OverviewTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          CustomText(
             'Stats',
             style: AppTypography.cardTitle.copyWith(fontSize: 15.sp),
           ),
-          SizedBox(height: 10.h),
+          sh(10),
           Row(
             children: [
               _buildStatItem(
-                Icons.remove_red_eye_outlined,
+                CustomImageView(
+                  imagePath: AppAssets.icEyeon,
+                  color: AppColors.primaryBlue,
+                  height: 18.r,
+                  width: 18.r,
+                ),
                 '${d.totalProfileViews}',
                 'Views',
                 color: AppColors.primaryBlue,
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               _buildStatItem(
-                Icons.trending_up_outlined,
+                Icon(
+                  Icons.trending_up_outlined,
+                  color: AppColors.orange,
+                  size: 18.r,
+                ),
                 '${d.activeBoosts}',
                 'Boosts',
                 color: AppColors.orange,
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               _buildStatItem(
-                Icons.article_outlined,
+                CustomImageView(
+                  imagePath: AppAssets.icPosts,
+                  color: AppColors.green,
+                  height: 18.r,
+                  width: 18.r,
+                ),
                 '${d.weeklyPostsUsed}/${d.weeklyPostsLimit}',
                 'Posts',
                 color: AppColors.green,
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          sh(8),
           Row(
             children: [
               _buildStatItem(
-                Icons.inventory_2_outlined,
+                Icon(
+                  Icons.inventory_2_outlined,
+                  color: AppColors.secondary,
+                  size: 18.r,
+                ),
                 '${state.products.length}',
                 'Products',
                 color: AppColors.secondary,
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               _buildStatItem(
-                Icons.handyman_outlined,
+                Icon(
+                  Icons.handyman_outlined,
+                  color: AppColors.blue,
+                  size: 18.r,
+                ),
                 '${state.services.length}',
                 'Services',
                 color: AppColors.blue,
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               _buildStatItem(
-                Icons.thumb_up_outlined,
+                CustomImageView(
+                  imagePath: AppAssets.icLike,
+                  color: AppColors.yellow,
+                  height: 18.r,
+                  width: 18.r,
+                ),
                 '${d.profile?.recommendationCount ?? 0}',
                 'Reviews',
                 color: AppColors.yellow,
@@ -944,7 +1002,7 @@ class _OverviewTab extends StatelessWidget {
   }
 
   Widget _buildStatItem(
-    IconData icon,
+    Widget iconWidget,
     String value,
     String label, {
     required Color color,
@@ -959,14 +1017,14 @@ class _OverviewTab extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 18.r),
-            SizedBox(height: 4.h),
-            Text(
+            iconWidget,
+            sh(4),
+            CustomText(
               value,
               style: AppTypography.cardTitle.copyWith(fontSize: 16.sp),
             ),
-            SizedBox(height: 2.h),
-            Text(
+            sh(2),
+            CustomText(
               label,
               style: AppTypography.caption.copyWith(
                 fontSize: 10.sp,
@@ -986,7 +1044,12 @@ class _OverviewTab extends StatelessWidget {
         children: [
           _buildActionChip(
             context,
-            icon: Icons.add_box_outlined,
+            iconWidget: CustomImageView(
+              imagePath: AppAssets.icAdd,
+              color: AppColors.white,
+              height: 16.r,
+              width: 16.r,
+            ),
             label: 'Add Product',
             onTap: () => callNextScreen(
               context,
@@ -996,10 +1059,14 @@ class _OverviewTab extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 8.w),
+          sw(8),
           _buildActionChip(
             context,
-            icon: Icons.add_reaction_outlined,
+            iconWidget: Icon(
+              Icons.add_reaction_outlined,
+              color: AppColors.white,
+              size: 16.r,
+            ),
             label: 'Add Service',
             onTap: () => callNextScreen(
               context,
@@ -1016,7 +1083,7 @@ class _OverviewTab extends StatelessWidget {
 
   Widget _buildActionChip(
     BuildContext context, {
-    required IconData icon,
+    required Widget iconWidget,
     required String label,
     required VoidCallback onTap,
   }) {
@@ -1032,9 +1099,9 @@ class _OverviewTab extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppColors.white, size: 16.r),
-              SizedBox(width: 6.w),
-              Text(
+              iconWidget,
+              sw(6),
+              CustomText(
                 label,
                 style: AppTypography.bodyText.copyWith(
                   fontSize: 12.sp,
@@ -1125,13 +1192,13 @@ class _ListingsTab extends StatelessWidget {
               size: 48.r,
               color: AppColors.grey.withValues(alpha: 0.5),
             ),
-            SizedBox(height: 12.h),
-            Text(
+            sh(12),
+            CustomText(
               'No ${type}s yet',
               style: AppTypography.emptyStateTitle.copyWith(fontSize: 18.sp),
             ),
-            SizedBox(height: 6.h),
-            Text(
+            sh(6),
+            CustomText(
               'Add your first ${type} to get started.',
               style: AppTypography.emptyStateBody.copyWith(fontSize: 14.sp),
               textAlign: TextAlign.center,
@@ -1178,18 +1245,14 @@ class _ListingsTab extends StatelessWidget {
             onEditTap: () {
               callNextScreen(
                 context,
-                AddEditListingScreen(
-                  type: type,
-                  bloc: bloc,
-                  listing: item,
-                ),
+                AddEditListingScreen(type: type, bloc: bloc, listing: item),
               );
             },
           );
         },
       );
     }
-    
+
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       itemCount: listings.length,
@@ -1253,29 +1316,29 @@ class _ListingCard extends StatelessWidget {
                     ),
                   ),
           ),
-          SizedBox(width: 12.w),
+          sw(12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                CustomText(
                   listing.title,
                   style: AppTypography.cardTitle.copyWith(fontSize: 14.sp),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2.h),
+                sh(2),
                 Row(
                   children: [
                     if (_priceText.isNotEmpty)
-                      Text(
+                      CustomText(
                         _priceText,
                         style: AppTypography.priceLabel.copyWith(
                           fontSize: 13.sp,
                         ),
                       ),
                     if (listing.category != null) ...[
-                      SizedBox(width: 6.w),
+                      sw(6),
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 6.w,
@@ -1285,7 +1348,7 @@ class _ListingCard extends StatelessWidget {
                           color: AppColors.primaryBlue.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
-                        child: Text(
+                        child: CustomText(
                           listing.category!,
                           style: AppTypography.caption.copyWith(
                             fontSize: 10.sp,
@@ -1297,7 +1360,7 @@ class _ListingCard extends StatelessWidget {
                   ],
                 ),
                 if (listing.type == 'product' && listing.condition != null) ...[
-                  SizedBox(height: 3.h),
+                  sh(3),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 6.w,
@@ -1307,7 +1370,7 @@ class _ListingCard extends StatelessWidget {
                       color: AppColors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
-                    child: Text(
+                    child: CustomText(
                       listing.condition!,
                       style: AppTypography.caption.copyWith(
                         fontSize: 10.sp,
@@ -1318,18 +1381,19 @@ class _ListingCard extends StatelessWidget {
                 ],
                 if (listing.type == 'service' &&
                     listing.serviceArea != null) ...[
-                  SizedBox(height: 3.h),
+                  sh(3),
                   Row(
                     children: [
-                      Icon(
-                        listing.serviceArea == 'home_visit'
-                            ? Icons.home_outlined
-                            : Icons.store_outlined,
-                        size: 12.r,
+                      CustomImageView(
+                        imagePath: listing.serviceArea == 'home_visit'
+                            ? AppAssets.icHome
+                            : AppAssets.icMarket,
                         color: AppColors.grey,
+                        height: 12.r,
+                        width: 12.r,
                       ),
-                      SizedBox(width: 3.w),
-                      Text(
+                      sw(3),
+                      CustomText(
                         listing.serviceArea == 'home_visit'
                             ? 'Home Visit'
                             : 'At Your Location',
@@ -1349,7 +1413,7 @@ class _ListingCard extends StatelessWidget {
                   : AppColors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6.r),
             ),
-            child: Text(
+            child: CustomText(
               listing.isAvailable ? 'Active' : 'Out of Stock',
               style: AppTypography.caption.copyWith(
                 fontSize: 11.sp,
@@ -1377,18 +1441,19 @@ class _PostsTab extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.article_outlined,
-              size: 48.r,
+            CustomImageView(
+              imagePath: AppAssets.icPosts,
               color: AppColors.grey.withValues(alpha: 0.5),
+              height: 48.r,
+              width: 48.r,
             ),
-            SizedBox(height: 12.h),
-            Text(
+            sh(12),
+            CustomText(
               'No posts yet',
               style: AppTypography.emptyStateTitle.copyWith(fontSize: 18.sp),
             ),
-            SizedBox(height: 6.h),
-            Text(
+            sh(6),
+            CustomText(
               'Share business updates with your neighbors.',
               style: AppTypography.emptyStateBody.copyWith(fontSize: 14.sp),
               textAlign: TextAlign.center,

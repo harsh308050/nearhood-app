@@ -81,11 +81,11 @@ class _BusinessRegistrationSuccessScreenState
               children: [
                 const Spacer(flex: 2),
                 _buildAnimation(),
-                SizedBox(height: 32.h),
+                sh(32),
                 _buildContent(),
                 const Spacer(flex: 2),
                 _buildHomeButton(),
-                SizedBox(height: 40.h),
+                sh(40),
               ],
             ),
           ],
@@ -207,7 +207,7 @@ class _BusinessRegistrationSuccessScreenState
           padding: EdgeInsets.symmetric(horizontal: 32.w),
           child: Column(
             children: [
-              Text(
+              CustomText(
                 'Business Created Successfully!',
                 textAlign: TextAlign.center,
                 style: AppTypography.screenTitle.copyWith(
@@ -215,8 +215,8 @@ class _BusinessRegistrationSuccessScreenState
                   fontSize: 20.sp,
                 ),
               ),
-              SizedBox(height: 12.h),
-              Text(
+              sh(12),
+              CustomText(
                 'Your business profile is now live. Neighbors can discover you in the marketplace.',
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyText.copyWith(
@@ -225,7 +225,7 @@ class _BusinessRegistrationSuccessScreenState
                   height: 1.5,
                 ),
               ),
-              SizedBox(height: 20.h),
+              sh(20),
             ],
           ),
         ),
@@ -255,7 +255,7 @@ class _BusinessRegistrationSuccessScreenState
             ),
             elevation: 0,
           ),
-          child: Text(
+          child: CustomText(
             'Go to Home',
             style: AppTypography.buttonLabel.copyWith(
               color: AppColors.white,

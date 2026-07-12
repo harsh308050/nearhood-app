@@ -216,7 +216,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                           ),
                           child: Icon(icon, color: color, size: 24.r),
                         ),
-                        SizedBox(width: 12.w),
+                        sw(12.w),
                         // Text
                         Expanded(
                           child: Column(
@@ -234,7 +234,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 4.h),
+                              sh(4.h),
                               Text(
                                 widget.body,
                                 style: TextStyle(
@@ -249,7 +249,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                             ],
                           ),
                         ),
-                        SizedBox(width: 8.w),
+                        sw(8.w),
                         // Close
                         GestureDetector(
                           onTap: _handleDismiss,

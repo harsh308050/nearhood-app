@@ -315,11 +315,11 @@ class _HomepageState extends State<Homepage> {
                       border: Border.all(color: AppColors.white, width: 1.5),
                     ),
                     child: Center(
-                      child: Text(
+                      child: CustomText(
                         widget.unreadNotificationCount > 99
                             ? '99+'
                             : widget.unreadNotificationCount.toString(),
-                        style: TextStyle(
+                        style: AppTypography.caption.copyWith(
                           color: AppColors.white,
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w700,
@@ -601,9 +601,11 @@ class _HomepageState extends State<Homepage> {
 
               if (isOwnPost)
                 ListTile(
-                  leading: Icon(
-                    Icons.edit_outlined,
+                  leading: CustomImageView(
+                    imagePath: AppAssets.icEdit,
                     color: AppColors.primaryBlue,
+                    height: 20.r,
+                    width: 20.r,
                   ),
                   title: CustomText(
                     AppStrings.editPost,

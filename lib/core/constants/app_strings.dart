@@ -442,8 +442,9 @@ class AppStrings {
   static const String businessLocality = 'Business Area';
   static const String businessCity = 'City';
   static const String businessLocalityHint =
-      'Pick the area where your business operates (same city as your home)';
-  static const String businessLocalityPlaceholder = 'Search for your business area';
+      'Pick the area where your business operates';
+  static const String businessLocalityPlaceholder =
+      'Search for your business area';
   static const String businessLogo = 'Logo / Profile Photo';
   static const String businessLogoHint = 'Required';
   static const String businessCover = 'Cover Photo';
@@ -476,8 +477,11 @@ class AppStrings {
 
   // ─── Business Categories ───────────────────────────────────────────────────
   static const String loadingCategories = 'Loading categories...';
-  static const String loadingCategoriesFromServer = 'Loading categories from server...';
-  static const String fetchingCategoriesRetry = 'Fetching categories, please try again.';
-  static const String searchCategoriesPlaceholder = 'Search categories or services...';
+  static const String loadingCategoriesFromServer =
+      'Loading categories from server...';
+  static const String fetchingCategoriesRetry =
+      'Fetching categories, please try again.';
+  static const String searchCategoriesPlaceholder =
+      'Search categories or services...';
   static const String noCategoriesFound = 'No categories found';
 }

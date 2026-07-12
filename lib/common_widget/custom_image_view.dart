@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nearhood/core/theme/app_colors.dart';
 import 'package:nearhood/core/utils/cm.dart';
 
 /// A customizable widget to display both PNG/JPG images and SVGs seamlessly.
@@ -95,10 +96,7 @@ class CustomImageView extends StatelessWidget {
       height: height ?? 40,
       width: width ?? 40,
       child: const Center(
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          color: Colors.grey,
-        ),
+        child: Icon(Icons.image_not_supported_outlined, color: AppColors.grey),
       ),
     );
   }

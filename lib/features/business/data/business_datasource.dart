@@ -90,24 +90,20 @@ class BusinessDataSource {
   // ─── Marketplace ────────────────────────────────────────────────────────────
 
   Future<HttpResponse> getMarketplaceFeed({
-    required double lat,
-    required double lng,
-    int? radius,
     String? category,
     String? type,
+    String? search,
     int page = 1,
     int limit = 20,
   }) async {
     final httpActions = await _http();
     final params = <String, String>{
-      'lat': lat.toString(),
-      'lng': lng.toString(),
       'page': page.toString(),
       'limit': limit.toString(),
     };
-    if (radius != null) params['radius'] = radius.toString();
     if (category != null) params['category'] = category;
     if (type != null) params['type'] = type;
+    if (search != null) params['search'] = search;
     return httpActions.get('/marketplace', queryParameters: params);
   }
 

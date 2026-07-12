@@ -19,7 +19,7 @@ class ShimmerCommentCard extends StatelessWidget {
               width: 32.r,
               height: 32.r,
               decoration: const BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 shape: BoxShape.circle,
               ),
             ),
@@ -42,7 +42,7 @@ class ShimmerCommentCard extends StatelessWidget {
                           height: 12.h,
                           width: 90.w,
                           decoration: BoxDecoration(
-                            color: Colors.grey,
+                            color: AppColors.grey,
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                         ),
@@ -50,7 +50,7 @@ class ShimmerCommentCard extends StatelessWidget {
                           height: 10.h,
                           width: 36.w,
                           decoration: BoxDecoration(
-                            color: Colors.grey,
+                            color: AppColors.grey,
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                         ),
@@ -62,7 +62,7 @@ class ShimmerCommentCard extends StatelessWidget {
                       height: 12.h,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
@@ -72,7 +72,7 @@ class ShimmerCommentCard extends StatelessWidget {
                       height: 12.h,
                       width: MediaQuery.of(context).size.width * 0.4,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
@@ -84,7 +84,7 @@ class ShimmerCommentCard extends StatelessWidget {
                           height: 10.h,
                           width: 28.w,
                           decoration: BoxDecoration(
-                            color: Colors.grey,
+                            color: AppColors.grey,
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                         ),
@@ -93,7 +93,7 @@ class ShimmerCommentCard extends StatelessWidget {
                           height: 10.h,
                           width: 36.w,
                           decoration: BoxDecoration(
-                            color: Colors.grey,
+                            color: AppColors.grey,
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                         ),
@@ -121,10 +121,7 @@ class ShimmerCommentCardList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(
-        itemCount,
-        (_) => const ShimmerCommentCard(),
-      ),
+      children: List.generate(itemCount, (_) => const ShimmerCommentCard()),
     );
   }
 }

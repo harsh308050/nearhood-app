@@ -328,9 +328,11 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody>
                 ),
               if (isOwnPost)
                 ListTile(
-                  leading: Icon(
-                    Icons.edit_outlined,
+                  leading: CustomImageView(
+                    imagePath: AppAssets.icEdit,
                     color: AppColors.primaryBlue,
+                    height: 20.r,
+                    width: 20.r,
                   ),
                   title: CustomText(
                     AppStrings.editPost,

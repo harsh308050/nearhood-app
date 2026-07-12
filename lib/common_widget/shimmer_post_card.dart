@@ -30,7 +30,7 @@ class ShimmerPostCard extends StatelessWidget {
                   width: 40.r,
                   height: 40.r,
                   decoration: const BoxDecoration(
-                    color: Colors.grey,
+                    color: AppColors.grey,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -44,7 +44,7 @@ class ShimmerPostCard extends StatelessWidget {
                         height: 14.h,
                         width: 120.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -54,7 +54,7 @@ class ShimmerPostCard extends StatelessWidget {
                         height: 10.h,
                         width: 80.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -66,7 +66,7 @@ class ShimmerPostCard extends StatelessWidget {
                   height: 20.h,
                   width: 56.w,
                   decoration: BoxDecoration(
-                    color: Colors.grey,
+                    color: AppColors.grey,
                     borderRadius: BorderRadius.circular(100.r),
                   ),
                 ),
@@ -80,7 +80,7 @@ class ShimmerPostCard extends StatelessWidget {
               height: 14.h,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -89,7 +89,7 @@ class ShimmerPostCard extends StatelessWidget {
               height: 14.h,
               width: MediaQuery.of(context).size.width * 0.7,
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -98,7 +98,7 @@ class ShimmerPostCard extends StatelessWidget {
               height: 14.h,
               width: MediaQuery.of(context).size.width * 0.45,
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: AppColors.grey,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -110,7 +110,7 @@ class ShimmerPostCard extends StatelessWidget {
                 height: 180.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey,
+                  color: AppColors.grey,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
@@ -129,7 +129,7 @@ class ShimmerPostCard extends StatelessWidget {
                       height: 34.h,
                       width: 64.w,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(100.r),
                       ),
                     ),
@@ -139,7 +139,7 @@ class ShimmerPostCard extends StatelessWidget {
                       height: 34.h,
                       width: 64.w,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(100.r),
                       ),
                     ),
@@ -152,7 +152,7 @@ class ShimmerPostCard extends StatelessWidget {
                       height: 34.r,
                       width: 34.r,
                       decoration: const BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -162,7 +162,7 @@ class ShimmerPostCard extends StatelessWidget {
                       height: 34.r,
                       width: 34.r,
                       decoration: const BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         shape: BoxShape.circle,
                       ),
                     ),

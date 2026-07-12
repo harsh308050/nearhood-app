@@ -8,41 +8,33 @@ abstract class MarketplaceEvent extends Equatable {
 }
 
 class FetchMarketplaceRequested extends MarketplaceEvent {
-  final double lat;
-  final double lng;
-  final String mode; // 'myarea' | 'nearby' | 'city'
   final String? type; // 'product' | 'service'
   final String? category;
+  final String? search;
   final bool refresh;
 
   const FetchMarketplaceRequested({
-    required this.lat,
-    required this.lng,
-    required this.mode,
     this.type,
     this.category,
+    this.search,
     this.refresh = false,
   });
 
   @override
-  List<Object?> get props => [lat, lng, mode, type, category, refresh];
+  List<Object?> get props => [type, category, search, refresh];
 }
 
 class LoadMoreMarketplaceRequested extends MarketplaceEvent {
-  final double lat;
-  final double lng;
-  final String mode;
   final String? type;
   final String? category;
+  final String? search;
 
   const LoadMoreMarketplaceRequested({
-    required this.lat,
-    required this.lng,
-    required this.mode,
     this.type,
     this.category,
+    this.search,
   });
 
   @override
-  List<Object?> get props => [lat, lng, mode, type, category];
+  List<Object?> get props => [type, category, search];
 }

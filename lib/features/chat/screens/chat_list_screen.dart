@@ -406,7 +406,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
     if (lastMessage.isLocation) {
       return Row(
         children: [
-          Icon(Icons.location_on, color: color, size: 16.r),
+          CustomImageView(
+            imagePath: AppAssets.icLocation,
+            color: color,
+            height: 16.r,
+            width: 16.r,
+          ),
           sw(4),
           Expanded(
             child: CustomText(

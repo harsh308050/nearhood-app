@@ -388,13 +388,15 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              SizedBox(height: 16.h),
+              sh(16),
               ListTile(
-                leading: const Icon(
-                  Icons.camera_alt,
+                leading: CustomImageView(
+                  imagePath: AppAssets.icCamera,
                   color: AppColors.primaryBlue,
+                  height: 20.r,
+                  width: 20.r,
                 ),
-                title: const Text(AppStrings.businessTakePhoto),
+                title: const CustomText(AppStrings.businessTakePhoto),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final photo = await _picker.pickImage(
@@ -415,11 +417,13 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
+                leading: CustomImageView(
+                  imagePath: AppAssets.icGallery,
                   color: AppColors.primaryBlue,
+                  height: 20.r,
+                  width: 20.r,
                 ),
-                title: const Text(AppStrings.businessChooseFromGallery),
+                title: const CustomText(AppStrings.businessChooseFromGallery),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final photo = await _picker.pickImage(
@@ -446,7 +450,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                     Icons.delete_outline,
                     color: AppColors.red,
                   ),
-                  title: const Text(AppStrings.businessRemovePhoto),
+                  title: const CustomText(AppStrings.businessRemovePhoto),
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() {
@@ -541,8 +545,10 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           website: _websiteController.text.trim(),
           workingHours: hours,
           gstNumber: _gstController.text.trim(),
-          localityId: _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
-          localityName: _selectedLocality?.name ?? _user?.location?.locality?.name,
+          localityId:
+              _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
+          localityName:
+              _selectedLocality?.name ?? _user?.location?.locality?.name,
           city: _user?.location?.city?.name,
           latitude: _user?.location?.coordinates?.lat,
           longitude: _user?.location?.coordinates?.lng,
@@ -567,8 +573,10 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           website: _websiteController.text.trim(),
           workingHours: hours,
           gstNumber: _gstController.text.trim(),
-          localityId: _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
-          localityName: _selectedLocality?.name ?? _user?.location?.locality?.name,
+          localityId:
+              _selectedLocality?.placeId ?? _user?.location?.locality?.placeId,
+          localityName:
+              _selectedLocality?.name ?? _user?.location?.locality?.name,
           city: _user?.location?.city?.name,
           latitude: _user?.location?.coordinates?.lat,
           longitude: _user?.location?.coordinates?.lng,
@@ -677,32 +685,33 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                   : AppColors.borderLight,
             ),
             child: isDone
-                ? Icon(Icons.check, color: AppColors.white, size: 14.r)
+                ? CustomImageView(
+                    imagePath: AppAssets.icCheckRoundFilled,
+                    color: AppColors.white,
+                    height: 14.r,
+                    width: 14.r,
+                  )
                 : Center(
-                    child: Text(
+                    child: CustomText(
                       '${index + 1}',
-                      style: TextStyle(
-                        color: isActive ? AppColors.white : AppColors.grey,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      color: isActive ? AppColors.white : AppColors.grey,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),
-          SizedBox(height: 4.h),
-          Text(
+          sh(4),
+          CustomText(
             label,
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: isActive
-                  ? AppColors.primaryBlue
-                  : isDone
-                  ? AppColors.darkGrey
-                  : AppColors.grey,
-              fontWeight: isActive || isDone
-                  ? FontWeight.w600
-                  : FontWeight.normal,
-            ),
+            fontSize: 11.sp,
+            color: isActive
+                ? AppColors.primaryBlue
+                : isDone
+                ? AppColors.darkGrey
+                : AppColors.grey,
+            fontWeight: isActive || isDone
+                ? FontWeight.w600
+                : FontWeight.normal,
             textAlign: TextAlign.center,
             maxLines: 1,
           ),
@@ -739,13 +748,19 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     }
 
     final categoryItems = [
-      ...availableCategories.map((c) => DropdownItem(value: c.name, label: c.name)),
+      ...availableCategories.map(
+        (c) => DropdownItem(value: c.name, label: c.name),
+      ),
       DropdownItem(value: 'Other', label: 'Other'),
     ];
 
-    final selectedCatObj = availableCategories.where((c) => c.name == _selectedCategory).firstOrNull;
+    final selectedCatObj = availableCategories
+        .where((c) => c.name == _selectedCategory)
+        .firstOrNull;
     final subcategoryItems = selectedCatObj != null
-        ? selectedCatObj.subcategories.map((sub) => DropdownItem(value: sub.name, label: sub.name)).toList()
+        ? selectedCatObj.subcategories
+              .map((sub) => DropdownItem(value: sub.name, label: sub.name))
+              .toList()
         : <DropdownItem<String>>[];
 
     return GestureDetector(
@@ -756,27 +771,27 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Business Type
-            Text(
+            CustomText(
               AppStrings.businessTypeSelection,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 12.h),
+            sh(12),
             _buildBusinessTypeCard(
               type: 'neighbor_for_hire',
               title: AppStrings.neighborForHire,
               desc: AppStrings.neighborForHireDesc,
-              icon: Icons.person,
+              imagePath: AppAssets.icProfile,
             ),
-            SizedBox(height: 8.h),
+            sh(8),
             _buildBusinessTypeCard(
               type: 'professional',
               title: AppStrings.professionalBusiness,
               desc: AppStrings.professionalBusinessDesc,
-              icon: Icons.store,
+              imagePath: AppAssets.icMarket,
             ),
-            SizedBox(height: 20.h),
+            sh(20),
 
             // Business Name
             CustomTextField(
@@ -789,12 +804,14 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               textInputAction: TextInputAction.next,
               emptyErrorMessage: AppStrings.fieldRequired,
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // Category
             CustomDropdown<String>(
               label: AppStrings.businessCategory,
-              hint: isLoading ? 'Loading categories...' : AppStrings.selectCategory,
+              hint: isLoading
+                  ? 'Loading categories...'
+                  : AppStrings.selectCategory,
               isRequired: true,
               isSearchable: true,
               value: _selectedCategory,
@@ -811,7 +828,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
             ),
 
             if (_selectedCategory == 'Other') ...[
-              SizedBox(height: 12.h),
+              sh(12),
               CustomTextField(
                 controller: _customSubCategoryController,
                 label: AppStrings.businessSubCategory,
@@ -826,7 +843,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
             if (_selectedCategory != null &&
                 _selectedCategory != 'Other' &&
                 subcategoryItems.isNotEmpty) ...[
-              SizedBox(height: 12.h),
+              sh(12),
               CustomDropdown<String>(
                 label: AppStrings.businessSubCategory,
                 hint: AppStrings.selectSubCategory,
@@ -837,42 +854,42 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                 onChanged: (val) => setState(() => _selectedSubCategory = val),
               ),
             ],
-            SizedBox(height: 20.h),
+            sh(20),
 
             // Logo
-            Text(
+            CustomText(
               AppStrings.businessLogo,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 4.h),
-            Text(
+            sh(4),
+            CustomText(
               AppStrings.businessLogoHint,
               style: AppTypography.caption.copyWith(color: AppColors.grey),
             ),
-            SizedBox(height: 8.h),
+            sh(8),
             _buildImagePicker(
               localPath: _logoLocalPath,
               onTap: () => _pickImage(isLogo: true),
               label: AppStrings.businessUploadLogo,
               networkUrl: widget.profile?.logoUrl,
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // Cover
-            Text(
+            CustomText(
               AppStrings.businessCover,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 4.h),
-            Text(
+            sh(4),
+            CustomText(
               AppStrings.businessCoverHint,
               style: AppTypography.caption.copyWith(color: AppColors.grey),
             ),
-            SizedBox(height: 8.h),
+            sh(8),
             _buildImagePicker(
               localPath: _coverLocalPath,
               onTap: () => _pickImage(isLogo: false),
@@ -890,7 +907,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     required String type,
     required String title,
     required String desc,
-    required IconData icon,
+    required String imagePath,
   }) {
     final isSelected = _selectedBusinessType == type;
     return GestureDetector(
@@ -920,37 +937,32 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
         child: Row(
           children: [
             Container(
-              width: 44.r,
-              height: 44.r,
+              width: 32.r,
+              height: 32.r,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primaryBlue.withValues(alpha: 0.12)
-                    : AppColors.background,
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(
-                icon,
+              child: CustomImageView(
+                imagePath: imagePath,
                 color: isSelected ? AppColors.primaryBlue : AppColors.grey,
-                size: 22.r,
               ),
             ),
-            SizedBox(width: 12.w),
+            sw(12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  CustomText(
                     title,
-                    style: TextStyle(
+                    style: AppTypography.cardTitle.copyWith(
                       fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
                       color: AppColors.darkGrey,
                     ),
                   ),
-                  SizedBox(height: 2.h),
-                  Text(
+                  sh(2),
+                  CustomText(
                     desc,
-                    style: TextStyle(
+                    style: AppTypography.bodyText.copyWith(
                       fontSize: 12.sp,
                       color: AppColors.grey,
                       height: 1.3,
@@ -962,10 +974,11 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               ),
             ),
             if (isSelected)
-              Icon(
-                Icons.check_circle,
+              CustomImageView(
+                imagePath: AppAssets.icCheckRoundFilled,
                 color: AppColors.primaryBlue,
-                size: 20.r,
+                height: 20.r,
+                width: 20.r,
               ),
           ],
         ),
@@ -1015,10 +1028,13 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.add_a_photo_outlined, color: AppColors.grey, size: 32.r),
-        SizedBox(height: 6.h),
-        Text(
+        sh(6),
+        CustomText(
           label,
-          style: TextStyle(fontSize: 13.sp, color: AppColors.grey),
+          style: AppTypography.bodyText.copyWith(
+            fontSize: 13.sp,
+            color: AppColors.grey,
+          ),
         ),
       ],
     );
@@ -1044,7 +1060,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               textInputAction: TextInputAction.newline,
               emptyErrorMessage: AppStrings.fieldRequired,
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // Address with GPS button
             Row(
@@ -1061,95 +1077,111 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                     emptyErrorMessage: AppStrings.fieldRequired,
                   ),
                 ),
-                SizedBox(width: 8.w),
+                sw(8),
                 Padding(
                   padding: EdgeInsets.only(top: 28.h),
                   child: GestureDetector(
                     onTap: _getCurrentAddress,
                     child: Container(
+                      padding: EdgeInsets.all(10.r),
                       width: 44.r,
                       height: 44.r,
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(
                           color: AppColors.primaryBlue.withValues(alpha: 0.2),
                         ),
                       ),
-                      child: Icon(
-                        Icons.my_location,
+                      child: CustomImageView(
+                        imagePath: AppAssets.icGPS,
                         color: AppColors.primaryBlue,
-                        size: 20.r,
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // Business Area (selectable locality, same city as home)
-            Text(
+            CustomText(
               AppStrings.businessLocality,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 6.h),
+            sh(6),
             GestureDetector(
               onTap: _pickBusinessLocality,
               child: Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(color: AppColors.borderLight),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.location_on, color: AppColors.grey, size: 18.r),
-                    SizedBox(width: 8.w),
+                    CustomImageView(
+                      imagePath: AppAssets.icLocation,
+                      color: AppColors.grey,
+                      height: 18.r,
+                      width: 18.r,
+                    ),
+                    sw(8),
                     Expanded(
-                      child: Text(
+                      child: CustomText(
                         _selectedLocality?.name ??
                             _user?.location?.locality?.name ??
                             '',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: _selectedLocality?.name != null ||
+                        style: AppTypography.bodyText.copyWith(
+                          color:
+                              _selectedLocality?.name != null ||
                                   _user?.location?.locality?.name != null
                               ? AppColors.darkGrey
                               : AppColors.grey,
                         ),
                       ),
                     ),
-                    Icon(Icons.chevron_right, color: AppColors.grey, size: 18.r),
+                    CustomImageView(
+                      imagePath: AppAssets.icRightarrowWithoutbar,
+                    ),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 4.h),
+            sh(4),
             Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.grey, size: 14.r),
-                SizedBox(width: 4.w),
-                Text(
-                  AppStrings.businessLocalityHint,
-                  style: TextStyle(fontSize: 11.sp, color: AppColors.grey),
+                CustomImageView(
+                  imagePath: AppAssets.icInfo,
+                  color: AppColors.grey,
+                  height: 14.r,
+                  width: 14.r,
+                ),
+                sw(4),
+                Flexible(
+                  child: CustomText(
+                    AppStrings.businessLocalityHint,
+                    style: AppTypography.bodyText.copyWith(
+                      color: AppColors.grey,
+                    ),
+                  ),
                 ),
               ],
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // City (locked to home city)
-            Text(
+            CustomText(
               AppStrings.businessCity,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 6.h),
+            sh(6),
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
@@ -1161,17 +1193,21 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               child: Row(
                 children: [
                   Icon(Icons.location_city, color: AppColors.grey, size: 18.r),
-                  SizedBox(width: 8.w),
+                  sw(8),
                   Expanded(
-                    child: Text(
+                    child: CustomText(
                       _user?.location?.city?.name ?? '',
-                      style: TextStyle(
-                        fontSize: 14.sp,
+                      style: AppTypography.bodyText.copyWith(
                         color: AppColors.darkGrey,
                       ),
                     ),
                   ),
-                  Icon(Icons.lock, color: AppColors.grey, size: 14.r),
+                  CustomImageView(
+                    imagePath: AppAssets.icLock,
+                    color: AppColors.grey,
+                    height: 14.r,
+                    width: 14.r,
+                  ),
                 ],
               ),
             ),
@@ -1212,17 +1248,17 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                     ),
                   ),
 
-                  SizedBox(width: 12.w),
+                  sw(12),
                   Container(
                     width: 1.r,
                     height: 24.h,
                     color: AppColors.borderLight,
                   ),
-                  SizedBox(width: 12.w),
+                  sw(12),
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             CustomTextField(
               key: _websiteKey,
@@ -1233,18 +1269,18 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               textInputAction: TextInputAction.next,
               onChanged: (_) => _websiteKey.currentState?.validate(),
             ),
-            SizedBox(height: 16.h),
+            sh(16),
 
             // Working Hours
-            Text(
+            CustomText(
               AppStrings.businessWorkingHours,
               style: AppTypography.sectionHeader.copyWith(
                 color: AppColors.darkGrey,
               ),
             ),
-            SizedBox(height: 12.h),
+            sh(12),
             _buildWorkingHours(),
-            SizedBox(height: 16.h),
+            sh(16),
 
             CustomTextField(
               controller: _gstController,
@@ -1279,9 +1315,9 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
             children: [
               SizedBox(
                 width: 40.w,
-                child: Text(
+                child: CustomText(
                   label,
-                  style: TextStyle(
+                  style: AppTypography.bodyText.copyWith(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w500,
                     color: AppColors.darkGrey,
@@ -1311,11 +1347,11 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                       borderRadius: BorderRadius.circular(8.r),
                       border: Border.all(color: AppColors.borderLight),
                     ),
-                    child: Text(
+                    child: CustomText(
                       _workingHoursOpenTime[key] != null
                           ? _workingHoursOpenTime[key]!.format(context)
                           : 'Open',
-                      style: TextStyle(
+                      style: AppTypography.bodyText.copyWith(
                         fontSize: 12.sp,
                         color: _workingHoursOpenTime[key] != null
                             ? AppColors.darkGrey
@@ -1328,7 +1364,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 6.w),
-                child: Text('–', style: TextStyle(color: AppColors.grey)),
+                child: CustomText('–', color: AppColors.grey),
               ),
               Expanded(
                 child: GestureDetector(
@@ -1353,11 +1389,11 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                       borderRadius: BorderRadius.circular(8.r),
                       border: Border.all(color: AppColors.borderLight),
                     ),
-                    child: Text(
+                    child: CustomText(
                       _workingHoursCloseTime[key] != null
                           ? _workingHoursCloseTime[key]!.format(context)
                           : 'Close',
-                      style: TextStyle(
+                      style: AppTypography.bodyText.copyWith(
                         fontSize: 12.sp,
                         color: _workingHoursCloseTime[key] != null
                             ? AppColors.darkGrey
@@ -1368,7 +1404,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                   ),
                 ),
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               Transform.scale(
                 scale: 0.8,
                 child: Switch(
@@ -1418,11 +1454,14 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          CustomText(
             AppStrings.businessReviewSubtitle,
-            style: TextStyle(fontSize: 13.sp, color: AppColors.grey),
+            style: AppTypography.bodyText.copyWith(
+              fontSize: 13.sp,
+              color: AppColors.grey,
+            ),
           ),
-          SizedBox(height: 16.h),
+          sh(16),
 
           // ── Profile Card ──────────────────────────────────────────
           Container(
@@ -1477,15 +1516,15 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Business name
-                              Text(
+                              CustomText(
                                 _nameController.text,
-                                style: TextStyle(
+                                style: AppTypography.cardTitle.copyWith(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.darkGrey,
                                 ),
                               ),
-                              SizedBox(height: 4.h),
+                              sh(4),
                               // Category + Subcategory
                               Row(
                                 children: [
@@ -1500,9 +1539,9 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                                       ),
                                       borderRadius: BorderRadius.circular(6.r),
                                     ),
-                                    child: Text(
+                                    child: CustomText(
                                       _selectedCategory ?? '',
-                                      style: TextStyle(
+                                      style: AppTypography.caption.copyWith(
                                         fontSize: 11.sp,
                                         color: AppColors.primaryBlue,
                                         fontWeight: FontWeight.w500,
@@ -1514,13 +1553,13 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                                             .trim()
                                             .isNotEmpty
                                       : _selectedSubCategory != null) ...[
-                                    SizedBox(width: 6.w),
-                                    Text(
+                                    sw(6),
+                                    CustomText(
                                       _selectedCategory == 'Other'
                                           ? _customSubCategoryController.text
                                                 .trim()
                                           : _selectedSubCategory!,
-                                      style: TextStyle(
+                                      style: AppTypography.bodyText.copyWith(
                                         fontSize: 12.sp,
                                         color: AppColors.grey,
                                       ),
@@ -1528,23 +1567,26 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                                   ],
                                 ],
                               ),
-                              SizedBox(height: 4.h),
+                              sh(4),
                               // Business type
                               Row(
                                 children: [
-                                  Icon(
-                                    _selectedBusinessType == 'neighbor_for_hire'
-                                        ? Icons.person_outline
-                                        : Icons.storefront_outlined,
-                                    size: 14.r,
+                                  CustomImageView(
+                                    imagePath:
+                                        _selectedBusinessType ==
+                                            'neighbor_for_hire'
+                                        ? AppAssets.icProfile
+                                        : AppAssets.icMarket,
                                     color: AppColors.grey,
+                                    height: 14.r,
+                                    width: 14.r,
                                   ),
-                                  SizedBox(width: 4.w),
-                                  Text(
+                                  sw(4),
+                                  CustomText(
                                     _selectedBusinessType == 'neighbor_for_hire'
                                         ? AppStrings.neighborForHire
                                         : AppStrings.professionalBusiness,
-                                    style: TextStyle(
+                                    style: AppTypography.bodyText.copyWith(
                                       fontSize: 12.sp,
                                       color: AppColors.grey,
                                     ),
@@ -1561,46 +1603,76 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
               ],
             ),
           ),
-          SizedBox(height: 16.h),
+          sh(16),
 
           // ── Details Section ───────────────────────────────────────
           _buildReviewDetailRow(
-            Icons.description_outlined,
+            CustomImageView(
+              imagePath: AppAssets.icDocument,
+              color: AppColors.grey,
+              height: 18.r,
+              width: 18.r,
+            ),
             'Description',
             _descController.text,
           ),
           _buildReviewDetailRow(
-            Icons.location_on_outlined,
+            CustomImageView(
+              imagePath: AppAssets.icLocation,
+              color: AppColors.grey,
+              height: 18.r,
+              width: 18.r,
+            ),
             'Address',
             _addressController.text,
           ),
           _buildReviewDetailRow(
-            Icons.pin_drop_outlined,
+            CustomImageView(
+              imagePath: AppAssets.icLocation,
+              color: AppColors.grey,
+              height: 18.r,
+              width: 18.r,
+            ),
             'Locality',
             '$locality, $city',
           ),
           if (_phoneController.text.isNotEmpty)
             _buildReviewDetailRow(
-              Icons.phone_outlined,
+              CustomImageView(
+                imagePath: AppAssets.icCall,
+                color: AppColors.grey,
+                height: 18.r,
+                width: 18.r,
+              ),
               'Phone',
               _phoneController.text,
             ),
           if (_websiteController.text.isNotEmpty)
             _buildReviewDetailRow(
-              Icons.language,
+              CustomImageView(
+                imagePath: AppAssets.icWorld,
+                color: AppColors.grey,
+                height: 18.r,
+                width: 18.r,
+              ),
               'Website',
               _websiteController.text,
             ),
           if (_gstController.text.isNotEmpty)
             _buildReviewDetailRow(
-              Icons.verified_outlined,
+              CustomImageView(
+                imagePath: AppAssets.icVerified,
+                color: AppColors.grey,
+                height: 18.r,
+                width: 18.r,
+              ),
               'GST Number',
               _gstController.text,
             ),
 
           // Working hours summary
           if (_workingHoursOpen.values.any((v) => v == true)) ...[
-            SizedBox(height: 12.h),
+            sh(12),
             _buildReviewWorkingHoursSummary(),
           ],
         ],
@@ -1644,10 +1716,11 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
         ),
       ),
       child: Center(
-        child: Icon(
-          Icons.storefront,
+        child: CustomImageView(
+          imagePath: AppAssets.icMarket,
           color: AppColors.primaryBlue.withValues(alpha: 0.3),
-          size: 48.r,
+          height: 48.r,
+          width: 48.r,
         ),
       ),
     );
@@ -1692,34 +1765,41 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
         color: AppColors.background,
         shape: BoxShape.circle,
       ),
-      child: Icon(Icons.store, color: AppColors.grey, size: 28.r),
+      child: CustomImageView(
+        imagePath: AppAssets.icMarket,
+        color: AppColors.grey,
+        height: 28.r,
+        width: 28.r,
+      ),
     );
   }
 
-  Widget _buildReviewDetailRow(IconData icon, String label, String value) {
+  Widget _buildReviewDetailRow(Widget iconWidget, String label, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 14.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18.r, color: AppColors.grey),
-          SizedBox(width: 10.w),
+          iconWidget,
+          sw(10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                CustomText(
                   label,
-                  style: TextStyle(
+                  style: AppTypography.caption.copyWith(
                     fontSize: 11.sp,
                     color: AppColors.grey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 2.h),
-                Text(
+                sh(2),
+                CustomText(
                   value,
-                  style: TextStyle(fontSize: 14.sp, color: AppColors.darkGrey),
+                  style: AppTypography.bodyText.copyWith(
+                    color: AppColors.darkGrey,
+                  ),
                 ),
               ],
             ),
@@ -1750,24 +1830,31 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.access_time, size: 18.r, color: AppColors.grey),
-        SizedBox(width: 10.w),
+        CustomImageView(
+          imagePath: AppAssets.icTime,
+          color: AppColors.grey,
+          height: 18.r,
+          width: 18.r,
+        ),
+        sw(10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              CustomText(
                 'Working Hours',
-                style: TextStyle(
+                style: AppTypography.caption.copyWith(
                   fontSize: 11.sp,
                   color: AppColors.grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              SizedBox(height: 2.h),
-              Text(
+              sh(2),
+              CustomText(
                 openDays.join(', '),
-                style: TextStyle(fontSize: 14.sp, color: AppColors.darkGrey),
+                style: AppTypography.bodyText.copyWith(
+                  color: AppColors.darkGrey,
+                ),
               ),
             ],
           ),
@@ -1820,7 +1907,7 @@ class _CreateBusinessScreenState extends State<CreateBusinessScreenBody> {
                   onPressed: _prevStep,
                 ),
               ),
-            if (_currentStep > 0) SizedBox(width: 12.w),
+            if (_currentStep > 0) sw(12),
             Expanded(
               flex: 2,
               child: CustomButton(

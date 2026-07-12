@@ -226,13 +226,15 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              SizedBox(height: 16.h),
+              sh(16),
               ListTile(
-                leading: const Icon(
-                  Icons.camera_alt,
+                leading: CustomImageView(
+                  imagePath: AppAssets.icCamera,
                   color: AppColors.primaryBlue,
+                  height: 20.r,
+                  width: 20.r,
                 ),
-                title: const Text('Take Photo'),
+                title: const CustomText('Take Photo'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   _captureMedia(isVideo: false);
@@ -243,7 +245,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                   Icons.videocam,
                   color: AppColors.primaryBlue,
                 ),
-                title: const Text('Record Video'),
+                title: const CustomText('Record Video'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   _captureMedia(isVideo: true);
@@ -706,7 +708,7 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
       child: Container(
         padding: EdgeInsets.all(12.r),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FA),
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: AppColors.borderLight),
         ),
@@ -718,7 +720,12 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.poll, color: AppColors.primaryBlue, size: 18.r),
+                    CustomImageView(
+                      imagePath: AppAssets.icPoll,
+                      color: AppColors.primaryBlue,
+                      height: 18.r,
+                      width: 18.r,
+                    ),
                     sw(6),
                     CustomText(
                       AppStrings.pollAttachment,
@@ -824,14 +831,11 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                   child: isVid
                       ? _VideoPreviewItem(path: path)
                       : (isNetwork
-                          ? CachedNetworkImage(
-                              imageUrl: path,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.file(
-                              File(path),
-                              fit: BoxFit.cover,
-                            )),
+                            ? CachedNetworkImage(
+                                imageUrl: path,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(File(path), fit: BoxFit.cover)),
                 ),
               ),
               Positioned(
@@ -850,10 +854,11 @@ class _CreatePostScreenBodyState extends State<CreatePostScreenBody> {
                       color: AppColors.red,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.close,
+                    child: CustomImageView(
+                      imagePath: AppAssets.icClose,
                       color: AppColors.white,
-                      size: 14.r,
+                      height: 14.r,
+                      width: 14.r,
                     ),
                   ),
                 ),
@@ -979,13 +984,16 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
         ? VideoPlayerController.networkUrl(Uri.parse(widget.path))
         : VideoPlayerController.file(File(widget.path));
 
-    _controller!.initialize().then((_) {
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    }).catchError((_) {});
+    _controller!
+        .initialize()
+        .then((_) {
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+          }
+        })
+        .catchError((_) {});
   }
 
   @override
@@ -999,9 +1007,7 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
     if (!_isInitialized || _controller == null) {
       return Container(
         color: AppColors.background,
-        child: const Center(
-          child: CircularProgressIndicator.adaptive(),
-        ),
+        child: const Center(child: CircularProgressIndicator.adaptive()),
       );
     }
 

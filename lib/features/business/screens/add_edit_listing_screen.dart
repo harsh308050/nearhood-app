@@ -176,13 +176,15 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              SizedBox(height: 16.h),
+              sh(16),
               ListTile(
-                leading: const Icon(
-                  Icons.camera_alt,
+                leading: CustomImageView(
+                  imagePath: AppAssets.icCamera,
                   color: AppColors.primaryBlue,
+                  height: 20.r,
+                  width: 20.r,
                 ),
-                title: const Text(AppStrings.businessTakePhoto),
+                title: const CustomText(AppStrings.businessTakePhoto),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final photo = await _picker.pickImage(
@@ -200,11 +202,13 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
+                leading: CustomImageView(
+                  imagePath: AppAssets.icGallery,
                   color: AppColors.primaryBlue,
+                  height: 20.r,
+                  width: 20.r,
                 ),
-                title: const Text(AppStrings.businessChooseFromGallery),
+                title: const CustomText(AppStrings.businessChooseFromGallery),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final remaining = _maxPhotos - _mediaItems.length;
@@ -503,31 +507,31 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTitleField(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildCategoryPicker(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildConditionPicker(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildPriceSection(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildPriceUnitPicker(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildOptionalField(
           label: 'Brand / Model',
           hint: 'e.g. Samsung, IKEA',
           controller: _brandController,
         ),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildOptionalNumberField(
           label: 'Quantity Available',
           hint: 'e.g. 10',
           controller: _quantityController,
         ),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildDescriptionField(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildMediaSection(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildAvailabilitySection(),
       ],
     );
@@ -540,23 +544,23 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTitleField(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildCategoryPicker(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildServicePriceSection(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildDescriptionField(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildServiceAreaPicker(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildOptionalField(
           label: 'Duration',
           hint: 'e.g. 45 minutes, 2-3 hours',
           controller: _durationController,
         ),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildMediaSection(),
-        SizedBox(height: 16.h),
+        sh(16),
         _buildAvailabilitySection(),
       ],
     );
@@ -600,18 +604,20 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
       label: AppStrings.businessCategory,
       isRequired: true,
       value: _selectedCategory,
-      hint: isLoading ? AppStrings.loadingCategories : AppStrings.selectCategory,
+      hint: isLoading
+          ? AppStrings.loadingCategories
+          : AppStrings.selectCategory,
       onTap: () {
         if (isLoading) {
-          AppSnackBar.showMessage(context, AppStrings.loadingCategoriesFromServer);
+          AppSnackBar.showMessage(
+            context,
+            AppStrings.loadingCategoriesFromServer,
+          );
           return;
         }
         if (categories.isEmpty) {
           bloc.add(FetchListingCategories());
-          AppSnackBar.showMessage(
-            context,
-            AppStrings.fetchingCategoriesRetry,
-          );
+          AppSnackBar.showMessage(context, AppStrings.fetchingCategoriesRetry);
           return;
         }
         _showCategoryPickerSheet(
@@ -666,11 +672,15 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        CustomText(
           'Service Area',
-          style: AppTypography.sectionHeader.copyWith(fontSize: 16.sp),
+          style: AppTypography.bodyText.copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.grey,
+            fontSize: 15.sp,
+          ),
         ),
-        SizedBox(height: 8.h),
+        sh(8),
         Row(
           children: [
             Expanded(
@@ -680,7 +690,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                 Icons.store_outlined,
               ),
             ),
-            SizedBox(width: 8.w),
+            sw(8),
             Expanded(
               child: _buildServiceAreaOption(
                 'home_visit',
@@ -718,10 +728,10 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
               size: 18.r,
               color: isSelected ? AppColors.primaryBlue : AppColors.grey,
             ),
-            SizedBox(width: 6.w),
-            Text(
+            sw(6),
+            CustomText(
               label,
-              style: TextStyle(
+              style: AppTypography.bodyText.copyWith(
                 fontSize: 13.sp,
                 color: isSelected ? AppColors.primaryBlue : AppColors.darkGrey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -739,11 +749,11 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        CustomText(
           'Price',
           style: AppTypography.sectionHeader.copyWith(fontSize: 16.sp),
         ),
-        SizedBox(height: 8.h),
+        sh(8),
         CustomTextField(
           controller: _priceController,
           hint: '0',
@@ -751,7 +761,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
           textInputAction: TextInputAction.done,
           prefix: Padding(
             padding: EdgeInsets.only(right: 8.w),
-            child: Text(
+            child: CustomText(
               '₹',
               style: AppTypography.bodyText.copyWith(
                 fontWeight: FontWeight.w600,
@@ -762,7 +772,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
           enabled: _priceType != 'contact',
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         ),
-        SizedBox(height: 10.h),
+        sh(10),
         Wrap(
           spacing: 8.w,
           runSpacing: 8.h,
@@ -779,11 +789,11 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        CustomText(
           'Price',
           style: AppTypography.sectionHeader.copyWith(fontSize: 16.sp),
         ),
-        SizedBox(height: 8.h),
+        sh(8),
         if (_priceType == 'fixed') ...[
           CustomTextField(
             controller: _priceController,
@@ -791,7 +801,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
             keyboardType: TextInputType.number,
             prefix: Padding(
               padding: EdgeInsets.only(right: 8.w),
-              child: Text(
+              child: CustomText(
                 '₹',
                 style: AppTypography.bodyText.copyWith(
                   fontWeight: FontWeight.w600,
@@ -811,7 +821,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                   keyboardType: TextInputType.number,
                   prefix: Padding(
                     padding: EdgeInsets.only(right: 8.w),
-                    child: Text(
+                    child: CustomText(
                       '₹',
                       style: AppTypography.bodyText.copyWith(
                         fontWeight: FontWeight.w600,
@@ -822,12 +832,12 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
               ),
-              SizedBox(width: 8.w),
-              Text(
+              sw(8),
+              CustomText(
                 'to',
                 style: AppTypography.bodyText.copyWith(color: AppColors.grey),
               ),
-              SizedBox(width: 8.w),
+              sw(8),
               Expanded(
                 child: CustomTextField(
                   controller: _priceMaxController,
@@ -835,7 +845,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                   keyboardType: TextInputType.number,
                   prefix: Padding(
                     padding: EdgeInsets.only(right: 8.w),
-                    child: Text(
+                    child: CustomText(
                       '₹',
                       style: AppTypography.bodyText.copyWith(
                         fontWeight: FontWeight.w600,
@@ -850,7 +860,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
           ),
         ],
         if (_priceType != 'contact') ...[
-          SizedBox(height: 10.h),
+          sh(10),
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
@@ -879,9 +889,9 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
             color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
           ),
         ),
-        child: Text(
+        child: CustomText(
           label,
-          style: TextStyle(
+          style: AppTypography.bodyText.copyWith(
             fontSize: 13.sp,
             color: isSelected ? AppColors.primaryBlue : AppColors.darkGrey,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -934,33 +944,37 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
             Text.rich(
               TextSpan(
                 text: 'Photos',
-                style: AppTypography.sectionHeader.copyWith(fontSize: 16.sp),
+                style: AppTypography.bodyText.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grey,
+                  fontSize: 15.sp,
+                ),
                 children: _isProduct
                     ? [
                         TextSpan(
                           text: ' *',
                           style: TextStyle(
                             color: AppColors.red,
-                            fontSize: 16.sp,
+                            fontSize: 15.sp,
                           ),
                         ),
                       ]
                     : null,
               ),
             ),
-            Text(
+            CustomText(
               '${_mediaItems.length}/$_maxPhotos',
               style: AppTypography.caption.copyWith(fontSize: 12.sp),
             ),
           ],
         ),
-        SizedBox(height: 8.h),
+        sh(8),
         SizedBox(
           height: 100.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: _mediaItems.length + 1,
-            separatorBuilder: (_, idx) => SizedBox(width: 8.w),
+            separatorBuilder: (_, idx) => sw(8),
             itemBuilder: (context, index) {
               if (index == _mediaItems.length) return _buildAddImageButton();
               return _buildMediaThumbnail(index);
@@ -986,8 +1000,11 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add_a_photo_outlined, color: AppColors.grey, size: 24.r),
-            SizedBox(height: 4.h),
-            Text('Add', style: AppTypography.caption.copyWith(fontSize: 11.sp)),
+            sh(4),
+            CustomText(
+              'Add',
+              style: AppTypography.caption.copyWith(fontSize: 11.sp),
+            ),
           ],
         ),
       ),
@@ -1051,23 +1068,26 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
     return _buildCard(
       child: Row(
         children: [
-          Icon(
-            _isAvailable ? Icons.check_circle : Icons.cancel_outlined,
-            color: _isAvailable ? AppColors.green : AppColors.grey,
-            size: 22.r,
-          ),
-          SizedBox(width: 12.w),
+          _isAvailable
+              ? CustomImageView(
+                  imagePath: AppAssets.icCheckRoundFilled,
+                  color: AppColors.green,
+                  height: 22.r,
+                  width: 22.r,
+                )
+              : Icon(Icons.cancel_outlined, color: AppColors.grey, size: 22.r),
+          sw(12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                CustomText(
                   _isAvailable ? 'Available' : 'Out of Stock',
                   style: AppTypography.bodyText.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
+                CustomText(
                   _isAvailable
                       ? 'This listing is visible to neighbors'
                       : 'This listing is hidden from view',
@@ -1130,18 +1150,22 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
           Text.rich(
             TextSpan(
               text: label,
-              style: AppTypography.sectionHeader.copyWith(fontSize: 16.sp),
+              style: AppTypography.bodyText.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.grey,
+                fontSize: 15.sp,
+              ),
               children: isRequired
                   ? [
                       TextSpan(
                         text: ' *',
-                        style: TextStyle(color: AppColors.red, fontSize: 16.sp),
+                        style: TextStyle(color: AppColors.red, fontSize: 15.sp),
                       ),
                     ]
                   : null,
             ),
           ),
-          SizedBox(height: 8.h),
+          sh(8),
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
@@ -1157,9 +1181,9 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
+                  child: CustomText(
                     value ?? hint,
-                    style: TextStyle(
+                    style: AppTypography.bodyText.copyWith(
                       fontSize: 14.sp,
                       color: value != null
                           ? AppColors.darkGrey
@@ -1224,7 +1248,7 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-              child: Text(
+              child: CustomText(
                 title,
                 style: AppTypography.sectionHeader.copyWith(fontSize: 18.sp),
               ),
@@ -1238,9 +1262,9 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                   final opt = options[i];
                   final isSelected = opt == selected;
                   return ListTile(
-                    title: Text(
+                    title: CustomText(
                       opt,
-                      style: TextStyle(
+                      style: AppTypography.bodyText.copyWith(
                         fontSize: 15.sp,
                         color: isSelected
                             ? AppColors.primaryBlue
@@ -1251,10 +1275,11 @@ class _AddEditListingBodyState extends State<_AddEditListingBody> {
                       ),
                     ),
                     trailing: isSelected
-                        ? Icon(
-                            Icons.check,
+                        ? CustomImageView(
+                            imagePath: AppAssets.icCheckRoundFilled,
                             color: AppColors.primaryBlue,
-                            size: 20.r,
+                            height: 20.r,
+                            width: 20.r,
                           )
                         : null,
                     onTap: () {
@@ -1314,7 +1339,8 @@ class _CategoryPickerSheetContent extends StatefulWidget {
       _CategoryPickerSheetContentState();
 }
 
-class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent> {
+class _CategoryPickerSheetContentState
+    extends State<_CategoryPickerSheetContent> {
   late final TextEditingController _searchController;
 
   @override
@@ -1338,7 +1364,8 @@ class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent
           if (searchQuery.isEmpty) return cat;
 
           final matchesCategory = cat.name.toLowerCase().contains(searchQuery);
-          if (matchesCategory) return cat; // Return category with all subcategories
+          if (matchesCategory)
+            return cat; // Return category with all subcategories
 
           final matchedSubs = cat.subcategories
               .where((sub) => sub.name.toLowerCase().contains(searchQuery))
@@ -1374,86 +1401,106 @@ class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 14.h,
-            ),
-            child: Text(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            child: CustomText(
               AppStrings.businessCategory,
-              style: AppTypography.sectionHeader.copyWith(
-                fontSize: 18.sp,
-              ),
+              style: AppTypography.sectionHeader.copyWith(fontSize: 18.sp),
             ),
           ),
           // Search Bar
+          // Padding(
+          //   padding: EdgeInsets.symmetric(
+          //     horizontal: 16.w,
+          //     vertical: 12.h,
+          //   ),
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //       color: AppColors.background,
+          //       borderRadius: BorderRadius.circular(10.r),
+          //       border: Border.all(color: AppColors.borderLight),
+          //     ),
+          //     padding: EdgeInsets.symmetric(horizontal: 12.w),
+          //     child: Row(
+          //       children: [
+          //         Icon(Icons.search, color: AppColors.grey, size: 20.r),
+          //         sw(8),
+          //         Expanded(
+          //           child: TextField(
+          //             controller: _searchController,
+          //             onChanged: (val) {
+          //               setState(() {});
+          //             },
+          //             decoration: InputDecoration(
+          //               hintText: AppStrings.searchCategoriesPlaceholder,
+          //               hintStyle: TextStyle(
+          //                 color: AppColors.grey,
+          //                 fontSize: 14.sp,
+          //               ),
+          //               border: InputBorder.none,
+          //               isDense: true,
+          //               contentPadding: EdgeInsets.symmetric(
+          //                 vertical: 10.h,
+          //               ),
+          //             ),
+          //             style: TextStyle(
+          //               fontSize: 14.sp,
+          //               color: AppColors.darkGrey,
+          //             ),
+          //           ),
+          //         ),
+          //         if (_searchController.text.isNotEmpty)
+          //           GestureDetector(
+          //             onTap: () {
+          //               _searchController.clear();
+          //               setState(() {});
+          //             },
+          //             child: Icon(
+          //               Icons.clear,
+          //               color: AppColors.grey,
+          //               size: 18.r,
+          //             ),
+          //           ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 12.h,
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: AppColors.borderLight),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: CustomTextField(
+              controller: _searchController,
+              onChanged: (val) {
+                setState(() {});
+              },
+              hint: AppStrings.searchCategoriesPlaceholder,
+              prefixIcon: CustomImageView(
+                imagePath: AppAssets.icSearch,
+                color: AppColors.grey,
               ),
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              child: Row(
-                children: [
-                  Icon(Icons.search, color: AppColors.grey, size: 20.r),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) {
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        hintText: AppStrings.searchCategoriesPlaceholder,
-                        hintStyle: TextStyle(
-                          color: AppColors.grey,
-                          fontSize: 14.sp,
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 10.h,
-                        ),
-                      ),
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppColors.darkGrey,
-                      ),
-                    ),
-                  ),
-                  if (_searchController.text.isNotEmpty)
-                    GestureDetector(
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? GestureDetector(
                       onTap: () {
                         _searchController.clear();
                         setState(() {});
                       },
-                      child: Icon(
-                        Icons.clear,
+                      child: CustomImageView(
+                        imagePath: AppAssets.icClose,
+                        width: 12.w,
+                        height: 12.h,
                         color: AppColors.grey,
-                        size: 18.r,
                       ),
-                    ),
-                ],
-              ),
+                    )
+                  : null,
             ),
           ),
-          const Divider(
-            height: 1,
-            color: AppColors.borderLight,
-          ),
+          const Divider(height: 1, color: AppColors.borderLight),
           Expanded(
             child: filteredCategories.isEmpty
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.all(24.r),
-                      child: Text(
+                      child: CustomText(
                         AppStrings.noCategoriesFound,
-                        style: TextStyle(
+                        style: AppTypography.bodyText.copyWith(
                           color: AppColors.grey,
                           fontSize: 14.sp,
                         ),
@@ -1468,15 +1515,10 @@ class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              16.w,
-                              12.h,
-                              16.w,
-                              6.h,
-                            ),
-                            child: Text(
+                            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 6.h),
+                            child: CustomText(
                               cat.name,
-                              style: TextStyle(
+                              style: AppTypography.bodyText.copyWith(
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.grey,
@@ -1489,9 +1531,9 @@ class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 24.w,
                               ),
-                              title: Text(
+                              title: CustomText(
                                 sub.name,
-                                style: TextStyle(
+                                style: AppTypography.bodyText.copyWith(
                                   fontSize: 15.sp,
                                   color: isSelected
                                       ? AppColors.primaryBlue
@@ -1502,10 +1544,11 @@ class _CategoryPickerSheetContentState extends State<_CategoryPickerSheetContent
                                 ),
                               ),
                               trailing: isSelected
-                                  ? Icon(
-                                      Icons.check,
+                                  ? CustomImageView(
+                                      imagePath: AppAssets.icCheckRoundFilled,
                                       color: AppColors.primaryBlue,
-                                      size: 20.r,
+                                      height: 20.r,
+                                      width: 20.r,
                                     )
                                   : null,
                               onTap: () {

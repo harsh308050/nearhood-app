@@ -275,10 +275,11 @@ class _EditProfileScreenBodyState extends State<EditProfileScreenBody> {
                   color: AppColors.primaryBlue,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.camera_alt,
+                child: CustomImageView(
+                  imagePath: AppAssets.icCamera,
                   color: AppColors.white,
-                  size: 16.r,
+                  height: 16.r,
+                  width: 16.r,
                 ),
               ),
             ),

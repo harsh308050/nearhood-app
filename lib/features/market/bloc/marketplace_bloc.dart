@@ -5,18 +5,6 @@ import 'package:nearhood/features/business/models/business_models.dart';
 import 'package:nearhood/features/market/bloc/marketplace_event.dart';
 import 'package:nearhood/features/market/bloc/marketplace_state.dart';
 
-int _radiusForMode(String mode) {
-  switch (mode) {
-    case 'nearby':
-      return 10000;
-    case 'city':
-      return 50000;
-    case 'myarea':
-    default:
-      return 5000;
-  }
-}
-
 class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
   final BusinessDataSource _dataSource = BusinessDataSource();
 
@@ -34,13 +22,12 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
       page: 1,
       hasReachedMax: false,
       listings: const [],
-      mode: event.mode,
       type: event.type,
       category: event.category,
+      search: event.search,
       clearError: true,
     ));
-    await _fetch(emit, event.lat, event.lng, event.mode, event.type,
-        event.category, 1, isRefresh: true);
+    await _fetch(emit, event.type, event.category, event.search, 1, isRefresh: true);
   }
 
   Future<void> _onLoadMore(
@@ -49,27 +36,22 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
   ) async {
     if (state.hasReachedMax || state.status == ApiCallState.busy) return;
     final nextPage = state.page + 1;
-    await _fetch(emit, event.lat, event.lng, event.mode, event.type,
-        event.category, nextPage, isRefresh: false);
+    await _fetch(emit, event.type, event.category, event.search, nextPage, isRefresh: false);
   }
 
   Future<void> _fetch(
     Emitter<MarketplaceState> emit,
-    double lat,
-    double lng,
-    String mode,
     String? type,
     String? category,
+    String? search,
     int page, {
     required bool isRefresh,
   }) async {
     try {
       final response = await _dataSource.getMarketplaceFeed(
-        lat: lat,
-        lng: lng,
-        radius: _radiusForMode(mode),
         type: type,
         category: category,
+        search: search,
         page: page,
         limit: 20,
       );
@@ -83,7 +65,7 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
                 MarketplaceListing.fromJson(e as Map<String, dynamic>))
             .toList();
 
-        final total = data is Map ? (data['totalCount'] as int? ?? 0) : 0;
+        final total = data is Map ? (data['totalCount'] as int? ?? data['pagination']?['total'] as int? ?? 0) : 0;
 
         final updated = isRefresh ? items : [...state.listings, ...items];
         emit(state.copyWith(
@@ -106,11 +88,5 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
         errorMessage: e.toString(),
       ));
     }
-  }
-
-  @override
-  Future<void> close() {
-    _dataSource.dispose();
-    return super.close();
   }
 }

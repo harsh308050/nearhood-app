@@ -191,7 +191,10 @@ void callNextScreenBuilder(
 }) {
   Navigator.push(
     context,
-    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+    CustomPageRoute(
+      page: Builder(builder: builder),
+      transitionType: transitionType,
+    ),
   );
 }
 
@@ -204,7 +207,10 @@ void callReplaceScreenBuilder(
 }) {
   Navigator.pushReplacement(
     context,
-    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+    CustomPageRoute(
+      page: Builder(builder: builder),
+      transitionType: transitionType,
+    ),
   );
 }
 
@@ -217,13 +223,16 @@ Future<T?> callNextScreenBuilderWithResult<T>(
 }) async {
   return Navigator.push<T>(
     context,
-    CustomPageRoute(page: Builder(builder: builder), transitionType: transitionType),
+    CustomPageRoute(
+      page: Builder(builder: builder),
+      transitionType: transitionType,
+    ),
   );
 }
 
 Widget shimmer({required Widget child}) {
   return Shimmer.fromColors(
-    baseColor: Colors.grey.withValues(alpha: 0.2),
+    baseColor: AppColors.grey.withValues(alpha: 0.2),
     highlightColor: AppColors.borderLight,
     child: child,
   );
@@ -234,7 +243,7 @@ Widget shimmerContainer(double height, double width) {
     child: Container(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        color: Colors.grey,
+        color: AppColors.grey,
       ),
       height: height,
       width: width,

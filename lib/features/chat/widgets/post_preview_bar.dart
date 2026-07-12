@@ -69,7 +69,7 @@ class PostPreviewBar extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 1.h),
+                sh(1.h),
                 Text(
                   snapshot.title,
                   maxLines: 1,

@@ -159,8 +159,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     // Navigate based on notification type
     if (notification.type == 'CHAT_MESSAGE') {
-      final senderId = notification.senderId ?? notification.data['senderId'] as String?;
-      final senderName = notification.data['senderName'] as String? ?? notification.title;
+      final senderId =
+          notification.senderId ?? notification.data['senderId'] as String?;
+      final senderName =
+          notification.data['senderName'] as String? ?? notification.title;
       if (senderId != null && mounted) {
         callNextScreen(
           context,
@@ -213,7 +215,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 onPressed: _markAllAsRead,
                 child: CustomText(
                   'Mark all read',
-                  style: TextStyle(
+                  style: AppTypography.bodyText.copyWith(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primaryBlue,
@@ -234,7 +236,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     if (_hasError) {
       return EmptyStateWidget(
         title: 'Failed to load notifications',
-        subtitle: 'There was an error fetching your notification history. Please try again.',
+        subtitle:
+            'There was an error fetching your notification history. Please try again.',
         btnText: 'Try again',
         onPressed: () => _loadNotifications(refresh: true),
       );
@@ -261,8 +264,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           if (index == _notifications.length) {
             // Loading more shimmer tile
             return Shimmer.fromColors(
-              baseColor: Colors.grey.withValues(alpha: 0.15),
-              highlightColor: Colors.grey.withValues(alpha: 0.05),
+              baseColor: AppColors.grey.withValues(alpha: 0.15),
+              highlightColor: AppColors.grey.withValues(alpha: 0.05),
               child: Padding(
                 padding: EdgeInsets.all(16.w),
                 child: Row(
@@ -272,11 +275,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       width: 48.w,
                       height: 48.w,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    sw(12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,13 +287,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           Container(
                             height: 14.h,
                             width: 150.w,
-                            color: Colors.grey,
+                            color: AppColors.grey,
                           ),
-                          SizedBox(height: 8.h),
+                          sh(8),
                           Container(
                             height: 12.h,
                             width: double.infinity,
-                            color: Colors.grey,
+                            color: AppColors.grey,
                           ),
                         ],
                       ),
@@ -328,18 +331,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
             children: [
               // Icon shimmer
               Shimmer.fromColors(
-                baseColor: Colors.grey.withValues(alpha: 0.15),
-                highlightColor: Colors.grey.withValues(alpha: 0.05),
+                baseColor: AppColors.grey.withValues(alpha: 0.15),
+                highlightColor: AppColors.grey.withValues(alpha: 0.05),
                 child: Container(
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: Colors.grey,
+                    color: AppColors.grey,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              sw(12),
               // Content shimmer
               Expanded(
                 child: Column(
@@ -347,55 +350,55 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   children: [
                     // Title shimmer
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.withValues(alpha: 0.15),
-                      highlightColor: Colors.grey.withValues(alpha: 0.05),
+                      baseColor: AppColors.grey.withValues(alpha: 0.15),
+                      highlightColor: AppColors.grey.withValues(alpha: 0.05),
                       child: Container(
                         height: 14.h,
                         width: 160.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    sh(8),
                     // Body line 1 shimmer
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.withValues(alpha: 0.15),
-                      highlightColor: Colors.grey.withValues(alpha: 0.05),
+                      baseColor: AppColors.grey.withValues(alpha: 0.15),
+                      highlightColor: AppColors.grey.withValues(alpha: 0.05),
                       child: Container(
                         height: 12.h,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
                     ),
-                    SizedBox(height: 6.h),
+                    sh(6),
                     // Body line 2 shimmer
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.withValues(alpha: 0.15),
-                      highlightColor: Colors.grey.withValues(alpha: 0.05),
+                      baseColor: AppColors.grey.withValues(alpha: 0.15),
+                      highlightColor: AppColors.grey.withValues(alpha: 0.05),
                       child: Container(
                         height: 12.h,
                         width: 200.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    sh(8),
                     // Time ago shimmer
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.withValues(alpha: 0.15),
-                      highlightColor: Colors.grey.withValues(alpha: 0.05),
+                      baseColor: AppColors.grey.withValues(alpha: 0.15),
+                      highlightColor: AppColors.grey.withValues(alpha: 0.05),
                       child: Container(
                         height: 10.h,
                         width: 60.w,
                         decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: AppColors.grey,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -487,7 +490,7 @@ class _NotificationTile extends StatelessWidget {
                     ),
                     child: Icon(icon, color: color, size: 26.r),
                   ),
-                  SizedBox(width: 12.w),
+                  sw(12),
                   // COLUMN {TITLE + CONTENT}
                   Expanded(
                     child: Column(
@@ -495,7 +498,7 @@ class _NotificationTile extends StatelessWidget {
                       children: [
                         CustomText(
                           notification.title,
-                          style: TextStyle(
+                          style: AppTypography.cardTitle.copyWith(
                             fontSize: 15.sp,
                             fontWeight: notification.isRead
                                 ? FontWeight.w600
@@ -506,14 +509,14 @@ class _NotificationTile extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 4.h),
+                        sh(4),
                         CustomText(
-                          notification.type == 'CHAT_MESSAGE' && notification.messageCount > 1
+                          notification.type == 'CHAT_MESSAGE' &&
+                                  notification.messageCount > 1
                               ? '${notification.body} (${notification.messageCount} messages)'
                               : notification.body,
-                          style: TextStyle(
+                          style: AppTypography.bodyText.copyWith(
                             fontSize: 14.sp,
-                            fontWeight: FontWeight.w400,
                             color: AppColors.grey,
                             height: 1.4,
                           ),
@@ -526,7 +529,7 @@ class _NotificationTile extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: 12.w),
+            sw(12),
             // COLUMN {INDICATOR + TIME AGO}
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -543,10 +546,10 @@ class _NotificationTile extends StatelessWidget {
                   )
                 else
                   SizedBox(width: 8.w, height: 8.w),
-                SizedBox(height: 12.h),
+                sh(12),
                 CustomText(
                   timeAgo,
-                  style: TextStyle(
+                  style: AppTypography.overline.copyWith(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                     color: AppColors.placeholderText,

@@ -754,7 +754,7 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
             sw(6),
             CustomText(
               '$count',
-              style: TextStyle(
+              style: AppTypography.cardTitle.copyWith(
                 color: AppColors.darkGrey,
                 fontSize: 13.sp,
                 fontWeight: FontWeight.bold,
@@ -1496,9 +1496,10 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
                 sw(12),
                 GestureDetector(
                   onTap: _cancelReply,
-                  child: const Icon(
-                    Icons.close,
-                    size: 18,
+                  child: CustomImageView(
+                    imagePath: AppAssets.icClose,
+                    height: 18,
+                    width: 18,
                     color: AppColors.grey,
                   ),
                 ),
@@ -1600,9 +1601,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
               // Edit Post (only for own posts)
               if (isOwnPost)
                 ListTile(
-                  leading: Icon(
-                    Icons.edit_outlined,
+                  leading: CustomImageView(
+                    imagePath: AppAssets.icEdit,
                     color: AppColors.primaryBlue,
+                    height: 20.r,
+                    width: 20.r,
                   ),
                   title: CustomText(
                     AppStrings.editPost,
@@ -1711,9 +1714,11 @@ class _PostDetailScreenBodyState extends State<PostDetailScreenBody> {
               // Message about this post (only for other people's posts)
               if (!isOwnPost)
                 ListTile(
-                  leading: const Icon(
-                    Icons.chat_bubble_outline,
+                  leading: CustomImageView(
+                    imagePath: AppAssets.icMessage,
                     color: AppColors.primaryBlue,
+                    height: 20.r,
+                    width: 20.r,
                   ),
                   title: CustomText(
                     AppStrings.chatMenuReplyToPost,

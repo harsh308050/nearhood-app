@@ -236,7 +236,7 @@ class _ReactionPickerWidgetState extends State<_ReactionPickerWidget> {
                       horizontal: 10.w,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2D3748),
+                      color: AppColors.darkGrey,
                       borderRadius: BorderRadius.circular(100.r),
                       boxShadow: [
                         BoxShadow(

@@ -332,7 +332,13 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
       child: CustomTextField(
         controller: _searchController,
         hint: widget.searchHint,
-        prefixIcon: AppAssets.icSearch,
+        prefixIcon: CustomImageView(
+          imagePath: AppAssets.icSearch,
+          color: AppColors.primaryBlue,
+
+          height: 18.r,
+          width: 18.r,
+        ),
         suffix: _searchController.text.isNotEmpty
             ? GestureDetector(
                 onTap: () {
@@ -341,8 +347,6 @@ class CustomDropdownState<T> extends State<CustomDropdown<T>> {
                 },
                 child: CustomImageView(
                   imagePath: AppAssets.icClose,
-                  height: 16.r,
-                  width: 16.r,
                   color: AppColors.grey,
                 ),
               )

@@ -360,7 +360,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(Icons.call, color: AppColors.primaryBlue, size: 22.r),
+            icon: CustomImageView(
+              imagePath: AppAssets.icCall,
+              color: AppColors.primaryBlue,
+              height: 22.r,
+              width: 22.r,
+            ),
             onPressed: () {
               final phone = widget.otherUser.phoneNumber;
               if (phone == null || phone.isEmpty) return;
@@ -701,23 +706,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                         children: [
                           CustomText(
                             time,
-                            style: TextStyle(
+                            style: AppTypography.overline.copyWith(
                               color: isMine
                                   ? AppColors.white.withValues(alpha: 0.7)
                                   : AppColors.grey,
                               fontSize: 11.sp,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                           if (message.isEdited && !showDeletedText) ...[
                             sw(4),
                             CustomText(
                               AppStrings.chatEdited,
-                              style: TextStyle(
+                              style: AppTypography.overline.copyWith(
                                 color: isMine
                                     ? AppColors.white.withValues(alpha: 0.6)
                                     : AppColors.grey,
                                 fontSize: 10.sp,
                                 fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
@@ -897,11 +904,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                       ],
                       CustomText(
                         time,
-                        style: TextStyle(
+                        style: AppTypography.overline.copyWith(
                           color: isMine
                               ? AppColors.white.withValues(alpha: 0.7)
                               : AppColors.grey,
                           fontSize: 11.sp,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                       if (isMine && !isUploading) ...[
@@ -954,7 +962,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               160.h,
             ),
           ),
-          SizedBox(width: 2.r),
+          sw(2.r),
           Expanded(
             child: _buildSingleImageThumb(
               urls[1],
@@ -986,7 +994,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                   108.h,
                 ),
               ),
-              SizedBox(width: 2.r),
+              sw(2.r),
               Expanded(
                 child: _buildSingleImageThumb(
                   urls[1],
@@ -998,7 +1006,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               ),
             ],
           ),
-          SizedBox(height: 2.r),
+          sh(2.r),
           _buildSingleImageThumb(urls[2], isUploading, isMine, 220.w, 108.h),
         ],
       );
@@ -1018,7 +1026,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 108.h,
               ),
             ),
-            SizedBox(width: 2.r),
+            sw(2.r),
             Expanded(
               child: _buildSingleImageThumb(
                 urls[1],
@@ -1030,7 +1038,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             ),
           ],
         ),
-        SizedBox(height: 2.r),
+        sh(2.r),
         Row(
           children: [
             Expanded(
@@ -1042,7 +1050,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 108.h,
               ),
             ),
-            SizedBox(width: 2.r),
+            sw(2.r),
             Expanded(
               child: Stack(
                 alignment: Alignment.center,
@@ -1062,7 +1070,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                       child: Center(
                         child: CustomText(
                           '+$overflow',
-                          style: TextStyle(
+                          style: AppTypography.cardTitle.copyWith(
                             color: AppColors.white,
                             fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
@@ -1231,10 +1239,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                                     point: latLng,
                                     width: 30.r,
                                     height: 30.r,
-                                    child: Icon(
-                                      Icons.location_pin,
+                                    child: CustomImageView(
+                                      imagePath: AppAssets.icLocation,
                                       color: AppColors.red,
-                                      size: 30.r,
+                                      height: 30.r,
+                                      width: 30.r,
                                     ),
                                   ),
                                 ],
@@ -1257,16 +1266,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.location_on,
-                                size: 14.r,
+                              CustomImageView(
+                                imagePath: AppAssets.icLocation,
+                                height: 14.r,
+                                width: 14.r,
                                 color: isMine ? AppColors.white : AppColors.red,
                               ),
                               sw(4),
                               Expanded(
                                 child: CustomText(
                                   loc?.name ?? AppStrings.chatLocation,
-                                  style: TextStyle(
+                                  style: AppTypography.bodyText.copyWith(
                                     color: isMine
                                         ? AppColors.white
                                         : AppColors.darkGrey,
@@ -1284,11 +1294,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                             children: [
                               CustomText(
                                 isUploading ? AppStrings.chatSending : time,
-                                style: TextStyle(
+                                style: AppTypography.overline.copyWith(
                                   color: isMine
                                       ? AppColors.white.withValues(alpha: 0.7)
                                       : AppColors.grey,
                                   fontSize: 11.sp,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                               if (isMine && !isUploading) ...[
@@ -1364,8 +1375,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
           child: Align(
             alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
             child: Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
               child: Container(
                 height: 40.h,
                 width: 150.w,
@@ -1506,7 +1517,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                           ),
                           child: CustomText(
                             _formatDuration(_recordingDuration),
-                            style: TextStyle(
+                            style: AppTypography.bodyText.copyWith(
                               color: AppColors.primaryBlue,
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
@@ -1651,10 +1662,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                                           color: AppColors.primaryBlue,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: Icon(
-                                          Icons.send,
+                                        child: CustomImageView(
+                                          imagePath: AppAssets.icSend,
                                           color: AppColors.white,
-                                          size: 18.r,
+                                          height: 18.r,
+                                          width: 18.r,
                                         ),
                                       ),
                                       onPressed: _sendMessage,
@@ -1882,7 +1894,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
           ),
           sw(8),
           IconButton(
-            icon: Icon(Icons.close, color: AppColors.grey, size: 20.r),
+            icon: CustomImageView(
+              imagePath: AppAssets.icClose,
+              color: AppColors.grey,
+              height: 20.r,
+              width: 20.r,
+            ),
             onPressed: () {
               _chatBloc?.add(ClearReplyTo());
             },
@@ -1905,7 +1922,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.edit_outlined, color: AppColors.primaryBlue, size: 18.r),
+          CustomImageView(
+            imagePath: AppAssets.icEdit,
+            color: AppColors.primaryBlue,
+            height: 18.r,
+            width: 18.r,
+          ),
           sw(8),
           Expanded(
             child: Column(
@@ -1935,7 +1957,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
           ),
           sw(8),
           IconButton(
-            icon: Icon(Icons.close, color: AppColors.grey, size: 20.r),
+            icon: CustomImageView(
+              imagePath: AppAssets.icClose,
+              color: AppColors.grey,
+              height: 20.r,
+              width: 20.r,
+            ),
             onPressed: () {
               _chatBloc?.add(ClearEditingMessage());
               _messageController.clear();
@@ -2009,7 +2036,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     sw(8),
                     CustomText(
                       '${_formatDuration(position)} / ${_formatDuration(total)}',
-                      style: TextStyle(color: AppColors.grey, fontSize: 11.sp),
+                      style: AppTypography.overline.copyWith(
+                        color: AppColors.grey,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ],
                 ),
@@ -2018,7 +2049,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
           ),
           sw(8),
           IconButton(
-            icon: Icon(Icons.close, color: AppColors.red, size: 22.r),
+            icon: CustomImageView(
+              imagePath: AppAssets.icClose,
+              color: AppColors.red,
+              height: 22.r,
+              width: 22.r,
+            ),
             onPressed: _deleteRecording,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -2032,7 +2068,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 color: AppColors.primaryBlue,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.send, color: AppColors.white, size: 18.r),
+              child: CustomImageView(
+                imagePath: AppAssets.icSend,
+                color: AppColors.white,
+                height: 18.r,
+                width: 18.r,
+              ),
             ),
           ),
         ],
@@ -2109,7 +2150,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                       Expanded(
                         child: CustomText(
                           AppStrings.chatSending,
-                          style: TextStyle(
+                          style: AppTypography.bodyText.copyWith(
                             color: isMine ? AppColors.white : AppColors.grey,
                             fontSize: 13.sp,
                           ),
@@ -2163,13 +2204,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                                       isPlaying
                                           ? _formatDuration(position)
                                           : _formatDuration(totalDuration),
-                                      style: TextStyle(
+                                      style: AppTypography.overline.copyWith(
                                         color: isMine
                                             ? AppColors.white.withValues(
                                                 alpha: 0.7,
                                               )
                                             : AppColors.grey,
                                         fontSize: 11.sp,
+                                        fontWeight: FontWeight.w400,
                                       ),
                                     ),
                                     if (isMine) ...[
@@ -2236,12 +2278,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               children: [
                 CustomText(
                   message.content.isNotEmpty ? message.content : 'Shared post',
-                  style: TextStyle(
+                  style: AppTypography.bodyText.copyWith(
                     color: isMine ? AppColors.white : AppColors.darkGrey,
                     fontSize: 15.sp,
                   ),
                 ),
-                Text(
+                CustomText(
                   time,
                   style: TextStyle(
                     color: isMine
@@ -2325,33 +2367,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
+                              CustomText(
                                 snapshot.type,
-                                style: TextStyle(
+                                style: AppTypography.overline.copyWith(
                                   color: accentColor,
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.3,
                                 ),
                               ),
-                              SizedBox(height: 2.h),
-                              Text(
+                              sh(2),
+                              CustomText(
                                 snapshot.title,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: AppTypography.overline.copyWith(
                                   color: AppColors.darkGrey,
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w500,
                                   height: 1.3,
                                 ),
                               ),
-                              SizedBox(height: 4.h),
-                              Text(
+                              sh(4),
+                              CustomText(
                                 '${snapshot.authorName}${snapshot.authorLocality.isNotEmpty ? ' · ${snapshot.authorLocality}' : ''}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: AppTypography.overline.copyWith(
                                   color: AppColors.grey,
                                   fontSize: 10.sp,
                                 ),
@@ -2394,9 +2436,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                       horizontal: 12.w,
                       vertical: 6.h,
                     ),
-                    child: Text(
+                    child: CustomText(
                       message.content,
-                      style: TextStyle(
+                      style: AppTypography.bodyText.copyWith(
                         color: isMine ? AppColors.white : AppColors.darkGrey,
                         fontSize: 15.sp,
                       ),
@@ -2410,13 +2452,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
+                        CustomText(
                           time,
-                          style: TextStyle(
+                          style: AppTypography.overline.copyWith(
                             color: isMine
                                 ? AppColors.white.withValues(alpha: 0.7)
                                 : AppColors.grey,
                             fontSize: 11.sp,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                         if (isMine) ...[
@@ -2533,6 +2576,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 children: [
                   _buildAttachmentOption(
                     icon: Icons.camera_alt,
+                    iconAsset: AppAssets.icCamera,
                     label: AppStrings.chatCamera,
                     color: AppColors.primaryBlue,
                     onTap: () {
@@ -2544,6 +2588,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                   ),
                   _buildAttachmentOption(
                     icon: Icons.photo_library,
+                    iconAsset: AppAssets.icGallery,
                     label: AppStrings.chatGallery,
                     color: AppColors.green,
                     onTap: () {
@@ -2555,6 +2600,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                   ),
                   _buildAttachmentOption(
                     icon: Icons.location_on,
+                    iconAsset: AppAssets.icLocation,
                     label: AppStrings.chatLocation,
                     color: AppColors.red,
                     onTap: () {
@@ -2576,6 +2622,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   Widget _buildAttachmentOption({
     required IconData icon,
+    String? iconAsset,
     required String label,
     required Color color,
     required VoidCallback onTap,
@@ -2590,7 +2637,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24.r),
+            child: iconAsset != null
+                ? CustomImageView(
+                    imagePath: iconAsset,
+                    color: color,
+                    height: 24.r,
+                    width: 24.r,
+                  )
+                : Icon(icon, color: color, size: 24.r),
           ),
           sh(8),
           CustomText(
@@ -3347,8 +3401,6 @@ class _MessageItem {
     required this.showAvatar,
   });
 }
-
-
 
 class _SwipeToReplyWrapper extends StatefulWidget {
   final Widget child;

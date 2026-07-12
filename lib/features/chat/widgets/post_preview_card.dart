@@ -68,7 +68,7 @@ class PostPreviewCard extends StatelessWidget {
                         letterSpacing: 0.3,
                       ),
                     ),
-                    SizedBox(height: 2.h),
+                    sh(2.h),
                     // Title
                     Text(
                       snapshot.title,
@@ -81,7 +81,7 @@ class PostPreviewCard extends StatelessWidget {
                         height: 1.3,
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    sh(4.h),
                     // Author + locality
                     Text(
                       '${snapshot.authorName}${snapshot.authorLocality.isNotEmpty ? ' · ${snapshot.authorLocality}' : ''}',
